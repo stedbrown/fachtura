@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
+import { PDFDocument, rgb } from 'pdf-lib'
+import fontkit from '@pdf-lib/fontkit'
 import { format } from 'date-fns'
 import { it, de, fr, enUS } from 'date-fns/locale'
 import { getPDFTranslations } from '@/lib/pdf-translations'
+import * as fs from 'fs'
+import * as path from 'path'
 
 const localeMap: Record<string, any> = {
   it: it,
@@ -86,9 +89,19 @@ export async function GET(
 
     // Create PDF
     const pdfDoc = await PDFDocument.create()
+    
+    // Register fontkit to support custom fonts
+    pdfDoc.registerFontkit(fontkit)
+    
+    // Load custom fonts (Roboto supports Italian accented characters)
+    const fontRegularPath = path.join(process.cwd(), 'public', 'fonts', 'Roboto-Regular.ttf')
+    const fontBoldPath = path.join(process.cwd(), 'public', 'fonts', 'Roboto-Bold.ttf')
+    const fontRegularBytes = fs.readFileSync(fontRegularPath)
+    const fontBoldBytes = fs.readFileSync(fontBoldPath)
+    
     const page = pdfDoc.addPage([595, 842]) // A4 size
-    const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
-    const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
+    const font = await pdfDoc.embedFont(fontRegularBytes)
+    const fontBold = await pdfDoc.embedFont(fontBoldBytes)
 
     const { width, height } = page.getSize()
     let yPosition = height - 50

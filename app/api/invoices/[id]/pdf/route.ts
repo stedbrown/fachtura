@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
+import { PDFDocument, rgb } from 'pdf-lib'
+import fontkit from '@pdf-lib/fontkit'
 import { SwissQRBill } from 'swissqrbill/svg'
 import sharp from 'sharp'
 import { format } from 'date-fns'
 import { it, de, fr, enUS } from 'date-fns/locale'
 import { getPDFTranslations } from '@/lib/pdf-translations'
+import * as fs from 'fs'
+import * as path from 'path'
 
 const localeMap: Record<string, any> = {
   it: it,
@@ -119,9 +122,19 @@ export async function GET(
 
     // Create PDF with pdf-lib
     const pdfDoc = await PDFDocument.create()
+    
+    // Register fontkit to support custom fonts
+    pdfDoc.registerFontkit(fontkit)
+    
+    // Load custom fonts (Roboto supports Italian accented characters)
+    const fontRegularPath = path.join(process.cwd(), 'public', 'fonts', 'Roboto-Regular.ttf')
+    const fontBoldPath = path.join(process.cwd(), 'public', 'fonts', 'Roboto-Bold.ttf')
+    const fontRegularBytes = fs.readFileSync(fontRegularPath)
+    const fontBoldBytes = fs.readFileSync(fontBoldPath)
+    
     const page = pdfDoc.addPage([595, 842]) // A4
-    const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
-    const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
+    const font = await pdfDoc.embedFont(fontRegularBytes)
+    const fontBold = await pdfDoc.embedFont(fontBoldBytes)
 
     // Swiss QR Bill height is 297pt, so we have 545pt available for invoice content
     const qrBillHeight = 297
