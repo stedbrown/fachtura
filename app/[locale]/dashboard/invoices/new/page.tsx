@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -24,6 +25,9 @@ export default function NewInvoicePage() {
   const router = useRouter()
   const params = useParams()
   const locale = params.locale as string
+  const t = useTranslations('invoices')
+  const tCommon = useTranslations('common')
+  const tStatus = useTranslations('invoices.status')
   const [clients, setClients] = useState<Client[]>([])
   const [loading, setLoading] = useState(false)
   const [clientId, setClientId] = useState('')
@@ -114,7 +118,7 @@ export default function NewInvoicePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!clientId) {
-      alert('Seleziona un cliente')
+      alert(t('form.errorSelectClient'))
       return
     }
 
@@ -150,7 +154,7 @@ export default function NewInvoicePage() {
         .single()
 
       if (invoiceError || !invoice) {
-        alert('Errore durante la creazione della fattura')
+        alert(t('form.errorCreating'))
         return
       }
 
@@ -177,23 +181,23 @@ export default function NewInvoicePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Nuova Fattura</h1>
+        <h1 className="text-3xl font-bold">{t('form.title')}</h1>
         <p className="text-muted-foreground">
-          Crea una nuova fattura per un cliente
+          {t('form.subtitle')}
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle>Informazioni Generali</CardTitle>
+            <CardTitle>{t('form.generalInfo')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="client">Cliente *</Label>
+              <Label htmlFor="client">{t('fields.client')} *</Label>
               <Select value={clientId} onValueChange={setClientId}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Seleziona un cliente" />
+                  <SelectValue placeholder={t('form.selectClient')} />
                 </SelectTrigger>
                 <SelectContent>
                   {clients.map((client) => (
@@ -206,7 +210,7 @@ export default function NewInvoicePage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="date">Data</Label>
+                <Label htmlFor="date">{t('fields.date')}</Label>
                 <Input
                   id="date"
                   type="date"
@@ -215,7 +219,7 @@ export default function NewInvoicePage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="dueDate">Scadenza</Label>
+                <Label htmlFor="dueDate">{t('fields.dueDate')}</Label>
                 <Input
                   id="dueDate"
                   type="date"
@@ -225,21 +229,21 @@ export default function NewInvoicePage() {
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="status">Stato</Label>
+              <Label htmlFor="status">{tCommon('status')}</Label>
               <Select value={status} onValueChange={(value: any) => setStatus(value)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Seleziona stato" />
+                  <SelectValue placeholder={t('form.selectStatus')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="draft">Bozza</SelectItem>
-                  <SelectItem value="issued">Emessa</SelectItem>
-                  <SelectItem value="paid">Pagata</SelectItem>
-                  <SelectItem value="overdue">Scaduta</SelectItem>
+                  <SelectItem value="draft">{tStatus('draft')}</SelectItem>
+                  <SelectItem value="issued">{tStatus('issued')}</SelectItem>
+                  <SelectItem value="paid">{tStatus('paid')}</SelectItem>
+                  <SelectItem value="overdue">{tStatus('overdue')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="notes">Note</Label>
+              <Label htmlFor="notes">{tCommon('notes')}</Label>
               <Textarea
                 id="notes"
                 value={notes}
@@ -252,10 +256,10 @@ export default function NewInvoicePage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Articoli</CardTitle>
+            <CardTitle>{t('fields.items')}</CardTitle>
             <Button type="button" variant="outline" size="sm" onClick={addItem}>
               <Plus className="mr-2 h-4 w-4" />
-              Aggiungi Articolo
+              {t('fields.addItem')}
             </Button>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -276,18 +280,18 @@ export default function NewInvoicePage() {
                   </Button>
                 )}
                 <div className="space-y-2">
-                  <Label>Descrizione</Label>
+                  <Label>{t('fields.description')}</Label>
                   <Input
                     value={item.description}
                     onChange={(e) =>
                       updateItem(index, 'description', e.target.value)
                     }
-                    placeholder="Descrizione articolo"
+                    placeholder={t('form.itemDescription')}
                   />
                 </div>
                 <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-2">
-                    <Label>Quantità</Label>
+                    <Label>{t('fields.quantity')}</Label>
                     <Input
                       type="number"
                       step="0.01"
@@ -299,7 +303,7 @@ export default function NewInvoicePage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Prezzo Unitario (CHF)</Label>
+                    <Label>{t('fields.unitPrice')} (CHF)</Label>
                     <Input
                       type="number"
                       step="0.01"
@@ -311,7 +315,7 @@ export default function NewInvoicePage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>IVA (%)</Label>
+                    <Label>{t('fields.taxRate')} (%)</Label>
                     <Input
                       type="number"
                       step="0.1"
@@ -326,7 +330,7 @@ export default function NewInvoicePage() {
                 </div>
                 <div className="text-right">
                   <span className="text-sm text-muted-foreground">
-                    Totale riga: CHF{' '}
+                    {t('fields.lineTotal')}: CHF{' '}
                     {(
                       item.quantity *
                       item.unit_price *
@@ -341,19 +345,19 @@ export default function NewInvoicePage() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Totali</CardTitle>
+            <CardTitle>{t('form.totals')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             <div className="flex justify-between">
-              <span>Subtotale:</span>
+              <span>{tCommon('subtotal')}:</span>
               <span>CHF {totals.subtotal.toFixed(2)}</span>
             </div>
             <div className="flex justify-between">
-              <span>IVA:</span>
+              <span>{tCommon('tax')}:</span>
               <span>CHF {totals.taxAmount.toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-lg font-bold">
-              <span>Totale:</span>
+              <span>{tCommon('total')}:</span>
               <span>CHF {totals.total.toFixed(2)}</span>
             </div>
           </CardContent>
@@ -363,12 +367,12 @@ export default function NewInvoicePage() {
           <Button
             type="button"
             variant="outline"
-            onClick={() => router.push('/dashboard/invoices')}
+            onClick={() => router.push(`/${locale}/dashboard/invoices`)}
           >
-            Annulla
+            {tCommon('cancel')}
           </Button>
           <Button type="submit" disabled={loading}>
-            {loading ? 'Salvataggio...' : 'Crea Fattura'}
+            {loading ? t('form.saving') : t('form.createButton')}
           </Button>
         </div>
       </form>

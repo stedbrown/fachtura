@@ -230,6 +230,19 @@
       "lineTotal": "Line Total",
       "addItem": "Add Item",
       "removeItem": "Remove Item"
+    },
+    "form": {
+      "title": "New Quote",
+      "subtitle": "Create a new quote for a client",
+      "generalInfo": "General Information",
+      "selectClient": "Select a client",
+      "selectStatus": "Select status",
+      "itemDescription": "Item description",
+      "totals": "Totals",
+      "saving": "Saving...",
+      "createButton": "Create Quote",
+      "errorCreating": "Error creating the quote",
+      "errorSelectClient": "Please select a client"
     }
   },
   "invoices": {
@@ -268,6 +281,19 @@
       "lineTotal": "Line Total",
       "addItem": "Add Item",
       "removeItem": "Remove Item"
+    },
+    "form": {
+      "title": "New Invoice",
+      "subtitle": "Create a new invoice for a client",
+      "generalInfo": "General Information",
+      "selectClient": "Select a client",
+      "selectStatus": "Select status",
+      "itemDescription": "Item description",
+      "totals": "Totals",
+      "saving": "Saving...",
+      "createButton": "Create Invoice",
+      "errorCreating": "Error creating the invoice",
+      "errorSelectClient": "Please select a client"
     }
   },
   "settings": {

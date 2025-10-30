@@ -230,6 +230,19 @@
       "lineTotal": "Total ligne",
       "addItem": "Ajouter un article",
       "removeItem": "Retirer l'article"
+    },
+    "form": {
+      "title": "Nouveau Devis",
+      "subtitle": "Créer un nouveau devis pour un client",
+      "generalInfo": "Informations Générales",
+      "selectClient": "Sélectionner un client",
+      "selectStatus": "Sélectionner le statut",
+      "itemDescription": "Description de l'article",
+      "totals": "Totaux",
+      "saving": "Enregistrement...",
+      "createButton": "Créer le devis",
+      "errorCreating": "Erreur lors de la création du devis",
+      "errorSelectClient": "Veuillez sélectionner un client"
     }
   },
   "invoices": {
@@ -268,6 +281,19 @@
       "lineTotal": "Total ligne",
       "addItem": "Ajouter un article",
       "removeItem": "Retirer l'article"
+    },
+    "form": {
+      "title": "Nouvelle Facture",
+      "subtitle": "Créer une nouvelle facture pour un client",
+      "generalInfo": "Informations Générales",
+      "selectClient": "Sélectionner un client",
+      "selectStatus": "Sélectionner le statut",
+      "itemDescription": "Description de l'article",
+      "totals": "Totaux",
+      "saving": "Enregistrement...",
+      "createButton": "Créer la facture",
+      "errorCreating": "Erreur lors de la création de la facture",
+      "errorSelectClient": "Veuillez sélectionner un client"
     }
   },
   "settings": {

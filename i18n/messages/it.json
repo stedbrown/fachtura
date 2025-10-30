@@ -230,6 +230,19 @@
       "lineTotal": "Totale Riga",
       "addItem": "Aggiungi Articolo",
       "removeItem": "Rimuovi Articolo"
+    },
+    "form": {
+      "title": "Nuovo Preventivo",
+      "subtitle": "Crea un nuovo preventivo per un cliente",
+      "generalInfo": "Informazioni Generali",
+      "selectClient": "Seleziona un cliente",
+      "selectStatus": "Seleziona stato",
+      "itemDescription": "Descrizione articolo",
+      "totals": "Totali",
+      "saving": "Salvataggio...",
+      "createButton": "Crea Preventivo",
+      "errorCreating": "Errore durante la creazione del preventivo",
+      "errorSelectClient": "Seleziona un cliente"
     }
   },
   "invoices": {
@@ -268,6 +281,19 @@
       "lineTotal": "Totale Riga",
       "addItem": "Aggiungi Articolo",
       "removeItem": "Rimuovi Articolo"
+    },
+    "form": {
+      "title": "Nuova Fattura",
+      "subtitle": "Crea una nuova fattura per un cliente",
+      "generalInfo": "Informazioni Generali",
+      "selectClient": "Seleziona un cliente",
+      "selectStatus": "Seleziona stato",
+      "itemDescription": "Descrizione articolo",
+      "totals": "Totali",
+      "saving": "Salvataggio...",
+      "createButton": "Crea Fattura",
+      "errorCreating": "Errore durante la creazione della fattura",
+      "errorSelectClient": "Seleziona un cliente"
     }
   },
   "settings": {

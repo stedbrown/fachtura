@@ -230,6 +230,19 @@
       "lineTotal": "Total da lingia",
       "addItem": "Agiuntar artitgel",
       "removeItem": "Allontanar artitgel"
+    },
+    "form": {
+      "title": "Nov Preventiv",
+      "subtitle": "Crear in nov preventiv per in client",
+      "generalInfo": "Infurmaziuns generalas",
+      "selectClient": "Selecziunar in client",
+      "selectStatus": "Selecziunar status",
+      "itemDescription": "Descripziun da l'artitgel",
+      "totals": "Totals",
+      "saving": "Memorisar...",
+      "createButton": "Crear preventiv",
+      "errorCreating": "Errur cun crear il preventiv",
+      "errorSelectClient": "Per plaschair selecziunar in client"
     }
   },
   "invoices": {
@@ -268,6 +281,19 @@
       "lineTotal": "Total da lingia",
       "addItem": "Agiuntar artitgel",
       "removeItem": "Allontanar artitgel"
+    },
+    "form": {
+      "title": "Nova factura",
+      "subtitle": "Crear ina nova factura per in client",
+      "generalInfo": "Infurmaziuns generalas",
+      "selectClient": "Selecziunar in client",
+      "selectStatus": "Selecziunar status",
+      "itemDescription": "Descripziun da l'artitgel",
+      "totals": "Totals",
+      "saving": "Memorisar...",
+      "createButton": "Crear factura",
+      "errorCreating": "Errur cun crear la factura",
+      "errorSelectClient": "Per plaschair selecziunar in client"
     }
   },
   "settings": {

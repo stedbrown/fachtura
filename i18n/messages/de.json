@@ -230,6 +230,19 @@
       "lineTotal": "Zeilensumme",
       "addItem": "Artikel hinzufügen",
       "removeItem": "Artikel entfernen"
+    },
+    "form": {
+      "title": "Neues Angebot",
+      "subtitle": "Erstelle ein neues Angebot für einen Kunden",
+      "generalInfo": "Allgemeine Informationen",
+      "selectClient": "Kunde auswählen",
+      "selectStatus": "Status auswählen",
+      "itemDescription": "Artikelbeschreibung",
+      "totals": "Summen",
+      "saving": "Speichern...",
+      "createButton": "Angebot erstellen",
+      "errorCreating": "Fehler beim Erstellen des Angebots",
+      "errorSelectClient": "Bitte einen Kunden auswählen"
     }
   },
   "invoices": {
@@ -268,6 +281,19 @@
       "lineTotal": "Zeilensumme",
       "addItem": "Artikel hinzufügen",
       "removeItem": "Artikel entfernen"
+    },
+    "form": {
+      "title": "Neue Rechnung",
+      "subtitle": "Erstelle eine neue Rechnung für einen Kunden",
+      "generalInfo": "Allgemeine Informationen",
+      "selectClient": "Kunde auswählen",
+      "selectStatus": "Status auswählen",
+      "itemDescription": "Artikelbeschreibung",
+      "totals": "Summen",
+      "saving": "Speichern...",
+      "createButton": "Rechnung erstellen",
+      "errorCreating": "Fehler beim Erstellen der Rechnung",
+      "errorSelectClient": "Bitte einen Kunden auswählen"
     }
   },
   "settings": {
