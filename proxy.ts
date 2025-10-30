@@ -10,20 +10,29 @@ const intlMiddleware = createMiddleware({
   localePrefix: 'always',
 })
 
-export async function middleware(request: NextRequest) {
-  // First handle Supabase session
-  const supabaseResponse = await updateSession(request)
-  
-  // Then handle i18n
+// Export as "proxy" function for Next.js 16
+export async function proxy(request: NextRequest) {
+  // First handle i18n (this may return a redirect)
   const intlResponse = intlMiddleware(request)
   
-  // Merge headers from both middlewares
+  // If intl middleware returns a redirect, return it immediately
+  if (intlResponse && (intlResponse.status === 307 || intlResponse.status === 308 || intlResponse.headers.get('location'))) {
+    return intlResponse
+  }
+  
+  // Handle Supabase session
+  const supabaseResponse = await updateSession(request)
+  
+  // Use intl response as base, or supabase response if no intl response
   const response = intlResponse || supabaseResponse
   
-  // Copy Supabase session headers to the final response
-  if (supabaseResponse) {
+  // Merge Supabase session headers into the response
+  if (supabaseResponse && response) {
     supabaseResponse.headers.forEach((value, key) => {
-      response.headers.set(key, value)
+      // Only copy Supabase-specific headers, don't override location or content-type
+      if (key.toLowerCase().startsWith('set-cookie') || key.toLowerCase().includes('supabase')) {
+        response.headers.set(key, value)
+      }
     })
   }
   
