@@ -448,7 +448,7 @@ export async function GET(
         city: invoice.client.city || '',
         country: getCountryCode(invoice.client.country),
       },
-      message: `Fattura ${invoice.invoice_number}`,
+      message: `${t.qrInvoiceMessage} ${invoice.invoice_number}`,
     }
 
     // Map locale to Swiss QR Bill language codes

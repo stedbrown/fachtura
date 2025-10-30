@@ -187,16 +187,16 @@ export function DashboardCharts({
   ]
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
       {/* Monthly Revenue Line Chart */}
       {visibility.revenueChart && (
-      <Card className="col-span-full lg:col-span-2">
+      <Card className="col-span-full">
         <CardHeader>
           <CardTitle>{t('revenueChart')}</CardTitle>
           <CardDescription>{t('revenueChartDescription')}</CardDescription>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={revenueChartConfig} className="h-[300px] w-full">
+          <ChartContainer config={revenueChartConfig} className="h-[200px] sm:h-[250px] md:h-[300px] w-full">
             <AreaChart accessibilityLayer data={formattedMonthlyData}>
               <defs>
                 <linearGradient id="fillRevenue" x1="0" y1="0" x2="0" y2="1">
@@ -263,7 +263,7 @@ export function DashboardCharts({
           ) : (
             <ChartContainer
               config={radialChartConfig}
-              className="mx-auto aspect-square max-h-[250px]"
+              className="mx-auto aspect-square max-h-[200px] sm:max-h-[225px] md:max-h-[250px]"
             >
               <RadialBarChart 
                 accessibilityLayer 
@@ -302,7 +302,7 @@ export function DashboardCharts({
 
       {/* Top Clients Bar Chart */}
       {visibility.topClients && (
-      <Card className="lg:col-span-2">
+      <Card className="col-span-full md:col-span-2">
         <CardHeader>
           <CardTitle>{t('topClients')}</CardTitle>
           <CardDescription>{t('topClientsDescription')}</CardDescription>
@@ -311,17 +311,20 @@ export function DashboardCharts({
           {topClients.length === 0 ? (
             <p className="text-center py-8 text-muted-foreground">{t('noDataAvailable')}</p>
           ) : (
-            <ChartContainer config={topClientsChartConfig} className="h-[300px] w-full">
+            <ChartContainer config={topClientsChartConfig} className="h-[200px] sm:h-[250px] md:h-[300px] w-full">
               <BarChart accessibilityLayer data={topClients}>
                 <CartesianGrid vertical={false} stroke="hsl(var(--border))" strokeOpacity={0.5} />
-                <XAxis
-                  dataKey="name"
-                  tickLine={false}
-                  tickMargin={10}
-                  axisLine={false}
-                  tickFormatter={(value) => value.slice(0, 10)}
-                  tick={{ fill: 'hsl(var(--muted-foreground))' }}
-                />
+              <XAxis
+                dataKey="name"
+                tickLine={false}
+                tickMargin={10}
+                axisLine={false}
+                tickFormatter={(value) => value.length > 8 ? value.slice(0, 8) + '...' : value}
+                tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 10 }}
+                angle={-45}
+                textAnchor="end"
+                height={70}
+              />
                 <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
                 <Bar dataKey="total" fill="var(--color-total)" radius={8} />
               </BarChart>
@@ -344,7 +347,7 @@ export function DashboardCharts({
           ) : (
             <ChartContainer
               config={quotesChartConfig}
-              className="mx-auto aspect-square max-h-[250px]"
+              className="mx-auto aspect-square max-h-[200px] sm:max-h-[225px] md:max-h-[250px]"
             >
               <PieChart accessibilityLayer>
                 <ChartTooltip cursor={false} content={<ChartTooltipContent nameKey="status" />} />
@@ -385,7 +388,7 @@ export function DashboardCharts({
           ) : (
             <ChartContainer
               config={invoicesChartConfig}
-              className="mx-auto aspect-square max-h-[250px]"
+              className="mx-auto aspect-square max-h-[200px] sm:max-h-[225px] md:max-h-[250px]"
             >
               <PieChart accessibilityLayer>
                 <ChartTooltip cursor={false} content={<ChartTooltipContent nameKey="status" />} />
@@ -415,13 +418,13 @@ export function DashboardCharts({
 
       {/* Quotes vs Invoices Comparison Bar Chart */}
       {visibility.documentsComparison && (
-      <Card className="col-span-full lg:col-span-2">
+      <Card className="col-span-full md:col-span-2">
         <CardHeader>
           <CardTitle>{t('documentsComparison')}</CardTitle>
           <CardDescription>{t('documentsComparisonDescription')}</CardDescription>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={comparisonChartConfig} className="h-[200px] w-full">
+          <ChartContainer config={comparisonChartConfig} className="h-[150px] sm:h-[175px] md:h-[200px] w-full">
             <BarChart accessibilityLayer data={comparisonData} layout="vertical">
               <CartesianGrid horizontal={false} stroke="hsl(var(--border))" strokeOpacity={0.5} />
               <YAxis

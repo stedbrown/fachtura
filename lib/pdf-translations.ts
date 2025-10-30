@@ -32,6 +32,9 @@ export const pdfTranslations = {
     email: 'Email',
     website: 'Web',
     vatNumber: 'P.IVA',
+    // QR Bill message (ASCII-safe, no accents for QR code compatibility)
+    qrInvoiceMessage: 'Factura',
+    qrQuoteMessage: 'Preventivo',
   },
   en: {
     quote: 'QUOTE',
@@ -65,6 +68,9 @@ export const pdfTranslations = {
     email: 'Email',
     website: 'Web',
     vatNumber: 'VAT',
+    // QR Bill message (ASCII-safe, no accents for QR code compatibility)
+    qrInvoiceMessage: 'Invoice',
+    qrQuoteMessage: 'Quote',
   },
   de: {
     quote: 'OFFERTE',
@@ -98,6 +104,9 @@ export const pdfTranslations = {
     email: 'E-Mail',
     website: 'Web',
     vatNumber: 'UID',
+    // QR Bill message (ASCII-safe, no accents for QR code compatibility)
+    qrInvoiceMessage: 'Rechnung',
+    qrQuoteMessage: 'Offerte',
   },
   fr: {
     quote: 'DEVIS',
@@ -131,6 +140,9 @@ export const pdfTranslations = {
     email: 'Email',
     website: 'Web',
     vatNumber: 'TVA',
+    // QR Bill message (ASCII-safe, no accents for QR code compatibility)
+    qrInvoiceMessage: 'Facture',
+    qrQuoteMessage: 'Devis',
   },
   rm: {
     quote: 'PREVENTIV',
@@ -154,7 +166,7 @@ export const pdfTranslations = {
     paymentTerms: 'Cundiziuns da Pajament',
     thankYou: 'Grazia per vossa fiduzcha!',
     acceptance: 'Acceptaziun dal Preventiv',
-    accept: 'Jau acceptel il preventiv sco inditgà',
+    accept: 'Jau acceptel il preventiv sco inditga',
     reject: 'Jau refusel il preventiv',
     signature: 'Suttascripziun dal Client',
     signatureDate: 'Data',
@@ -164,6 +176,9 @@ export const pdfTranslations = {
     email: 'Email',
     website: 'Web',
     vatNumber: 'TPV',
+    // QR Bill message (ASCII-safe, no accents for QR code compatibility)
+    qrInvoiceMessage: 'Factura',
+    qrQuoteMessage: 'Preventiv',
   },
 }
 
