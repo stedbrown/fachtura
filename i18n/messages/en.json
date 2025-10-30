@@ -1,0 +1,367 @@
+{
+  "landing": {
+    "login": "Login",
+    "getStarted": "Get Started Free",
+    "hero": {
+      "title": "Manage Invoices and Quotes with Ease",
+      "subtitle": "The free management tool for freelancers and small businesses. Create invoices with Swiss QR, manage clients and track your revenue.",
+      "cta": "Start Free Now",
+      "secondaryCta": "Sign In"
+    },
+    "features": {
+      "title": "Everything you need",
+      "subtitle": "A complete and free management tool for your business",
+      "quotes": {
+        "title": "Professional Quotes",
+        "description": "Create quotes in a few clicks, automatically convert them to invoices when accepted"
+      },
+      "invoices": {
+        "title": "Invoices with Swiss QR",
+        "description": "Generate compliant invoices with integrated Swiss QR Bill, download PDFs ready to send"
+      },
+      "clients": {
+        "title": "Client Management",
+        "description": "Organize your clients, keep track of all documentation in one place"
+      },
+      "analytics": {
+        "title": "Dashboard Analytics",
+        "description": "Monitor revenue, deadlines and statistics with interactive charts and real-time KPIs"
+      },
+      "multilang": {
+        "title": "5 Languages Supported",
+        "description": "Interface and PDFs translated into Italian, English, German, French and Romansh"
+      },
+      "export": {
+        "title": "Export & Filters",
+        "description": "Export data to Excel/CSV, filter by dates, amounts and clients with one click"
+      }
+    },
+    "benefits": {
+      "title": "Why choose Fattura?",
+      "free": {
+        "title": "100% Free",
+        "description": "No hidden costs, no limits. Unlimited invoices forever."
+      },
+      "fast": {
+        "title": "Fast and Intuitive",
+        "description": "Modern and simple interface. Create an invoice in less than 60 seconds."
+      },
+      "secure": {
+        "title": "Secure and Reliable",
+        "description": "Data protected with enterprise encryption. Automatic backups on Supabase."
+      },
+      "swiss": {
+        "title": "Swiss QR Bill Integrated",
+        "description": "Automatically generate the Swiss QR code for immediate payments."
+      }
+    },
+    "cta": {
+      "title": "Ready to get started?",
+      "description": "Create your free account in 30 seconds. No credit card required.",
+      "button": "Sign Up Free"
+    },
+    "footer": {
+      "rights": "All rights reserved."
+    }
+  },
+  "common": {
+    "loading": "Loading...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "download": "Download",
+    "create": "Create",
+    "back": "Back",
+    "next": "Next",
+    "close": "Close",
+    "search": "Search",
+    "noResults": "No results found",
+    "filter": "Filter",
+    "export": "Export",
+    "import": "Import",
+    "yes": "Yes",
+    "no": "No",
+    "confirm": "Confirm",
+    "actions": "Actions",
+    "status": "Status",
+    "date": "Date",
+    "total": "Total",
+    "subtotal": "Subtotal",
+    "tax": "VAT",
+    "notes": "Notes",
+    "error": "Error",
+    "success": "Success",
+    "quotes": "quotes",
+    "invoices": "invoices",
+    "clear": "Clear",
+    "clearFilters": "Clear filters",
+    "from": "From",
+    "to": "To",
+    "select": "Select",
+    "amount": "Amount",
+    "min": "Min",
+    "max": "Max",
+    "all": "All",
+    "client": "Client"
+  },
+  "auth": {
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "companyName": "Company Name",
+    "loginTitle": "Sign in to your account",
+    "registerTitle": "Create a new account",
+    "alreadyHaveAccount": "Already have an account?",
+    "dontHaveAccount": "Don't have an account?",
+    "loginHere": "Login here",
+    "registerHere": "Register here"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "clients": "Clients",
+    "quotes": "Quotes",
+    "invoices": "Invoices",
+    "settings": "Settings"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Overview of your business",
+    "welcomeBack": "Welcome back",
+    "recentActivity": "Recent Activity",
+    "statistics": "Statistics",
+    "totalRevenue": "Total Revenue",
+    "paidInvoices": "Paid invoices",
+    "activeClients": "Active clients",
+    "pendingInvoices": "Pending Invoices",
+    "awaitingPayment": "Awaiting payment",
+    "overdueInvoices": "Overdue Invoices",
+    "vsLastMonth": "vs last month",
+    "revenueChart": "Monthly Revenue",
+    "revenueChartDescription": "Revenue trend over the last 12 months",
+    "revenue": "Revenue",
+    "topClients": "Top 5 Clients",
+    "topClientsDescription": "Clients with the highest revenue",
+    "quotesDistribution": "Quotes Distribution",
+    "quotesDistributionDescription": "Quotes by status",
+    "invoicesDistribution": "Invoices Distribution",
+    "invoicesDistributionDescription": "Invoices by status",
+    "noDataAvailable": "No data available",
+    "acceptanceRate": "Acceptance Rate",
+    "quotesAcceptanceRate": "Percentage of accepted quotes",
+    "accepted": "accepted",
+    "of": "of",
+    "documentsComparison": "Documents Comparison",
+    "documentsComparisonDescription": "Quotes vs Invoices created",
+    "totalDocumentsCreated": "Total documents created",
+    "customizeDashboard": "Customize Dashboard",
+    "customizeDashboardDescription": "Choose which charts to display on the dashboard",
+    "resetToDefault": "Reset to default",
+    "settingsSaved": "Settings saved successfully"
+  },
+  "clients": {
+    "title": "Clients",
+    "subtitle": "Manage your clients",
+    "detail": "Client details",
+    "information": "Client information",
+    "statistics": "Statistics",
+    "newClient": "New Client",
+    "listTitle": "Client List",
+    "listDescription": "All your clients in one place",
+    "archivedTitle": "Archived Clients",
+    "archivedDescription": "Clients moved to trash",
+    "noClients": "No clients found. Create the first one!",
+    "createClient": "Create Client",
+    "editClient": "Edit Client",
+    "deleteClient": "Archive this client?",
+    "deleteDescription": "The client will be moved to the archive. You can restore it anytime from the 'Archived' section.",
+    "restore": "Restore",
+    "permanentDelete": "Delete permanently",
+    "permanentDeleteWarning": "WARNING: This action will permanently delete the client and cannot be undone. Continue?",
+    "fields": {
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "address": "Address",
+      "city": "City",
+      "postalCode": "Postal Code",
+      "country": "Country",
+      "vatNumber": "VAT Number"
+    }
+  },
+  "quotes": {
+    "title": "Quotes",
+    "subtitle": "Manage your quotes",
+    "newQuote": "New Quote",
+    "listTitle": "Quote List",
+    "listDescription": "All your quotes",
+    "archivedTitle": "Archived Quotes",
+    "archivedDescription": "Quotes moved to trash",
+    "noQuotes": "No quotes found. Create the first one!",
+    "createQuote": "Create Quote",
+    "editQuote": "Edit Quote",
+    "deleteQuote": "Archive this quote?",
+    "deleteDescription": "The quote will be moved to the archive. You can restore it anytime from the 'Archived' section.",
+    "restore": "Restore",
+    "permanentDelete": "Delete permanently",
+    "changeStatus": "Change status",
+    "convertToInvoice": "Convert to Invoice",
+    "downloadPDF": "Download PDF",
+    "status": {
+      "draft": "Draft",
+      "sent": "Sent",
+      "accepted": "Accepted",
+      "rejected": "Rejected"
+    },
+    "fields": {
+      "quoteNumber": "Quote Number",
+      "client": "Client",
+      "date": "Date",
+      "validUntil": "Valid Until",
+      "items": "Items",
+      "description": "Description",
+      "quantity": "Quantity",
+      "unitPrice": "Unit Price",
+      "taxRate": "Tax Rate",
+      "lineTotal": "Line Total",
+      "addItem": "Add Item",
+      "removeItem": "Remove Item"
+    }
+  },
+  "invoices": {
+    "title": "Invoices",
+    "subtitle": "Manage your invoices",
+    "newInvoice": "New Invoice",
+    "listTitle": "Invoice List",
+    "listDescription": "All your invoices",
+    "archivedTitle": "Archived Invoices",
+    "archivedDescription": "Invoices moved to trash",
+    "noInvoices": "No invoices found. Create the first one!",
+    "createInvoice": "Create Invoice",
+    "editInvoice": "Edit Invoice",
+    "deleteInvoice": "Archive this invoice?",
+    "deleteDescription": "The invoice will be moved to the archive. You can restore it anytime from the 'Archived' section.",
+    "restore": "Restore",
+    "permanentDelete": "Delete permanently",
+    "changeStatus": "Change status",
+    "downloadPDF": "Download PDF",
+    "status": {
+      "draft": "Draft",
+      "issued": "Issued",
+      "paid": "Paid",
+      "overdue": "Overdue"
+    },
+    "fields": {
+      "invoiceNumber": "Invoice Number",
+      "client": "Client",
+      "date": "Date",
+      "dueDate": "Due Date",
+      "items": "Items",
+      "description": "Description",
+      "quantity": "Quantity",
+      "unitPrice": "Unit Price",
+      "taxRate": "Tax Rate",
+      "lineTotal": "Line Total",
+      "addItem": "Add Item",
+      "removeItem": "Remove Item"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Configure your company information",
+    "companyInfo": "Company Information",
+    "companyInfoDescription": "This information will appear on quotes and invoices",
+    "quoteCustomization": "Quote Customization",
+    "quoteCustomizationDescription": "Configure default quote behavior",
+    "invoiceCustomization": "Invoice Customization",
+    "invoiceCustomizationDescription": "Configure default invoice behavior",
+    "paymentInfo": "Payment Information",
+    "paymentInfoDescription": "Payment methods and terms",
+    "fields": {
+      "companyName": "Company Name",
+      "address": "Address",
+      "city": "City",
+      "postalCode": "Postal Code",
+      "country": "Country",
+      "vatNumber": "VAT Number",
+      "iban": "IBAN",
+      "phone": "Phone",
+      "email": "Email",
+      "website": "Website",
+      "logo": "Logo",
+      "quoteDefaultNotes": "Default Quote Notes",
+      "quoteDefaultNotesPlaceholder": "E.g.: Thank you for your interest in our services",
+      "quoteTermsConditions": "Quote Terms & Conditions",
+      "quoteTermsConditionsPlaceholder": "E.g.: This quote is valid for the period indicated. Prices may vary...",
+      "quoteDefaultValidityDays": "Default Validity (days)",
+      "quoteFooterText": "Quote Footer Text",
+      "quoteFooterTextPlaceholder": "E.g.: For any information please don't hesitate to contact us",
+      "invoiceDefaultNotes": "Default Invoice Notes",
+      "invoiceDefaultNotesPlaceholder": "E.g.: Thank you for your business",
+      "invoicePaymentTerms": "Payment Terms",
+      "invoicePaymentTermsPlaceholder": "E.g.: Payment due within 30 days from invoice date",
+      "invoiceDefaultDueDays": "Default Due Date (days)",
+      "invoiceFooterText": "Invoice Footer Text",
+      "invoiceFooterTextPlaceholder": "E.g.: Payment to be made to the account indicated",
+      "paymentMethods": "Accepted Payment Methods",
+      "paymentMethodsPlaceholder": "E.g.: Bank transfer, Credit card, PayPal",
+      "latePaymentFee": "Late Payment Fee",
+      "latePaymentFeePlaceholder": "E.g.: 2% monthly interest for late payment"
+    },
+    "uploadLogo": "Upload Logo",
+    "removeLogo": "Remove Logo",
+    "logoDescription": "PNG, JPG or WEBP (max 2MB)"
+  },
+  "tabs": {
+    "active": "Active",
+    "archived": "Archived"
+  },
+  "pdf": {
+    "quote": "Quote",
+    "invoice": "Invoice",
+    "from": "From",
+    "to": "To",
+    "date": "Date",
+    "validUntil": "Valid Until",
+    "dueDate": "Due Date",
+    "description": "Description",
+    "quantity": "Qty",
+    "unitPrice": "Unit Price",
+    "total": "Total",
+    "subtotal": "Subtotal",
+    "tax": "VAT",
+    "totalAmount": "Total Amount",
+    "paymentSlip": "Payment Slip",
+    "receipt": "Receipt",
+    "payment": "Payment",
+    "currency": "CHF",
+    "account": "Account",
+    "reference": "Reference",
+    "payableBy": "Payable By"
+  },
+  "errors": {
+    "generic": "An error occurred",
+    "notFound": "Not found",
+    "unauthorized": "Unauthorized",
+    "serverError": "Server error",
+    "validationError": "Validation error",
+    "requiredField": "Required field",
+    "invalidEmail": "Invalid email",
+    "passwordMismatch": "Passwords do not match",
+    "minLength": "Minimum length: {min} characters",
+    "maxLength": "Maximum length: {max} characters"
+  },
+  "success": {
+    "saved": "Saved successfully",
+    "settingsSavedDescription": "Settings have been saved successfully",
+    "created": "Created successfully",
+    "updated": "Updated successfully",
+    "deleted": "Deleted successfully",
+    "restored": "Restored successfully"
+  }
+}
+

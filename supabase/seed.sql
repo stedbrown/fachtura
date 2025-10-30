@@ -1,0 +1,62 @@
+-- Seed file per dati demo
+-- NOTA: Questo file è solo a scopo dimostrativo
+-- Per usarlo, dovrai prima creare un utente tramite l'interfaccia Supabase
+-- e sostituire 'YOUR_USER_ID' con l'ID utente effettivo
+
+-- Esempio di company settings
+-- INSERT INTO company_settings (user_id, company_name, address, city, postal_code, country, vat_number, iban)
+-- VALUES (
+--   'YOUR_USER_ID',
+--   'Demo Company SA',
+--   'Via Example 123',
+--   'Lugano',
+--   '6900',
+--   'Switzerland',
+--   'CHE-123.456.789',
+--   'CH93 0076 2011 6238 5295 7'
+-- );
+
+-- Esempio di clienti
+-- INSERT INTO clients (user_id, name, email, phone, address, city, postal_code, country)
+-- VALUES
+-- (
+--   'YOUR_USER_ID',
+--   'Mario Rossi',
+--   'mario.rossi@example.com',
+--   '+41 91 123 45 67',
+--   'Via Roma 10',
+--   'Lugano',
+--   '6900',
+--   'Switzerland'
+-- ),
+-- (
+--   'YOUR_USER_ID',
+--   'Laura Bianchi',
+--   'laura.bianchi@example.com',
+--   '+41 91 234 56 78',
+--   'Corso Italia 25',
+--   'Bellinzona',
+--   '6500',
+--   'Switzerland'
+-- ),
+-- (
+--   'YOUR_USER_ID',
+--   'Giuseppe Verdi',
+--   'giuseppe.verdi@example.com',
+--   '+41 91 345 67 89',
+--   'Piazza Grande 5',
+--   'Locarno',
+--   '6600',
+--   'Switzerland'
+-- );
+
+-- Nota: Per creare preventivi e fatture con i relativi items,
+-- è meglio usare l'interfaccia web dell'applicazione in quanto
+-- richiede calcoli e riferimenti incrociati complessi.
+
+-- Alternative: Creare uno script di seeding più complesso che:
+-- 1. Crea un utente di test
+-- 2. Crea le impostazioni azienda
+-- 3. Crea alcuni clienti
+-- 4. Crea preventivi e fatture di esempio con i loro items
+

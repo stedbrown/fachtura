@@ -1,0 +1,367 @@
+{
+  "landing": {
+    "login": "Anmelden",
+    "getStarted": "Kostenlos starten",
+    "hero": {
+      "title": "Verwalten Sie Rechnungen und Angebote mit Leichtigkeit",
+      "subtitle": "Das kostenlose Verwaltungstool für Freiberufler und Kleinunternehmen. Erstellen Sie Rechnungen mit Swiss QR, verwalten Sie Kunden und überwachen Sie Ihre Einnahmen.",
+      "cta": "Jetzt kostenlos starten",
+      "secondaryCta": "Anmelden"
+    },
+    "features": {
+      "title": "Alles, was Sie brauchen",
+      "subtitle": "Ein komplettes und kostenloses Verwaltungstool für Ihr Unternehmen",
+      "quotes": {
+        "title": "Professionelle Angebote",
+        "description": "Erstellen Sie Angebote mit wenigen Klicks, konvertieren Sie sie automatisch in Rechnungen"
+      },
+      "invoices": {
+        "title": "Rechnungen mit Swiss QR",
+        "description": "Erstellen Sie konforme Rechnungen mit integriertem Swiss QR Bill, laden Sie versandfertige PDFs herunter"
+      },
+      "clients": {
+        "title": "Kundenverwaltung",
+        "description": "Organisieren Sie Ihre Kunden, verfolgen Sie alle Dokumente an einem Ort"
+      },
+      "analytics": {
+        "title": "Dashboard-Analysen",
+        "description": "Überwachen Sie Umsätze, Fristen und Statistiken mit interaktiven Diagrammen und Echtzeit-KPIs"
+      },
+      "multilang": {
+        "title": "5 Sprachen unterstützt",
+        "description": "Benutzeroberfläche und PDFs übersetzt in Italienisch, Englisch, Deutsch, Französisch und Rätoromanisch"
+      },
+      "export": {
+        "title": "Export & Filter",
+        "description": "Exportieren Sie Daten nach Excel/CSV, filtern Sie nach Daten, Beträgen und Kunden mit einem Klick"
+      }
+    },
+    "benefits": {
+      "title": "Warum Fattura wählen?",
+      "free": {
+        "title": "100% Kostenlos",
+        "description": "Keine versteckten Kosten, keine Limits. Unbegrenzte Rechnungen für immer."
+      },
+      "fast": {
+        "title": "Schnell und Intuitiv",
+        "description": "Moderne und einfache Benutzeroberfläche. Erstellen Sie eine Rechnung in weniger als 60 Sekunden."
+      },
+      "secure": {
+        "title": "Sicher und Zuverlässig",
+        "description": "Daten geschützt mit Unternehmensverschlüsselung. Automatische Backups auf Supabase."
+      },
+      "swiss": {
+        "title": "Swiss QR Bill Integriert",
+        "description": "Generieren Sie automatisch den Schweizer QR-Code für sofortige Zahlungen."
+      }
+    },
+    "cta": {
+      "title": "Bereit loszulegen?",
+      "description": "Erstellen Sie Ihr kostenloses Konto in 30 Sekunden. Keine Kreditkarte erforderlich.",
+      "button": "Kostenlos registrieren"
+    },
+    "footer": {
+      "rights": "Alle Rechte vorbehalten."
+    }
+  },
+  "common": {
+    "loading": "Laden...",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "view": "Ansehen",
+    "download": "Herunterladen",
+    "create": "Erstellen",
+    "back": "Zurück",
+    "next": "Weiter",
+    "close": "Schliessen",
+    "search": "Suchen",
+    "noResults": "Keine Ergebnisse gefunden",
+    "filter": "Filtern",
+    "export": "Exportieren",
+    "import": "Importieren",
+    "yes": "Ja",
+    "no": "Nein",
+    "confirm": "Bestätigen",
+    "actions": "Aktionen",
+    "status": "Status",
+    "date": "Datum",
+    "total": "Gesamt",
+    "subtotal": "Zwischensumme",
+    "tax": "MwSt",
+    "notes": "Notizen",
+    "error": "Fehler",
+    "success": "Erfolg",
+    "quotes": "Angebote",
+    "invoices": "Rechnungen",
+    "clear": "Löschen",
+    "clearFilters": "Filter löschen",
+    "from": "Von",
+    "to": "Bis",
+    "select": "Auswählen",
+    "amount": "Betrag",
+    "min": "Min",
+    "max": "Max",
+    "all": "Alle",
+    "client": "Kunde"
+  },
+  "auth": {
+    "login": "Anmelden",
+    "register": "Registrieren",
+    "logout": "Abmelden",
+    "email": "E-Mail",
+    "password": "Passwort",
+    "confirmPassword": "Passwort bestätigen",
+    "companyName": "Firmenname",
+    "loginTitle": "Melden Sie sich bei Ihrem Konto an",
+    "registerTitle": "Neues Konto erstellen",
+    "alreadyHaveAccount": "Haben Sie bereits ein Konto?",
+    "dontHaveAccount": "Sie haben noch kein Konto?",
+    "loginHere": "Hier anmelden",
+    "registerHere": "Hier registrieren"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "clients": "Kunden",
+    "quotes": "Offerten",
+    "invoices": "Rechnungen",
+    "settings": "Einstellungen"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Überblick über Ihr Geschäft",
+    "welcomeBack": "Willkommen zurück",
+    "recentActivity": "Letzte Aktivitäten",
+    "statistics": "Statistiken",
+    "totalRevenue": "Gesamtumsatz",
+    "paidInvoices": "Bezahlte Rechnungen",
+    "activeClients": "Aktive Kunden",
+    "pendingInvoices": "Ausstehende Rechnungen",
+    "awaitingPayment": "Warten auf Zahlung",
+    "overdueInvoices": "Überfällige Rechnungen",
+    "vsLastMonth": "vs letzter Monat",
+    "revenueChart": "Monatlicher Umsatz",
+    "revenueChartDescription": "Umsatzentwicklung der letzten 12 Monate",
+    "revenue": "Umsatz",
+    "topClients": "Top 5 Kunden",
+    "topClientsDescription": "Kunden mit dem höchsten Umsatz",
+    "quotesDistribution": "Offerten Verteilung",
+    "quotesDistributionDescription": "Offerten nach Status",
+    "invoicesDistribution": "Rechnungen Verteilung",
+    "invoicesDistributionDescription": "Rechnungen nach Status",
+    "noDataAvailable": "Keine Daten verfügbar",
+    "acceptanceRate": "Akzeptanzrate",
+    "quotesAcceptanceRate": "Prozentsatz akzeptierter Offerten",
+    "accepted": "akzeptiert",
+    "of": "von",
+    "documentsComparison": "Dokumentenvergleich",
+    "documentsComparisonDescription": "Offerten vs Rechnungen erstellt",
+    "totalDocumentsCreated": "Gesamtanzahl erstellter Dokumente",
+    "customizeDashboard": "Dashboard anpassen",
+    "customizeDashboardDescription": "Wählen Sie aus, welche Diagramme im Dashboard angezeigt werden sollen",
+    "resetToDefault": "Auf Standard zurücksetzen",
+    "settingsSaved": "Einstellungen erfolgreich gespeichert"
+  },
+  "clients": {
+    "title": "Kunden",
+    "subtitle": "Verwalten Sie Ihre Kunden",
+    "detail": "Kundendetails",
+    "information": "Kundeninformationen",
+    "statistics": "Statistiken",
+    "newClient": "Neuer Kunde",
+    "listTitle": "Kundenliste",
+    "listDescription": "Alle Ihre Kunden an einem Ort",
+    "archivedTitle": "Archivierte Kunden",
+    "archivedDescription": "In den Papierkorb verschobene Kunden",
+    "noClients": "Keine Kunden gefunden. Erstellen Sie den ersten!",
+    "createClient": "Kunde erstellen",
+    "editClient": "Kunde bearbeiten",
+    "deleteClient": "Diesen Kunden archivieren?",
+    "deleteDescription": "Der Kunde wird in das Archiv verschoben. Sie können ihn jederzeit aus dem Bereich 'Archiviert' wiederherstellen.",
+    "restore": "Wiederherstellen",
+    "permanentDelete": "Endgültig löschen",
+    "permanentDeleteWarning": "WARNUNG: Diese Aktion wird den Kunden endgültig löschen und kann nicht rückgängig gemacht werden. Fortfahren?",
+    "fields": {
+      "name": "Name",
+      "email": "E-Mail",
+      "phone": "Telefon",
+      "address": "Adresse",
+      "city": "Stadt",
+      "postalCode": "PLZ",
+      "country": "Land",
+      "vatNumber": "MwSt-Nummer"
+    }
+  },
+  "quotes": {
+    "title": "Offerten",
+    "subtitle": "Verwalten Sie Ihre Offerten",
+    "newQuote": "Neue Offerte",
+    "listTitle": "Offertenliste",
+    "listDescription": "Alle Ihre Offerten",
+    "archivedTitle": "Archivierte Offerten",
+    "archivedDescription": "In den Papierkorb verschobene Offerten",
+    "noQuotes": "Keine Offerten gefunden. Erstellen Sie die erste!",
+    "createQuote": "Offerte erstellen",
+    "editQuote": "Offerte bearbeiten",
+    "deleteQuote": "Diese Offerte archivieren?",
+    "deleteDescription": "Die Offerte wird in das Archiv verschoben. Sie können sie jederzeit aus dem Bereich 'Archiviert' wiederherstellen.",
+    "restore": "Wiederherstellen",
+    "permanentDelete": "Dauerhaft löschen",
+    "changeStatus": "Status ändern",
+    "convertToInvoice": "In Rechnung umwandeln",
+    "downloadPDF": "PDF herunterladen",
+    "status": {
+      "draft": "Entwurf",
+      "sent": "Gesendet",
+      "accepted": "Akzeptiert",
+      "rejected": "Abgelehnt"
+    },
+    "fields": {
+      "quoteNumber": "Offertennummer",
+      "client": "Kunde",
+      "date": "Datum",
+      "validUntil": "Gültig bis",
+      "items": "Artikel",
+      "description": "Beschreibung",
+      "quantity": "Menge",
+      "unitPrice": "Einzelpreis",
+      "taxRate": "MwSt-Satz",
+      "lineTotal": "Zeilensumme",
+      "addItem": "Artikel hinzufügen",
+      "removeItem": "Artikel entfernen"
+    }
+  },
+  "invoices": {
+    "title": "Rechnungen",
+    "subtitle": "Verwalten Sie Ihre Rechnungen",
+    "newInvoice": "Neue Rechnung",
+    "listTitle": "Rechnungsliste",
+    "listDescription": "Alle Ihre Rechnungen",
+    "archivedTitle": "Archivierte Rechnungen",
+    "archivedDescription": "In den Papierkorb verschobene Rechnungen",
+    "noInvoices": "Keine Rechnungen gefunden. Erstellen Sie die erste!",
+    "createInvoice": "Rechnung erstellen",
+    "editInvoice": "Rechnung bearbeiten",
+    "deleteInvoice": "Diese Rechnung archivieren?",
+    "deleteDescription": "Die Rechnung wird in das Archiv verschoben. Sie können sie jederzeit aus dem Bereich 'Archiviert' wiederherstellen.",
+    "restore": "Wiederherstellen",
+    "permanentDelete": "Dauerhaft löschen",
+    "changeStatus": "Status ändern",
+    "downloadPDF": "PDF herunterladen",
+    "status": {
+      "draft": "Entwurf",
+      "issued": "Ausgestellt",
+      "paid": "Bezahlt",
+      "overdue": "Überfällig"
+    },
+    "fields": {
+      "invoiceNumber": "Rechnungsnummer",
+      "client": "Kunde",
+      "date": "Datum",
+      "dueDate": "Fälligkeitsdatum",
+      "items": "Artikel",
+      "description": "Beschreibung",
+      "quantity": "Menge",
+      "unitPrice": "Einzelpreis",
+      "taxRate": "MwSt-Satz",
+      "lineTotal": "Zeilensumme",
+      "addItem": "Artikel hinzufügen",
+      "removeItem": "Artikel entfernen"
+    }
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "subtitle": "Konfigurieren Sie Ihre Firmeninformationen",
+    "companyInfo": "Firmeninformationen",
+    "companyInfoDescription": "Diese Informationen erscheinen auf Offerten und Rechnungen",
+    "quoteCustomization": "Offerten-Anpassung",
+    "quoteCustomizationDescription": "Standardverhalten für Offerten konfigurieren",
+    "invoiceCustomization": "Rechnungs-Anpassung",
+    "invoiceCustomizationDescription": "Standardverhalten für Rechnungen konfigurieren",
+    "paymentInfo": "Zahlungsinformationen",
+    "paymentInfoDescription": "Zahlungsmethoden und Bedingungen",
+    "fields": {
+      "companyName": "Firmenname",
+      "address": "Adresse",
+      "city": "Stadt",
+      "postalCode": "PLZ",
+      "country": "Land",
+      "vatNumber": "MwSt-Nummer",
+      "iban": "IBAN",
+      "phone": "Telefon",
+      "email": "E-Mail",
+      "website": "Webseite",
+      "logo": "Logo",
+      "quoteDefaultNotes": "Standard-Notizen für Offerten",
+      "quoteDefaultNotesPlaceholder": "Z.B.: Vielen Dank für Ihr Interesse an unseren Dienstleistungen",
+      "quoteTermsConditions": "Offerten-Bedingungen",
+      "quoteTermsConditionsPlaceholder": "Z.B.: Dieses Angebot ist für die angegebene Dauer gültig. Preise können variieren...",
+      "quoteDefaultValidityDays": "Standard-Gültigkeit (Tage)",
+      "quoteFooterText": "Offerten-Fußzeilentext",
+      "quoteFooterTextPlaceholder": "Z.B.: Für weitere Informationen zögern Sie nicht, uns zu kontaktieren",
+      "invoiceDefaultNotes": "Standard-Notizen für Rechnungen",
+      "invoiceDefaultNotesPlaceholder": "Z.B.: Vielen Dank für Ihr Vertrauen",
+      "invoicePaymentTerms": "Zahlungsbedingungen",
+      "invoicePaymentTermsPlaceholder": "Z.B.: Zahlung innerhalb von 30 Tagen ab Rechnungsdatum",
+      "invoiceDefaultDueDays": "Standard-Fälligkeit (Tage)",
+      "invoiceFooterText": "Rechnungs-Fußzeilentext",
+      "invoiceFooterTextPlaceholder": "Z.B.: Zahlung auf das angegebene Konto",
+      "paymentMethods": "Akzeptierte Zahlungsmethoden",
+      "paymentMethodsPlaceholder": "Z.B.: Banküberweisung, Kreditkarte, PayPal",
+      "latePaymentFee": "Verzugszinsen",
+      "latePaymentFeePlaceholder": "Z.B.: 2% monatliche Zinsen bei Zahlungsverzug"
+    },
+    "uploadLogo": "Logo hochladen",
+    "removeLogo": "Logo entfernen",
+    "logoDescription": "PNG, JPG oder WEBP (max 2MB)"
+  },
+  "tabs": {
+    "active": "Aktiv",
+    "archived": "Archiviert"
+  },
+  "pdf": {
+    "quote": "Offerte",
+    "invoice": "Rechnung",
+    "from": "Von",
+    "to": "An",
+    "date": "Datum",
+    "validUntil": "Gültig bis",
+    "dueDate": "Fälligkeitsdatum",
+    "description": "Beschreibung",
+    "quantity": "Mge",
+    "unitPrice": "Einzelpreis",
+    "total": "Gesamt",
+    "subtotal": "Zwischensumme",
+    "tax": "MwSt",
+    "totalAmount": "Gesamtbetrag",
+    "paymentSlip": "Zahlschein",
+    "receipt": "Empfangsschein",
+    "payment": "Zahlung",
+    "currency": "CHF",
+    "account": "Konto",
+    "reference": "Referenz",
+    "payableBy": "Zahlbar durch"
+  },
+  "errors": {
+    "generic": "Ein Fehler ist aufgetreten",
+    "notFound": "Nicht gefunden",
+    "unauthorized": "Nicht autorisiert",
+    "serverError": "Serverfehler",
+    "validationError": "Validierungsfehler",
+    "requiredField": "Pflichtfeld",
+    "invalidEmail": "Ungültige E-Mail",
+    "passwordMismatch": "Passwörter stimmen nicht überein",
+    "minLength": "Mindestlänge: {min} Zeichen",
+    "maxLength": "Maximale Länge: {max} Zeichen"
+  },
+  "success": {
+    "saved": "Erfolgreich gespeichert",
+    "settingsSavedDescription": "Die Einstellungen wurden erfolgreich gespeichert",
+    "created": "Erfolgreich erstellt",
+    "updated": "Erfolgreich aktualisiert",
+    "deleted": "Erfolgreich gelöscht",
+    "restored": "Erfolgreich wiederhergestellt"
+  }
+}
+

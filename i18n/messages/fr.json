@@ -1,0 +1,367 @@
+{
+  "landing": {
+    "login": "Se connecter",
+    "getStarted": "Commencer gratuitement",
+    "hero": {
+      "title": "Gérez vos factures et devis en toute simplicité",
+      "subtitle": "L'outil de gestion gratuit pour freelances et petites entreprises. Créez des factures avec QR Swiss, gérez vos clients et suivez vos revenus.",
+      "cta": "Démarrer gratuitement",
+      "secondaryCta": "Se connecter"
+    },
+    "features": {
+      "title": "Tout ce dont vous avez besoin",
+      "subtitle": "Un outil de gestion complet et gratuit pour votre entreprise",
+      "quotes": {
+        "title": "Devis professionnels",
+        "description": "Créez des devis en quelques clics, convertissez-les automatiquement en factures"
+      },
+      "invoices": {
+        "title": "Factures avec QR Swiss",
+        "description": "Générez des factures conformes avec QR Bill suisse intégré, téléchargez des PDF prêts à envoyer"
+      },
+      "clients": {
+        "title": "Gestion des clients",
+        "description": "Organisez vos clients, suivez toute la documentation au même endroit"
+      },
+      "analytics": {
+        "title": "Tableau de bord analytique",
+        "description": "Surveillez revenus, échéances et statistiques avec des graphiques interactifs et KPI en temps réel"
+      },
+      "multilang": {
+        "title": "5 langues supportées",
+        "description": "Interface et PDF traduits en italien, anglais, allemand, français et romanche"
+      },
+      "export": {
+        "title": "Export et filtres",
+        "description": "Exportez les données vers Excel/CSV, filtrez par dates, montants et clients en un clic"
+      }
+    },
+    "benefits": {
+      "title": "Pourquoi choisir Fattura?",
+      "free": {
+        "title": "100% Gratuit",
+        "description": "Pas de coûts cachés, pas de limites. Factures illimitées pour toujours."
+      },
+      "fast": {
+        "title": "Rapide et intuitif",
+        "description": "Interface moderne et simple. Créez une facture en moins de 60 secondes."
+      },
+      "secure": {
+        "title": "Sécurisé et fiable",
+        "description": "Données protégées avec cryptage entreprise. Sauvegardes automatiques sur Supabase."
+      },
+      "swiss": {
+        "title": "QR Bill suisse intégré",
+        "description": "Générez automatiquement le code QR suisse pour des paiements immédiats."
+      }
+    },
+    "cta": {
+      "title": "Prêt à commencer?",
+      "description": "Créez votre compte gratuit en 30 secondes. Aucune carte de crédit requise.",
+      "button": "S'inscrire gratuitement"
+    },
+    "footer": {
+      "rights": "Tous droits réservés."
+    }
+  },
+  "common": {
+    "loading": "Chargement...",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "view": "Voir",
+    "download": "Télécharger",
+    "create": "Créer",
+    "back": "Retour",
+    "next": "Suivant",
+    "close": "Fermer",
+    "search": "Rechercher",
+    "noResults": "Aucun résultat trouvé",
+    "filter": "Filtrer",
+    "export": "Exporter",
+    "import": "Importer",
+    "yes": "Oui",
+    "no": "Non",
+    "confirm": "Confirmer",
+    "actions": "Actions",
+    "status": "Statut",
+    "date": "Date",
+    "total": "Total",
+    "subtotal": "Sous-total",
+    "tax": "TVA",
+    "notes": "Notes",
+    "error": "Erreur",
+    "success": "Succès",
+    "quotes": "devis",
+    "invoices": "factures",
+    "clear": "Effacer",
+    "clearFilters": "Effacer les filtres",
+    "from": "De",
+    "to": "À",
+    "select": "Sélectionner",
+    "amount": "Montant",
+    "min": "Min",
+    "max": "Max",
+    "all": "Tous",
+    "client": "Client"
+  },
+  "auth": {
+    "login": "Se connecter",
+    "register": "S'inscrire",
+    "logout": "Se déconnecter",
+    "email": "Email",
+    "password": "Mot de passe",
+    "confirmPassword": "Confirmer le mot de passe",
+    "companyName": "Nom de l'entreprise",
+    "loginTitle": "Connectez-vous à votre compte",
+    "registerTitle": "Créer un nouveau compte",
+    "alreadyHaveAccount": "Vous avez déjà un compte?",
+    "dontHaveAccount": "Vous n'avez pas de compte?",
+    "loginHere": "Connectez-vous ici",
+    "registerHere": "Inscrivez-vous ici"
+  },
+  "navigation": {
+    "dashboard": "Tableau de bord",
+    "clients": "Clients",
+    "quotes": "Devis",
+    "invoices": "Factures",
+    "settings": "Paramètres"
+  },
+  "dashboard": {
+    "title": "Tableau de bord",
+    "subtitle": "Aperçu de votre activité",
+    "welcomeBack": "Bon retour",
+    "recentActivity": "Activité récente",
+    "statistics": "Statistiques",
+    "totalRevenue": "Chiffre d'affaires total",
+    "paidInvoices": "Factures payées",
+    "activeClients": "Clients actifs",
+    "pendingInvoices": "Factures en attente",
+    "awaitingPayment": "En attente de paiement",
+    "overdueInvoices": "Factures en retard",
+    "vsLastMonth": "vs mois dernier",
+    "revenueChart": "Chiffre d'affaires mensuel",
+    "revenueChartDescription": "Évolution du chiffre d'affaires sur 12 mois",
+    "revenue": "Chiffre d'affaires",
+    "topClients": "Top 5 clients",
+    "topClientsDescription": "Clients avec le chiffre d'affaires le plus élevé",
+    "quotesDistribution": "Distribution des devis",
+    "quotesDistributionDescription": "Devis par statut",
+    "invoicesDistribution": "Distribution des factures",
+    "invoicesDistributionDescription": "Factures par statut",
+    "noDataAvailable": "Aucune donnée disponible",
+    "acceptanceRate": "Taux d'acceptation",
+    "quotesAcceptanceRate": "Pourcentage de devis acceptés",
+    "accepted": "acceptés",
+    "of": "de",
+    "documentsComparison": "Comparaison des documents",
+    "documentsComparisonDescription": "Devis vs Factures créés",
+    "totalDocumentsCreated": "Total de documents créés",
+    "customizeDashboard": "Personnaliser le tableau de bord",
+    "customizeDashboardDescription": "Choisissez les graphiques à afficher sur le tableau de bord",
+    "resetToDefault": "Réinitialiser par défaut",
+    "settingsSaved": "Paramètres enregistrés avec succès"
+  },
+  "clients": {
+    "title": "Clients",
+    "subtitle": "Gérez vos clients",
+    "detail": "Détails du client",
+    "information": "Informations client",
+    "statistics": "Statistiques",
+    "newClient": "Nouveau client",
+    "listTitle": "Liste des clients",
+    "listDescription": "Tous vos clients en un seul endroit",
+    "archivedTitle": "Clients archivés",
+    "archivedDescription": "Clients déplacés dans la corbeille",
+    "noClients": "Aucun client trouvé. Créez le premier!",
+    "createClient": "Créer un client",
+    "editClient": "Modifier le client",
+    "deleteClient": "Archiver ce client?",
+    "deleteDescription": "Le client sera déplacé dans les archives. Vous pourrez le restaurer à tout moment depuis la section 'Archivés'.",
+    "restore": "Restaurer",
+    "permanentDelete": "Supprimer définitivement",
+    "permanentDeleteWarning": "ATTENTION: Cette action supprimera définitivement le client et ne pourra pas être annulée. Continuer?",
+    "fields": {
+      "name": "Nom",
+      "email": "Email",
+      "phone": "Téléphone",
+      "address": "Adresse",
+      "city": "Ville",
+      "postalCode": "Code postal",
+      "country": "Pays",
+      "vatNumber": "Numéro de TVA"
+    }
+  },
+  "quotes": {
+    "title": "Devis",
+    "subtitle": "Gérez vos devis",
+    "newQuote": "Nouveau devis",
+    "listTitle": "Liste des devis",
+    "listDescription": "Tous vos devis",
+    "archivedTitle": "Devis archivés",
+    "archivedDescription": "Devis déplacés dans la corbeille",
+    "noQuotes": "Aucun devis trouvé. Créez le premier!",
+    "createQuote": "Créer un devis",
+    "editQuote": "Modifier le devis",
+    "deleteQuote": "Archiver ce devis?",
+    "deleteDescription": "Le devis sera déplacé dans les archives. Vous pourrez le restaurer à tout moment depuis la section 'Archivés'.",
+    "restore": "Restaurer",
+    "permanentDelete": "Supprimer définitivement",
+    "changeStatus": "Changer le statut",
+    "convertToInvoice": "Convertir en facture",
+    "downloadPDF": "Télécharger PDF",
+    "status": {
+      "draft": "Brouillon",
+      "sent": "Envoyé",
+      "accepted": "Accepté",
+      "rejected": "Refusé"
+    },
+    "fields": {
+      "quoteNumber": "Numéro de devis",
+      "client": "Client",
+      "date": "Date",
+      "validUntil": "Valable jusqu'au",
+      "items": "Articles",
+      "description": "Description",
+      "quantity": "Quantité",
+      "unitPrice": "Prix unitaire",
+      "taxRate": "Taux de TVA",
+      "lineTotal": "Total ligne",
+      "addItem": "Ajouter un article",
+      "removeItem": "Retirer l'article"
+    }
+  },
+  "invoices": {
+    "title": "Factures",
+    "subtitle": "Gérez vos factures",
+    "newInvoice": "Nouvelle facture",
+    "listTitle": "Liste des factures",
+    "listDescription": "Toutes vos factures",
+    "archivedTitle": "Factures archivées",
+    "archivedDescription": "Factures déplacées dans la corbeille",
+    "noInvoices": "Aucune facture trouvée. Créez la première!",
+    "createInvoice": "Créer une facture",
+    "editInvoice": "Modifier la facture",
+    "deleteInvoice": "Archiver cette facture?",
+    "deleteDescription": "La facture sera déplacée dans les archives. Vous pourrez la restaurer à tout moment depuis la section 'Archivées'.",
+    "restore": "Restaurer",
+    "permanentDelete": "Supprimer définitivement",
+    "changeStatus": "Changer le statut",
+    "downloadPDF": "Télécharger PDF",
+    "status": {
+      "draft": "Brouillon",
+      "issued": "Émise",
+      "paid": "Payée",
+      "overdue": "En retard"
+    },
+    "fields": {
+      "invoiceNumber": "Numéro de facture",
+      "client": "Client",
+      "date": "Date",
+      "dueDate": "Date d'échéance",
+      "items": "Articles",
+      "description": "Description",
+      "quantity": "Quantité",
+      "unitPrice": "Prix unitaire",
+      "taxRate": "Taux de TVA",
+      "lineTotal": "Total ligne",
+      "addItem": "Ajouter un article",
+      "removeItem": "Retirer l'article"
+    }
+  },
+  "settings": {
+    "title": "Paramètres",
+    "subtitle": "Configurez les informations de votre entreprise",
+    "companyInfo": "Informations de l'entreprise",
+    "companyInfoDescription": "Ces informations apparaîtront sur les devis et factures",
+    "quoteCustomization": "Personnalisation des devis",
+    "quoteCustomizationDescription": "Configurez le comportement par défaut des devis",
+    "invoiceCustomization": "Personnalisation des factures",
+    "invoiceCustomizationDescription": "Configurez le comportement par défaut des factures",
+    "paymentInfo": "Informations de paiement",
+    "paymentInfoDescription": "Méthodes de paiement et conditions",
+    "fields": {
+      "companyName": "Nom de l'entreprise",
+      "address": "Adresse",
+      "city": "Ville",
+      "postalCode": "Code postal",
+      "country": "Pays",
+      "vatNumber": "Numéro de TVA",
+      "iban": "IBAN",
+      "phone": "Téléphone",
+      "email": "Email",
+      "website": "Site web",
+      "logo": "Logo",
+      "quoteDefaultNotes": "Notes par défaut pour les devis",
+      "quoteDefaultNotesPlaceholder": "Ex: Merci pour l'intérêt porté à nos services",
+      "quoteTermsConditions": "Conditions générales des devis",
+      "quoteTermsConditionsPlaceholder": "Ex: Ce devis est valable pour la période indiquée. Les prix peuvent varier...",
+      "quoteDefaultValidityDays": "Validité par défaut (jours)",
+      "quoteFooterText": "Texte de pied de page des devis",
+      "quoteFooterTextPlaceholder": "Ex: Pour toute information n'hésitez pas à nous contacter",
+      "invoiceDefaultNotes": "Notes par défaut pour les factures",
+      "invoiceDefaultNotesPlaceholder": "Ex: Nous vous remercions pour votre confiance",
+      "invoicePaymentTerms": "Conditions de paiement",
+      "invoicePaymentTermsPlaceholder": "Ex: Paiement sous 30 jours à compter de la date de facture",
+      "invoiceDefaultDueDays": "Échéance par défaut (jours)",
+      "invoiceFooterText": "Texte de pied de page des factures",
+      "invoiceFooterTextPlaceholder": "Ex: Paiement à effectuer sur le compte indiqué",
+      "paymentMethods": "Méthodes de paiement acceptées",
+      "paymentMethodsPlaceholder": "Ex: Virement bancaire, Carte de crédit, PayPal",
+      "latePaymentFee": "Pénalités de retard",
+      "latePaymentFeePlaceholder": "Ex: Intérêts de 2% par mois en cas de retard"
+    },
+    "uploadLogo": "Télécharger le logo",
+    "removeLogo": "Supprimer le logo",
+    "logoDescription": "PNG, JPG ou WEBP (max 2MB)"
+  },
+  "tabs": {
+    "active": "Actifs",
+    "archived": "Archivés"
+  },
+  "pdf": {
+    "quote": "Devis",
+    "invoice": "Facture",
+    "from": "De",
+    "to": "À",
+    "date": "Date",
+    "validUntil": "Valable jusqu'au",
+    "dueDate": "Date d'échéance",
+    "description": "Description",
+    "quantity": "Qté",
+    "unitPrice": "Prix unitaire",
+    "total": "Total",
+    "subtotal": "Sous-total",
+    "tax": "TVA",
+    "totalAmount": "Montant total",
+    "paymentSlip": "Bulletin de versement",
+    "receipt": "Récépissé",
+    "payment": "Paiement",
+    "currency": "CHF",
+    "account": "Compte",
+    "reference": "Référence",
+    "payableBy": "Payable par"
+  },
+  "errors": {
+    "generic": "Une erreur s'est produite",
+    "notFound": "Non trouvé",
+    "unauthorized": "Non autorisé",
+    "serverError": "Erreur du serveur",
+    "validationError": "Erreur de validation",
+    "requiredField": "Champ obligatoire",
+    "invalidEmail": "Email invalide",
+    "passwordMismatch": "Les mots de passe ne correspondent pas",
+    "minLength": "Longueur minimale: {min} caractères",
+    "maxLength": "Longueur maximale: {max} caractères"
+  },
+  "success": {
+    "saved": "Enregistré avec succès",
+    "settingsSavedDescription": "Les paramètres ont été enregistrés avec succès",
+    "created": "Créé avec succès",
+    "updated": "Mis à jour avec succès",
+    "deleted": "Supprimé avec succès",
+    "restored": "Restauré avec succès"
+  }
+}
+

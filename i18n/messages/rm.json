@@ -1,0 +1,367 @@
+{
+  "landing": {
+    "login": "S'annunziar",
+    "getStarted": "Cumenzar gratuitamain",
+    "hero": {
+      "title": "Administrar facturas e preventivs cun facilitad",
+      "subtitle": "L'instrument gratuit da gestiun per freelancers e pitschnas interprendas. Crear facturas cun Swiss QR, administrar clients e survegliar las entradas.",
+      "cta": "Cumenzar ussa gratuitamain",
+      "secondaryCta": "S'annunziar"
+    },
+    "features": {
+      "title": "Tut quai ch'ins dovra",
+      "subtitle": "In instrument da gestiun cumplain e gratuit per tia interpresa",
+      "quotes": {
+        "title": "Preventivs professiunals",
+        "description": "Crear preventivs cun pauc clics, convertir automaticamain en facturas"
+      },
+      "invoices": {
+        "title": "Facturas cun Swiss QR",
+        "description": "Generar facturas conformas cun Swiss QR Bill integrada, telechargiar PDFs pronts per spedir"
+      },
+      "clients": {
+        "title": "Gestiun da clients",
+        "description": "Organisar tes clients, mantegnair survista da tuts documents en in lieu"
+      },
+      "analytics": {
+        "title": "Dashboard analytics",
+        "description": "Survegliar il gudogn, termins e statisticas cun diagrammas interactivs e KPI en temp real"
+      },
+      "multilang": {
+        "title": "5 linguas sustegnidas",
+        "description": "Interface e PDFs translatads en talian, englais, tudestg, franzos e rumantsch"
+      },
+      "export": {
+        "title": "Export e filters",
+        "description": "Exportar datas en Excel/CSV, filtrar tenor datas, imports e clients cun in clic"
+      }
+    },
+    "benefits": {
+      "title": "Pertge tscherner Fattura?",
+      "free": {
+        "title": "100% gratuit",
+        "description": "Naginas custs zuppads, naginas limitas. Facturas senza limita per adina."
+      },
+      "fast": {
+        "title": "Spert e intuitiv",
+        "description": "Interface moderna e simpla. Crear ina factura en main che 60 secundas."
+      },
+      "secure": {
+        "title": "Segir e fidubel",
+        "description": "Datas protegidas cun criptografia d'interpresa. Backups automatics sin Supabase."
+      },
+      "swiss": {
+        "title": "Swiss QR Bill integrà",
+        "description": "Generar automaticamain il code QR svizzer per pajaments immediats."
+      }
+    },
+    "cta": {
+      "title": "Pront per cumenzar?",
+      "description": "Crear tes conto gratuit en 30 secundas. Nagina carta da credit necessaria.",
+      "button": "S'annunziar gratuitamain"
+    },
+    "footer": {
+      "rights": "Tuts dretgs reservads."
+    }
+  },
+  "common": {
+    "loading": "Chargiond...",
+    "save": "Memorisar",
+    "cancel": "Interrumper",
+    "delete": "Stizzar",
+    "edit": "Modifitgar",
+    "view": "Vesair",
+    "download": "Telechargiar",
+    "create": "Crear",
+    "back": "Enavos",
+    "next": "Vinavant",
+    "close": "Serrar",
+    "search": "Tschertgar",
+    "noResults": "Nagins resultats chattads",
+    "filter": "Filtrar",
+    "export": "Exportar",
+    "import": "Importar",
+    "yes": "Gea",
+    "no": "Na",
+    "confirm": "Confermar",
+    "actions": "Acziuns",
+    "status": "Status",
+    "date": "Data",
+    "total": "Total",
+    "subtotal": "Subtotal",
+    "tax": "TPV",
+    "notes": "Notizias",
+    "error": "Errur",
+    "success": "Success",
+    "quotes": "preventivs",
+    "invoices": "facturas",
+    "clear": "Stizzar",
+    "clearFilters": "Stizzar filters",
+    "from": "Da",
+    "to": "Fin",
+    "select": "Selecziunar",
+    "amount": "Import",
+    "min": "Min",
+    "max": "Max",
+    "all": "Tuts",
+    "client": "Client"
+  },
+  "auth": {
+    "login": "S'annunziar",
+    "register": "S'inscriver",
+    "logout": "Sortir",
+    "email": "E-mail",
+    "password": "Pled-clav",
+    "confirmPassword": "Confermar il pled-clav",
+    "companyName": "Num da l'interpresa",
+    "loginTitle": "S'annunziar a voss conto",
+    "registerTitle": "Crear in nov conto",
+    "alreadyHaveAccount": "Avais gia in conto?",
+    "dontHaveAccount": "N'avais anc nagin conto?",
+    "loginHere": "S'annunziar qua",
+    "registerHere": "S'inscriver qua"
+  },
+  "navigation": {
+    "dashboard": "Survista",
+    "clients": "Clients",
+    "quotes": "Preventivs",
+    "invoices": "Facturas",
+    "settings": "Parameters"
+  },
+  "dashboard": {
+    "title": "Survista",
+    "subtitle": "Survista da vossa interpresa",
+    "welcomeBack": "Bainvegni enavos",
+    "recentActivity": "Activitad recenta",
+    "statistics": "Statisticas",
+    "totalRevenue": "Cifra da fatschenta totala",
+    "paidInvoices": "Facturas pajaidas",
+    "activeClients": "Clients activs",
+    "pendingInvoices": "Facturas pendents",
+    "awaitingPayment": "En spetga da pajament",
+    "overdueInvoices": "Facturas scrudadas",
+    "vsLastMonth": "vs mais passà",
+    "revenueChart": "Cifra da fatschenta mensila",
+    "revenueChartDescription": "Svilup da la cifra da fatschenta dals ultims 12 mais",
+    "revenue": "Cifra da fatschenta",
+    "topClients": "Top 5 clients",
+    "topClientsDescription": "Clients cun la cifra da fatschenta la pli auta",
+    "quotesDistribution": "Distribuziun preventivs",
+    "quotesDistributionDescription": "Preventivs tenor status",
+    "invoicesDistribution": "Distribuziun facturas",
+    "invoicesDistributionDescription": "Facturas tenor status",
+    "noDataAvailable": "Naginas datas disponiblas",
+    "acceptanceRate": "Quota d'acceptaziun",
+    "quotesAcceptanceRate": "Percentual da preventivs acceptads",
+    "accepted": "acceptads",
+    "of": "da",
+    "documentsComparison": "Cumparaziun documents",
+    "documentsComparisonDescription": "Preventivs vs Facturas creadas",
+    "totalDocumentsCreated": "Total documents creads",
+    "customizeDashboard": "Personalisar Dashboard",
+    "customizeDashboardDescription": "Tscherna tge graficas mostrar sin il dashboard",
+    "resetToDefault": "Rearmar a standard",
+    "settingsSaved": "Parameters memorisads cun success"
+  },
+  "clients": {
+    "title": "Clients",
+    "subtitle": "Administrar voss clients",
+    "detail": "Detagls dal client",
+    "information": "Infurmaziuns dal client",
+    "statistics": "Statisticas",
+    "newClient": "Nov client",
+    "listTitle": "Glista da clients",
+    "listDescription": "Tut voss clients en in lieu",
+    "archivedTitle": "Clients archivads",
+    "archivedDescription": "Clients spustads en il rastrell",
+    "noClients": "Nagins clients chattads. Crear il prüm!",
+    "createClient": "Crear client",
+    "editClient": "Modifitgar client",
+    "deleteClient": "Archivar quest client?",
+    "deleteDescription": "Il client vegn spustà en l'archiv. Vus pudais restituir el da tut temp or da la secziun 'Archivads'.",
+    "restore": "Restituir",
+    "permanentDelete": "Stizzar definitivamain",
+    "permanentDeleteWarning": "ATTENZIUN: Questa acziun stizza definitivamain il client e na po betg vegnir revocada. Cuntinuar?",
+    "fields": {
+      "name": "Num",
+      "email": "E-mail",
+      "phone": "Telefon",
+      "address": "Adressa",
+      "city": "Citad",
+      "postalCode": "NPA",
+      "country": "Pajais",
+      "vatNumber": "Numer TPV"
+    }
+  },
+  "quotes": {
+    "title": "Preventivs",
+    "subtitle": "Administrar voss preventivs",
+    "newQuote": "Nov preventiv",
+    "listTitle": "Glista da preventivs",
+    "listDescription": "Tut voss preventivs",
+    "archivedTitle": "Preventivs archivads",
+    "archivedDescription": "Preventivs spustads en il rastrell",
+    "noQuotes": "Nagins preventivs chattads. Crear il prüm!",
+    "createQuote": "Crear preventiv",
+    "editQuote": "Modifitgar preventiv",
+    "deleteQuote": "Archivar quest preventiv?",
+    "deleteDescription": "Il preventiv vegn spustà en l'archiv. Vus pudais restituir el da tut temp or da la secziun 'Archivads'.",
+    "restore": "Restaurar",
+    "permanentDelete": "Stizzar definitivamain",
+    "changeStatus": "Midar il status",
+    "convertToInvoice": "Converter en factura",
+    "downloadPDF": "Telechargiar PDF",
+    "status": {
+      "draft": "Sboz",
+      "sent": "Tramess",
+      "accepted": "Acceptà",
+      "rejected": "Refusà"
+    },
+    "fields": {
+      "quoteNumber": "Numer dal preventiv",
+      "client": "Client",
+      "date": "Data",
+      "validUntil": "Valid fin",
+      "items": "Artitgels",
+      "description": "Descripziun",
+      "quantity": "Quantitad",
+      "unitPrice": "Pretsch unitar",
+      "taxRate": "Tarifa TPV",
+      "lineTotal": "Total da lingia",
+      "addItem": "Agiuntar artitgel",
+      "removeItem": "Allontanar artitgel"
+    }
+  },
+  "invoices": {
+    "title": "Facturas",
+    "subtitle": "Administrar vossas facturas",
+    "newInvoice": "Nova factura",
+    "listTitle": "Glista da facturas",
+    "listDescription": "Tut vossas facturas",
+    "archivedTitle": "Facturas archivadas",
+    "archivedDescription": "Facturas spustadas en il rastrell",
+    "noInvoices": "Naginas facturas chattadas. Crear la prüma!",
+    "createInvoice": "Crear factura",
+    "editInvoice": "Modifitgar factura",
+    "deleteInvoice": "Archivar questa factura?",
+    "deleteDescription": "La factura vegn spustada en l'archiv. Vus pudais restituir ella da tut temp or da la secziun 'Archivadas'.",
+    "restore": "Restaurar",
+    "permanentDelete": "Stizzar definitivamain",
+    "changeStatus": "Midar il status",
+    "downloadPDF": "Telechargiar PDF",
+    "status": {
+      "draft": "Sboz",
+      "issued": "Emessa",
+      "paid": "Pajada",
+      "overdue": "Scadida"
+    },
+    "fields": {
+      "invoiceNumber": "Numer da factura",
+      "client": "Client",
+      "date": "Data",
+      "dueDate": "Data da scadenza",
+      "items": "Artitgels",
+      "description": "Descripziun",
+      "quantity": "Quantitad",
+      "unitPrice": "Pretsch unitar",
+      "taxRate": "Tarifa TPV",
+      "lineTotal": "Total da lingia",
+      "addItem": "Agiuntar artitgel",
+      "removeItem": "Allontanar artitgel"
+    }
+  },
+  "settings": {
+    "title": "Parameters",
+    "subtitle": "Configurar las infurmaziuns da vossa interpresa",
+    "companyInfo": "Infurmaziuns da l'interpresa",
+    "companyInfoDescription": "Questas infurmaziuns cumparan sin preventivs e facturas",
+    "quoteCustomization": "Persunalisaziun preventivs",
+    "quoteCustomizationDescription": "Configurar il comportament standard dals preventivs",
+    "invoiceCustomization": "Persunalisaziun facturas",
+    "invoiceCustomizationDescription": "Configurar il comportament standard da las facturas",
+    "paymentInfo": "Infurmaziuns da pajament",
+    "paymentInfoDescription": "Metodas da pajament e cundiziuns",
+    "fields": {
+      "companyName": "Num da l'interpresa",
+      "address": "Adressa",
+      "city": "Citad",
+      "postalCode": "NPA",
+      "country": "Pajais",
+      "vatNumber": "Numer TPV",
+      "iban": "IBAN",
+      "phone": "Telefon",
+      "email": "E-mail",
+      "website": "Website",
+      "logo": "Logo",
+      "quoteDefaultNotes": "Notas standard per preventivs",
+      "quoteDefaultNotesPlaceholder": "P.ex.: Grazia per voss interess en noss servetschs",
+      "quoteTermsConditions": "Cundiziuns generals preventivs",
+      "quoteTermsConditionsPlaceholder": "P.ex.: Quest preventiv è valid per la perioda inditgada. Pretschs pon variar...",
+      "quoteDefaultValidityDays": "Validitad standard (dis)",
+      "quoteFooterText": "Text da pe da pagina preventivs",
+      "quoteFooterTextPlaceholder": "P.ex.: Per ulteriuras infurmaziuns ans contactai",
+      "invoiceDefaultNotes": "Notas standard per facturas",
+      "invoiceDefaultNotesPlaceholder": "P.ex.: Nus Vus engrazchain per Vossa confidenza",
+      "invoicePaymentTerms": "Cundiziuns da pajament",
+      "invoicePaymentTermsPlaceholder": "P.ex.: Pajament entaifer 30 dis a partir da la data da factura",
+      "invoiceDefaultDueDays": "Scadenza standard (dis)",
+      "invoiceFooterText": "Text da pe da pagina facturas",
+      "invoiceFooterTextPlaceholder": "P.ex.: Pajament sin il conto inditgà",
+      "paymentMethods": "Metodas da pajament acceptadas",
+      "paymentMethodsPlaceholder": "P.ex.: Transfer bancar, Carta da credit, PayPal",
+      "latePaymentFee": "Taglia da retard",
+      "latePaymentFeePlaceholder": "P.ex.: Tschains da 2% per mais en cas da retard"
+    },
+    "uploadLogo": "Chargiar si logo",
+    "removeLogo": "Allontanar logo",
+    "logoDescription": "PNG, JPG u WEBP (max 2MB)"
+  },
+  "tabs": {
+    "active": "Activs",
+    "archived": "Archivads"
+  },
+  "pdf": {
+    "quote": "Preventiv",
+    "invoice": "Factura",
+    "from": "Da",
+    "to": "A",
+    "date": "Data",
+    "validUntil": "Valid fin",
+    "dueDate": "Data da scadenza",
+    "description": "Descripziun",
+    "quantity": "Qtà",
+    "unitPrice": "Pretsch unitar",
+    "total": "Total",
+    "subtotal": "Subtotal",
+    "tax": "TPV",
+    "totalAmount": "Import total",
+    "paymentSlip": "Bulletin da pajament",
+    "receipt": "Retschavida",
+    "payment": "Pajament",
+    "currency": "CHF",
+    "account": "Conto",
+    "reference": "Referenza",
+    "payableBy": "Pajabel da"
+  },
+  "errors": {
+    "generic": "In errur è capitá",
+    "notFound": "Betg chattá",
+    "unauthorized": "Betg autorisà",
+    "serverError": "Errur dal server",
+    "validationError": "Errur da validaziun",
+    "requiredField": "Champ obligatoric",
+    "invalidEmail": "E-mail nunvalida",
+    "passwordMismatch": "Ils pleds-clav na correspundan betg",
+    "minLength": "Lunghezza minimala: {min} caracters",
+    "maxLength": "Lunghezza maximala: {max} caracters"
+  },
+  "success": {
+    "saved": "Memorisà cun success",
+    "settingsSavedDescription": "Las parameters èn stadas memorisadas cun success",
+    "created": "Creà cun success",
+    "updated": "Actualisà cun success",
+    "deleted": "Stizzà cun success",
+    "restored": "Restituì cun success"
+  }
+}
+

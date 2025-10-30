@@ -1,0 +1,367 @@
+{
+  "landing": {
+    "login": "Accedi",
+    "getStarted": "Inizia Gratis",
+    "hero": {
+      "title": "Gestisci Fatture e Preventivi con Semplicità",
+      "subtitle": "Il gestionale gratuito per freelance e piccole imprese. Crea fatture con QR Swiss, gestisci clienti e monitora i tuoi incassi.",
+      "cta": "Inizia Subito Gratis",
+      "secondaryCta": "Accedi"
+    },
+    "features": {
+      "title": "Tutto ciò di cui hai bisogno",
+      "subtitle": "Un gestionale completo e gratuito per la tua attività",
+      "quotes": {
+        "title": "Preventivi Professionali",
+        "description": "Crea preventivi in pochi click, convertili automaticamente in fatture quando vengono accettati"
+      },
+      "invoices": {
+        "title": "Fatture con QR Swiss",
+        "description": "Genera fatture conformi con QR Bill svizzero integrato, scarica PDF pronti per l'invio"
+      },
+      "clients": {
+        "title": "Gestione Clienti",
+        "description": "Organizza i tuoi clienti, tieni traccia di tutta la documentazione in un unico posto"
+      },
+      "analytics": {
+        "title": "Dashboard Analytics",
+        "description": "Monitora fatturato, scadenze e statistiche con grafici interattivi e KPI in tempo reale"
+      },
+      "multilang": {
+        "title": "5 Lingue Supportate",
+        "description": "Interfaccia e PDF tradotti in Italiano, Inglese, Tedesco, Francese e Romancio"
+      },
+      "export": {
+        "title": "Export e Filtri",
+        "description": "Esporta dati in Excel/CSV, filtra per date, importi e clienti con un click"
+      }
+    },
+    "benefits": {
+      "title": "Perché scegliere Fattura?",
+      "free": {
+        "title": "100% Gratuito",
+        "description": "Nessun costo nascosto, nessun limite. Fatture illimitate per sempre."
+      },
+      "fast": {
+        "title": "Veloce e Intuitivo",
+        "description": "Interfaccia moderna e semplice. Crea una fattura in meno di 60 secondi."
+      },
+      "secure": {
+        "title": "Sicuro e Affidabile",
+        "description": "Dati protetti con crittografia enterprise. Backup automatici su Supabase."
+      },
+      "swiss": {
+        "title": "Swiss QR Bill Integrato",
+        "description": "Genera automaticamente il codice QR svizzero per pagamenti immediati."
+      }
+    },
+    "cta": {
+      "title": "Pronto per iniziare?",
+      "description": "Crea il tuo account gratuito in 30 secondi. Nessuna carta di credito richiesta.",
+      "button": "Registrati Gratis"
+    },
+    "footer": {
+      "rights": "Tutti i diritti riservati."
+    }
+  },
+  "common": {
+    "loading": "Caricamento...",
+    "save": "Salva",
+    "cancel": "Annulla",
+    "delete": "Elimina",
+    "edit": "Modifica",
+    "view": "Visualizza",
+    "download": "Scarica",
+    "create": "Crea",
+    "back": "Indietro",
+    "next": "Avanti",
+    "close": "Chiudi",
+    "search": "Cerca",
+    "noResults": "Nessun risultato trovato",
+    "filter": "Filtra",
+    "export": "Esporta",
+    "import": "Importa",
+    "yes": "Sì",
+    "no": "No",
+    "confirm": "Conferma",
+    "actions": "Azioni",
+    "status": "Stato",
+    "date": "Data",
+    "total": "Totale",
+    "subtotal": "Subtotale",
+    "tax": "IVA",
+    "notes": "Note",
+    "error": "Errore",
+    "success": "Successo",
+    "quotes": "preventivi",
+    "invoices": "fatture",
+    "clear": "Cancella",
+    "clearFilters": "Cancella filtri",
+    "from": "Da",
+    "to": "A",
+    "select": "Seleziona",
+    "amount": "Importo",
+    "min": "Min",
+    "max": "Max",
+    "all": "Tutti",
+    "client": "Cliente"
+  },
+  "auth": {
+    "login": "Accedi",
+    "register": "Registrati",
+    "logout": "Esci",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Conferma Password",
+    "companyName": "Nome Azienda",
+    "loginTitle": "Accedi al tuo account",
+    "registerTitle": "Crea un nuovo account",
+    "alreadyHaveAccount": "Hai già un account?",
+    "dontHaveAccount": "Non hai un account?",
+    "loginHere": "Accedi qui",
+    "registerHere": "Registrati qui"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "clients": "Clienti",
+    "quotes": "Preventivi",
+    "invoices": "Fatture",
+    "settings": "Impostazioni"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Panoramica della tua attività",
+    "welcomeBack": "Bentornato",
+    "recentActivity": "Attività Recente",
+    "statistics": "Statistiche",
+    "totalRevenue": "Fatturato Totale",
+    "paidInvoices": "Fatture pagate",
+    "activeClients": "Clienti attivi",
+    "pendingInvoices": "Fatture in Attesa",
+    "awaitingPayment": "In attesa di pagamento",
+    "overdueInvoices": "Fatture Scadute",
+    "vsLastMonth": "vs mese scorso",
+    "revenueChart": "Fatturato Mensile",
+    "revenueChartDescription": "Andamento del fatturato negli ultimi 12 mesi",
+    "revenue": "Fatturato",
+    "topClients": "Top 5 Clienti",
+    "topClientsDescription": "Clienti con il maggior fatturato",
+    "quotesDistribution": "Distribuzione Preventivi",
+    "quotesDistributionDescription": "Preventivi per stato",
+    "invoicesDistribution": "Distribuzione Fatture",
+    "invoicesDistributionDescription": "Fatture per stato",
+    "noDataAvailable": "Nessun dato disponibile",
+    "acceptanceRate": "Tasso di Accettazione",
+    "quotesAcceptanceRate": "Percentuale di preventivi accettati",
+    "accepted": "accettati",
+    "of": "di",
+    "documentsComparison": "Confronto Documenti",
+    "documentsComparisonDescription": "Preventivi vs Fatture creati",
+    "totalDocumentsCreated": "Totale documenti creati",
+    "customizeDashboard": "Personalizza Dashboard",
+    "customizeDashboardDescription": "Scegli quali grafici visualizzare nella dashboard",
+    "resetToDefault": "Ripristina predefiniti",
+    "settingsSaved": "Impostazioni salvate con successo"
+  },
+  "clients": {
+    "title": "Clienti",
+    "subtitle": "Gestisci i tuoi clienti",
+    "detail": "Dettaglio cliente",
+    "information": "Informazioni cliente",
+    "statistics": "Statistiche",
+    "newClient": "Nuovo Cliente",
+    "listTitle": "Lista Clienti",
+    "listDescription": "Tutti i tuoi clienti in un unico posto",
+    "archivedTitle": "Clienti Archiviati",
+    "archivedDescription": "Clienti spostati nel cestino",
+    "noClients": "Nessun cliente trovato. Crea il primo!",
+    "createClient": "Crea Cliente",
+    "editClient": "Modifica Cliente",
+    "deleteClient": "Archiviare questo cliente?",
+    "deleteDescription": "Il cliente verrà spostato nell'archivio. Potrai ripristinarlo in qualsiasi momento dalla sezione 'Archiviati'.",
+    "restore": "Ripristina",
+    "permanentDelete": "Elimina definitivamente",
+    "permanentDeleteWarning": "ATTENZIONE: Questa azione eliminerà definitivamente il cliente e non potrà essere annullata. Continuare?",
+    "fields": {
+      "name": "Nome",
+      "email": "Email",
+      "phone": "Telefono",
+      "address": "Indirizzo",
+      "city": "Città",
+      "postalCode": "CAP",
+      "country": "Paese",
+      "vatNumber": "Partita IVA"
+    }
+  },
+  "quotes": {
+    "title": "Preventivi",
+    "subtitle": "Gestisci i tuoi preventivi",
+    "newQuote": "Nuovo Preventivo",
+    "listTitle": "Lista Preventivi",
+    "listDescription": "Tutti i tuoi preventivi",
+    "archivedTitle": "Preventivi Archiviati",
+    "archivedDescription": "Preventivi spostati nel cestino",
+    "noQuotes": "Nessun preventivo trovato. Crea il primo!",
+    "createQuote": "Crea Preventivo",
+    "editQuote": "Modifica Preventivo",
+    "deleteQuote": "Archiviare questo preventivo?",
+    "deleteDescription": "Il preventivo verrà spostato nell'archivio. Potrai ripristinarlo in qualsiasi momento dalla sezione 'Archiviati'.",
+    "restore": "Ripristina",
+    "permanentDelete": "Elimina definitivamente",
+    "changeStatus": "Cambia stato",
+    "convertToInvoice": "Converti in Fattura",
+    "downloadPDF": "Scarica PDF",
+    "status": {
+      "draft": "Bozza",
+      "sent": "Inviato",
+      "accepted": "Accettato",
+      "rejected": "Rifiutato"
+    },
+    "fields": {
+      "quoteNumber": "Numero Preventivo",
+      "client": "Cliente",
+      "date": "Data",
+      "validUntil": "Valido fino al",
+      "items": "Articoli",
+      "description": "Descrizione",
+      "quantity": "Quantità",
+      "unitPrice": "Prezzo Unitario",
+      "taxRate": "Aliquota IVA",
+      "lineTotal": "Totale Riga",
+      "addItem": "Aggiungi Articolo",
+      "removeItem": "Rimuovi Articolo"
+    }
+  },
+  "invoices": {
+    "title": "Fatture",
+    "subtitle": "Gestisci le tue fatture",
+    "newInvoice": "Nuova Fattura",
+    "listTitle": "Lista Fatture",
+    "listDescription": "Tutte le tue fatture",
+    "archivedTitle": "Fatture Archiviate",
+    "archivedDescription": "Fatture spostate nel cestino",
+    "noInvoices": "Nessuna fattura trovata. Crea la prima!",
+    "createInvoice": "Crea Fattura",
+    "editInvoice": "Modifica Fattura",
+    "deleteInvoice": "Archiviare questa fattura?",
+    "deleteDescription": "La fattura verrà spostata nell'archivio. Potrai ripristinarla in qualsiasi momento dalla sezione 'Archiviate'.",
+    "restore": "Ripristina",
+    "permanentDelete": "Elimina definitivamente",
+    "changeStatus": "Cambia stato",
+    "downloadPDF": "Scarica PDF",
+    "status": {
+      "draft": "Bozza",
+      "issued": "Emessa",
+      "paid": "Pagata",
+      "overdue": "Scaduta"
+    },
+    "fields": {
+      "invoiceNumber": "Numero Fattura",
+      "client": "Cliente",
+      "date": "Data",
+      "dueDate": "Scadenza",
+      "items": "Articoli",
+      "description": "Descrizione",
+      "quantity": "Quantità",
+      "unitPrice": "Prezzo Unitario",
+      "taxRate": "Aliquota IVA",
+      "lineTotal": "Totale Riga",
+      "addItem": "Aggiungi Articolo",
+      "removeItem": "Rimuovi Articolo"
+    }
+  },
+  "settings": {
+    "title": "Impostazioni",
+    "subtitle": "Configura le informazioni della tua azienda",
+    "companyInfo": "Informazioni Azienda",
+    "companyInfoDescription": "Queste informazioni appariranno su preventivi e fatture",
+    "quoteCustomization": "Personalizzazione Preventivi",
+    "quoteCustomizationDescription": "Configura il comportamento predefinito dei preventivi",
+    "invoiceCustomization": "Personalizzazione Fatture",
+    "invoiceCustomizationDescription": "Configura il comportamento predefinito delle fatture",
+    "paymentInfo": "Informazioni Pagamento",
+    "paymentInfoDescription": "Metodi di pagamento e termini",
+    "fields": {
+      "companyName": "Nome Azienda",
+      "address": "Indirizzo",
+      "city": "Città",
+      "postalCode": "CAP",
+      "country": "Paese",
+      "vatNumber": "Partita IVA",
+      "iban": "IBAN",
+      "phone": "Telefono",
+      "email": "Email",
+      "website": "Sito Web",
+      "logo": "Logo",
+      "quoteDefaultNotes": "Note Predefinite Preventivi",
+      "quoteDefaultNotesPlaceholder": "Es: Grazie per l'interesse mostrato verso i nostri servizi",
+      "quoteTermsConditions": "Termini e Condizioni Preventivi",
+      "quoteTermsConditionsPlaceholder": "Es: Il preventivo rimane valido per il periodo indicato. I prezzi possono variare...",
+      "quoteDefaultValidityDays": "Validità Predefinita (giorni)",
+      "quoteFooterText": "Testo Footer Preventivi",
+      "quoteFooterTextPlaceholder": "Es: Per qualsiasi informazione non esitate a contattarci",
+      "invoiceDefaultNotes": "Note Predefinite Fatture",
+      "invoiceDefaultNotesPlaceholder": "Es: La ringraziamo per la fiducia accordataci",
+      "invoicePaymentTerms": "Condizioni di Pagamento",
+      "invoicePaymentTermsPlaceholder": "Es: Pagamento entro 30 giorni dalla data fattura",
+      "invoiceDefaultDueDays": "Scadenza Predefinita (giorni)",
+      "invoiceFooterText": "Testo Footer Fatture",
+      "invoiceFooterTextPlaceholder": "Es: Pagamento da effettuare sul conto indicato",
+      "paymentMethods": "Metodi di Pagamento Accettati",
+      "paymentMethodsPlaceholder": "Es: Bonifico bancario, Carta di credito, PayPal",
+      "latePaymentFee": "Penale Ritardo Pagamento",
+      "latePaymentFeePlaceholder": "Es: Interessi 2% mensile in caso di ritardo"
+    },
+    "uploadLogo": "Carica Logo",
+    "removeLogo": "Rimuovi Logo",
+    "logoDescription": "PNG, JPG o WEBP (max 2MB)"
+  },
+  "tabs": {
+    "active": "Attivi",
+    "archived": "Archiviati"
+  },
+  "pdf": {
+    "quote": "Preventivo",
+    "invoice": "Fattura",
+    "from": "Da",
+    "to": "A",
+    "date": "Data",
+    "validUntil": "Valido fino al",
+    "dueDate": "Scadenza",
+    "description": "Descrizione",
+    "quantity": "Qtà",
+    "unitPrice": "Prezzo Unitario",
+    "total": "Totale",
+    "subtotal": "Subtotale",
+    "tax": "IVA",
+    "totalAmount": "Totale",
+    "paymentSlip": "Cedolino di Pagamento",
+    "receipt": "Ricevuta",
+    "payment": "Pagamento",
+    "currency": "CHF",
+    "account": "Conto",
+    "reference": "Riferimento",
+    "payableBy": "Pagabile da"
+  },
+  "errors": {
+    "generic": "Si è verificato un errore",
+    "notFound": "Non trovato",
+    "unauthorized": "Non autorizzato",
+    "serverError": "Errore del server",
+    "validationError": "Errore di validazione",
+    "requiredField": "Campo obbligatorio",
+    "invalidEmail": "Email non valida",
+    "passwordMismatch": "Le password non corrispondono",
+    "minLength": "Lunghezza minima: {min} caratteri",
+    "maxLength": "Lunghezza massima: {max} caratteri"
+  },
+  "success": {
+    "saved": "Salvato con successo",
+    "settingsSavedDescription": "Le impostazioni sono state salvate correttamente",
+    "created": "Creato con successo",
+    "updated": "Aggiornato con successo",
+    "deleted": "Eliminato con successo",
+    "restored": "Ripristinato con successo"
+  }
+}
+
