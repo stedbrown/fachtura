@@ -7,8 +7,6 @@ import sharp from 'sharp'
 import { format } from 'date-fns'
 import { it, de, fr, enUS } from 'date-fns/locale'
 import { getPDFTranslations } from '@/lib/pdf-translations'
-import * as fs from 'fs'
-import * as path from 'path'
 
 const localeMap: Record<string, any> = {
   it: it,
@@ -127,10 +125,17 @@ export async function GET(
     pdfDoc.registerFontkit(fontkit)
     
     // Load custom fonts (Roboto supports Italian accented characters)
-    const fontRegularPath = path.join(process.cwd(), 'public', 'fonts', 'Roboto-Regular.ttf')
-    const fontBoldPath = path.join(process.cwd(), 'public', 'fonts', 'Roboto-Bold.ttf')
-    const fontRegularBytes = fs.readFileSync(fontRegularPath)
-    const fontBoldBytes = fs.readFileSync(fontBoldPath)
+    // Use fetch instead of fs.readFileSync for Vercel compatibility
+    const fontRegularUrl = new URL('/fonts/Roboto-Regular.ttf', request.url).href
+    const fontBoldUrl = new URL('/fonts/Roboto-Bold.ttf', request.url).href
+    
+    const [fontRegularResponse, fontBoldResponse] = await Promise.all([
+      fetch(fontRegularUrl),
+      fetch(fontBoldUrl)
+    ])
+    
+    const fontRegularBytes = new Uint8Array(await fontRegularResponse.arrayBuffer())
+    const fontBoldBytes = new Uint8Array(await fontBoldResponse.arrayBuffer())
     
     const page = pdfDoc.addPage([595, 842]) // A4
     const font = await pdfDoc.embedFont(fontRegularBytes)
