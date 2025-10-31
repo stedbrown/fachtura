@@ -485,20 +485,21 @@ export async function GET(
     
     console.log('QR Bill page embedded, drawing at bottom of invoice...')
     
-    // Draw the QR Bill page at the bottom of our invoice (last 297pt)
-    // Swiss QR Bill occupies bottom 297pt of A4 page
+    // The QR Bill is generated on a full A4 page by swissqrbill library  
+    // It places the QR bill at the bottom of the page (bottom 297pt)
+    // We draw the full embedded page at y=0 (bottom), and it will overlay correctly
+    // Our invoice content should stay above y=297 to avoid overlap
     const qrBillBottom = 0
     const qrBillTop = qrBillHeight // 297pt
     
-    // Draw the embedded QR Bill page, cropped to show only bottom 297pt
+    // Draw the full embedded QR Bill page at the bottom
+    // This will place the QR Bill section (which is at bottom of embedded page) 
+    // at the bottom of our invoice page
     page.drawPage(embeddedQRBillPage, {
       x: 0,
-      y: qrBillBottom,
+      y: qrBillBottom,  // Start at bottom of invoice page
       width: 595,
-      height: qrBillHeight,
-      // Crop to show only the bottom part (QR Bill section)
-      xOffset: 0,
-      yOffset: 842 - qrBillHeight  // Offset to get bottom 297pt of A4 page
+      height: 297,  // Only draw bottom 297pt of embedded page
     })
     
     console.log('QR Bill drawn on invoice page')
