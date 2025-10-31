@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib'
-import { SwissQRBill as SwissQRBillPDF } from 'swissqrbill/pdf'
-import PDFKit from 'pdfkit'
+import { SwissQRBill } from 'swissqrbill/svg'
+import sharp from 'sharp'
 import { format } from 'date-fns'
 import { it, de, fr, enUS } from 'date-fns/locale'
 import { getPDFTranslations } from '@/lib/pdf-translations'
@@ -450,56 +450,50 @@ export async function GET(
     }
     const qrLanguage = qrLanguageMap[locale] || 'IT'
 
-    // Generate Swiss QR Bill using swissqrbill/pdf (PDFKit) which has proper font support
-    // Then embed it into our main PDF
-    const qrBillPdf = new PDFKit({
-      size: [595.28, 841.89], // A4 in points
-      margin: 0
-    })
-    
-    const qrBillBufferChunks: Buffer[] = []
-    qrBillPdf.on('data', (chunk) => qrBillBufferChunks.push(chunk))
-    
-    const qrBillPdfGenerated = new Promise<Buffer>((resolve, reject) => {
-      qrBillPdf.on('end', () => resolve(Buffer.concat(qrBillBufferChunks)))
-      qrBillPdf.on('error', reject)
-    })
-    
-    // Attach Swiss QR Bill to PDFKit document
-    const swissQRBill = new SwissQRBillPDF(qrBillData, {
+    // Generate Swiss QR Bill as SVG using official library
+    const swissQRBill = new SwissQRBill(qrBillData, {
       language: qrLanguage,
       outlines: false,
       scissors: false,
     })
     
-    console.log('Generating QR Bill with PDFKit...')
-    swissQRBill.attachTo(qrBillPdf)
-    qrBillPdf.end()
+    // Get SVG as string
+    let svgString = swissQRBill.toString()
     
-    const qrBillPdfBuffer = await qrBillPdfGenerated
-    console.log('QR Bill PDF generated, size:', qrBillPdfBuffer.length)
+    console.log('QR Bill SVG generated, length:', svgString.length)
     
-    // Embed the QR Bill PDF as embedded pages (required for drawPage)
-    const embeddedQRBillPages = await pdfDoc.embedPdf(qrBillPdfBuffer)
-    const embeddedQRBillPage = embeddedQRBillPages[0]
+    // Replace font-family in SVG to use system fonts that Sharp can render
+    // This avoids the font rendering issues on Vercel
+    svgString = svgString.replace(/font-family="[^"]*"/g, 'font-family="Arial, Helvetica, sans-serif"')
+    svgString = svgString.replace(/font-family='[^']*'/g, "font-family='Arial, Helvetica, sans-serif'")
     
-    console.log('QR Bill page embedded, drawing at bottom of invoice...')
+    console.log('SVG fonts replaced with Arial fallback')
     
-    // The QR Bill is generated on a full A4 page by swissqrbill library  
-    // It places the QR bill at the bottom of the page (bottom 297pt)
-    // We draw the full embedded page at y=0 (bottom), and it will overlay correctly
-    // Our invoice content should stay above y=297 to avoid overlap
+    // Convert SVG to PNG at high resolution for print quality
+    // Swiss QR Bill is 210mm x 105mm = 595pt x 297pt
+    // At 300 DPI: 2480px x 1240px
+    const qrBillPngBuffer = await sharp(Buffer.from(svgString), {
+      density: 300
+    })
+      .resize(2480, 1240)
+      .png()
+      .toBuffer()
+    
+    console.log('QR Bill PNG generated, size:', qrBillPngBuffer.length)
+
+    // Embed the Swiss QR Bill image
+    const qrBillImage = await pdfDoc.embedPng(qrBillPngBuffer)
+
+    // Swiss QR Bill is placed at the bottom of the same page
     const qrBillBottom = 0
     const qrBillTop = qrBillHeight // 297pt
     
-    // Draw the full embedded QR Bill page at the bottom
-    // This will place the QR Bill section (which is at bottom of embedded page) 
-    // at the bottom of our invoice page
-    page.drawPage(embeddedQRBillPage, {
+    // Draw the Swiss QR Bill at the bottom of the page
+    page.drawImage(qrBillImage, {
       x: 0,
-      y: qrBillBottom,  // Start at bottom of invoice page
-      width: 595,
-      height: 297,  // Only draw bottom 297pt of embedded page
+      y: qrBillBottom,
+      width: 595,  // Full width (210mm)
+      height: qrBillHeight, // 105mm height
     })
     
     console.log('QR Bill drawn on invoice page')
