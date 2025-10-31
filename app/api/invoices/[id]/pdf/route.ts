@@ -450,11 +450,19 @@ export async function GET(
     }
     const qrLanguage = qrLanguageMap[locale] || 'IT'
 
-    // Generate Swiss QR Bill as SVG using official library
+    // Swiss QR Bill on separate page (standard approach)
+    // This avoids all font rendering issues with Sharp/SVG conversion
+    // The QR Bill will be on page 2 of the PDF
+    
+    const qrBillPage = pdfDoc.addPage([595, 842]) // A4 page for QR Bill
+    
+    console.log('Generating QR Bill as SVG...')
+    
+    // Generate Swiss QR Bill as SVG
     const swissQRBill = new SwissQRBill(qrBillData, {
       language: qrLanguage,
       outlines: false,
-      scissors: false,
+      scissors: true,  // Show scissors on separate page
     })
     
     // Get SVG as string
@@ -462,68 +470,36 @@ export async function GET(
     
     console.log('QR Bill SVG generated, length:', svgString.length)
     
-    // Replace font-family in SVG to use system fonts that Sharp can render
-    // This avoids the font rendering issues on Vercel
+    // Replace fonts with Arial for Sharp compatibility
     svgString = svgString.replace(/font-family="[^"]*"/g, 'font-family="Arial, Helvetica, sans-serif"')
     svgString = svgString.replace(/font-family='[^']*'/g, "font-family='Arial, Helvetica, sans-serif'")
     
-    console.log('SVG fonts replaced with Arial fallback')
+    console.log('Converting QR Bill SVG to PNG...')
     
-    // Convert SVG to PNG at high resolution for print quality
-    // Swiss QR Bill is 210mm x 105mm = 595pt x 297pt
-    // At 300 DPI: 2480px x 1240px
+    // Convert entire A4 page with QR Bill to PNG
+    // Swiss QR Bill is at bottom of A4 page (210mm x 297mm)
+    // At 300 DPI: 2480px x 3508px
     const qrBillPngBuffer = await sharp(Buffer.from(svgString), {
       density: 300
     })
-      .resize(2480, 1240)
+      .resize(2480, 3508)  // Full A4 at 300 DPI
       .png()
       .toBuffer()
     
     console.log('QR Bill PNG generated, size:', qrBillPngBuffer.length)
 
-    // Embed the Swiss QR Bill image
+    // Embed the QR Bill image (full A4 page)
     const qrBillImage = await pdfDoc.embedPng(qrBillPngBuffer)
 
-    // Swiss QR Bill is placed at the bottom of the same page
-    const qrBillBottom = 0
-    const qrBillTop = qrBillHeight // 297pt
-    
-    // Draw the Swiss QR Bill at the bottom of the page
-    page.drawImage(qrBillImage, {
+    // Draw the QR Bill image on the separate page
+    qrBillPage.drawImage(qrBillImage, {
       x: 0,
-      y: qrBillBottom,
-      width: 595,  // Full width (210mm)
-      height: qrBillHeight, // 105mm height
+      y: 0,
+      width: 595,
+      height: 842,
     })
     
-    console.log('QR Bill drawn on invoice page')
-    
-    // Add dashed lines manually in correct positions (as per Swiss standard)
-    // Horizontal line at top of QR Bill section
-    page.drawLine({
-      start: { x: 0, y: qrBillTop },
-      end: { x: 595, y: qrBillTop },
-      thickness: 0.5,
-      dashArray: [4, 2],
-      color: rgb(0, 0, 0),
-    })
-    
-    // Vertical line between Receipt (62mm) and Payment Part
-    // 62mm = 175.75pt from left
-    const separatorX = 175.75
-    page.drawLine({
-      start: { x: separatorX, y: qrBillBottom },
-      end: { x: separatorX, y: qrBillTop },
-      thickness: 0.5,
-      dashArray: [4, 2],
-      color: rgb(0, 0, 0),
-    })
-    
-    // Add a note if content is too long (optional warning in console)
-    const minYPosition = qrBillTop + 20 // Leave 20pt margin above QR Bill
-    if (yPosition < minYPosition) {
-      console.warn('Invoice content may overlap with QR Bill. Consider using multiple pages for long invoices.')
-    }
+    console.log('QR Bill page added to PDF')
 
     const pdfBytes = await pdfDoc.save()
 
