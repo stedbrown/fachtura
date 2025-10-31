@@ -115,18 +115,37 @@ export default function InvoiceDetailPage() {
 
   async function handleDownloadPDF() {
     try {
-      const response = await fetch(`/api/invoices/${invoiceId}/pdf?locale=${locale}`)
+      console.log('📄 Starting PDF download for invoice:', invoiceId)
+      const url = `/api/invoices/${invoiceId}/pdf?locale=${locale}`
+      console.log('📄 Fetching from:', url)
+      
+      const response = await fetch(url)
+      console.log('📄 Response status:', response.status, response.statusText)
+      console.log('📄 Response headers:', Object.fromEntries(response.headers.entries()))
+      
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error('❌ PDF generation failed:', errorText)
+        alert(`Errore ${response.status}: ${errorText}`)
+        return
+      }
+      
       const blob = await response.blob()
-      const url = window.URL.createObjectURL(blob)
+      console.log('📄 Blob received, size:', blob.size, 'type:', blob.type)
+      
+      const blobUrl = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
-      a.href = url
+      a.href = blobUrl
       a.download = `${invoice?.invoice_number || 'fattura'}.pdf`
       document.body.appendChild(a)
       a.click()
-      window.URL.revokeObjectURL(url)
+      window.URL.revokeObjectURL(blobUrl)
       document.body.removeChild(a)
+      
+      console.log('✅ PDF downloaded successfully')
     } catch (error) {
-      console.error('Error downloading PDF:', error)
+      console.error('❌ Error downloading PDF:', error)
+      alert('Errore durante il download del PDF')
     }
   }
 

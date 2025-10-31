@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { PDFDocument, rgb } from 'pdf-lib'
-import fontkit from '@pdf-lib/fontkit'
+import { PDFDocument, StandardFonts, rgb } from 'pdf-lib'
 import { SwissQRBill } from 'swissqrbill/svg'
 import sharp from 'sharp'
 import { format } from 'date-fns'
@@ -121,35 +120,10 @@ export async function GET(
     // Create PDF with pdf-lib
     const pdfDoc = await PDFDocument.create()
     
-    // Register fontkit to support custom fonts
-    pdfDoc.registerFontkit(fontkit)
-    
-    // Load Roboto fonts directly from Google Fonts repository (TTF format)
-    const fontRegularUrl = 'https://github.com/google/fonts/raw/main/apache/roboto/static/Roboto-Regular.ttf'
-    const fontBoldUrl = 'https://github.com/google/fonts/raw/main/apache/roboto/static/Roboto-Bold.ttf'
-    
-    console.log('Loading Roboto TTF fonts from Google Fonts')
-    
-    const [fontRegularResponse, fontBoldResponse] = await Promise.all([
-      fetch(fontRegularUrl),
-      fetch(fontBoldUrl)
-    ])
-    
-    if (!fontRegularResponse.ok || !fontBoldResponse.ok) {
-      console.error('Font loading failed:', fontRegularResponse.status, fontBoldResponse.status)
-      throw new Error(`Font fetch failed: Regular ${fontRegularResponse.status}, Bold ${fontBoldResponse.status}`)
-    }
-    
-    const fontRegularBytes = new Uint8Array(await fontRegularResponse.arrayBuffer())
-    const fontBoldBytes = new Uint8Array(await fontBoldResponse.arrayBuffer())
-    
-    console.log('Fonts loaded successfully, sizes:', fontRegularBytes.length, fontBoldBytes.length)
-    
+    // Use standard PDF fonts (always available, no external loading needed)
     const page = pdfDoc.addPage([595, 842]) // A4
-    const font = await pdfDoc.embedFont(fontRegularBytes)
-    const fontBold = await pdfDoc.embedFont(fontBoldBytes)
-    
-    console.log('Fonts embedded in PDF')
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
+    const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
 
     // Swiss QR Bill height is 297pt, so we have 545pt available for invoice content
     const qrBillHeight = 297
