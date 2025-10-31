@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib'
-import { SwissQRCode } from 'swissqrbill'
 import QRCode from 'qrcode'
 import { format } from 'date-fns'
 import { it, de, fr, enUS } from 'date-fns/locale'
@@ -460,11 +459,50 @@ export async function GET(
     
     console.log('Drawing Swiss QR Bill manually with pdf-lib...')
     
-    // Generate QR Code data string
-    const qrCodeData = SwissQRCode.from(qrBillData)
+    // Build Swiss QR Code data string manually (ISO 20022 format)
+    // Format: lines separated by \r\n
+    const qrCodeLines = [
+      'SPC',  // QR Type
+      '0200', // Version
+      '1',    // Coding Type (1 = UTF-8)
+      qrBillData.creditor.account.replace(/\s/g, ''), // IBAN
+      'K',    // Creditor Address Type (K = combined)
+      qrBillData.creditor.name,
+      qrBillData.creditor.address || '',
+      `${qrBillData.creditor.zip || ''} ${qrBillData.creditor.city || ''}`.trim(),
+      '',     // Address Line 2 (empty)
+      '',     // Address Line 3 (empty)
+      qrBillData.creditor.country || 'CH',
+      '',     // Ultimate Creditor Address Type (empty)
+      '',     // Ultimate Creditor Name (empty)
+      '',     // Ultimate Creditor Address Line 1
+      '',     // Ultimate Creditor Address Line 2
+      '',     // Ultimate Creditor Address Line 3
+      '',     // Ultimate Creditor Address Line 4
+      '',     // Ultimate Creditor Address Line 5
+      '',     // Ultimate Creditor Country
+      qrBillData.amount ? qrBillData.amount.toFixed(2) : '', // Amount
+      qrBillData.currency || 'CHF', // Currency
+      'K',    // Debtor Address Type
+      qrBillData.debtor.name,
+      qrBillData.debtor.address || '',
+      `${qrBillData.debtor.zip || ''} ${qrBillData.debtor.city || ''}`.trim(),
+      '',     // Debtor Address Line 2
+      '',     // Debtor Address Line 3
+      qrBillData.debtor.country || 'CH',
+      'NON',  // Reference Type (NON = without reference)
+      '',     // Reference (empty for NON type)
+      qrBillData.message || '', // Unstructured Message
+      'EPD',  // Trailer
+      ''      // Bill Information (empty)
+    ]
+    
+    const qrCodeData = qrCodeLines.join('\r\n')
+    
+    console.log('QR Code data generated, length:', qrCodeData.length)
     
     // Generate QR Code as PNG using qrcode library
-    const qrCodePng = await QRCode.toBuffer(qrCodeData.toString(), {
+    const qrCodePng = await QRCode.toBuffer(qrCodeData, {
       type: 'png',
       width: 600,
       margin: 0,
@@ -474,7 +512,6 @@ export async function GET(
     const qrCodeImage = await pdfDoc.embedPng(qrCodePng)
     
     // Swiss QR Bill layout (bottom 105mm of A4 page)
-    const qrBillHeight = 297 // 105mm in points
     const qrBillTop = qrBillHeight
     
     // Draw scissors line
