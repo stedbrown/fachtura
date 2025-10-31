@@ -124,13 +124,12 @@ export async function GET(
     // Register fontkit to support custom fonts
     pdfDoc.registerFontkit(fontkit)
     
-    // Load custom fonts (Roboto supports Italian accented characters)
-    // Use fetch with origin-based URL for Vercel compatibility
-    const origin = new URL(request.url).origin
-    const fontRegularUrl = `${origin}/fonts/Roboto-Regular.ttf`
-    const fontBoldUrl = `${origin}/fonts/Roboto-Bold.ttf`
+    // Load custom fonts from CDN (Roboto supports Italian accented characters)
+    // Use jsDelivr CDN for reliable font loading on Vercel
+    const fontRegularUrl = 'https://cdn.jsdelivr.net/npm/@fontsource/roboto@5.0.8/files/roboto-latin-400-normal.woff'
+    const fontBoldUrl = 'https://cdn.jsdelivr.net/npm/@fontsource/roboto@5.0.8/files/roboto-latin-700-normal.woff'
     
-    console.log('Loading fonts from:', fontRegularUrl, fontBoldUrl)
+    console.log('Loading fonts from CDN:', fontRegularUrl, fontBoldUrl)
     
     const [fontRegularResponse, fontBoldResponse] = await Promise.all([
       fetch(fontRegularUrl),
@@ -142,17 +141,17 @@ export async function GET(
         regular: fontRegularResponse.status,
         bold: fontBoldResponse.status
       })
-      throw new Error('Failed to load fonts')
+      throw new Error('Failed to load fonts from CDN')
     }
     
     const fontRegularBytes = new Uint8Array(await fontRegularResponse.arrayBuffer())
     const fontBoldBytes = new Uint8Array(await fontBoldResponse.arrayBuffer())
     
-    console.log('Fonts loaded successfully')
+    console.log('Fonts loaded successfully from CDN')
     
     const page = pdfDoc.addPage([595, 842]) // A4
-    const font = await pdfDoc.embedFont(fontRegularBytes)
-    const fontBold = await pdfDoc.embedFont(fontBoldBytes)
+    const font = await pdfDoc.embedFont(fontRegularBytes, { subset: true })
+    const fontBold = await pdfDoc.embedFont(fontBoldBytes, { subset: true })
 
     // Swiss QR Bill height is 297pt, so we have 545pt available for invoice content
     const qrBillHeight = 297
