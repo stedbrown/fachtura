@@ -92,17 +92,30 @@ export async function GET(
     pdfDoc.registerFontkit(fontkit)
     
     // Load custom fonts (Roboto supports Italian accented characters)
-    // Use fetch instead of fs.readFileSync for Vercel compatibility
-    const fontRegularUrl = new URL('/fonts/Roboto-Regular.ttf', request.url).href
-    const fontBoldUrl = new URL('/fonts/Roboto-Bold.ttf', request.url).href
+    // Use fetch with origin-based URL for Vercel compatibility
+    const origin = new URL(request.url).origin
+    const fontRegularUrl = `${origin}/fonts/Roboto-Regular.ttf`
+    const fontBoldUrl = `${origin}/fonts/Roboto-Bold.ttf`
+    
+    console.log('Loading fonts from:', fontRegularUrl, fontBoldUrl)
     
     const [fontRegularResponse, fontBoldResponse] = await Promise.all([
       fetch(fontRegularUrl),
       fetch(fontBoldUrl)
     ])
     
+    if (!fontRegularResponse.ok || !fontBoldResponse.ok) {
+      console.error('Font loading failed:', {
+        regular: fontRegularResponse.status,
+        bold: fontBoldResponse.status
+      })
+      throw new Error('Failed to load fonts')
+    }
+    
     const fontRegularBytes = new Uint8Array(await fontRegularResponse.arrayBuffer())
     const fontBoldBytes = new Uint8Array(await fontBoldResponse.arrayBuffer())
+    
+    console.log('Fonts loaded successfully')
     
     const page = pdfDoc.addPage([595, 842]) // A4 size
     const font = await pdfDoc.embedFont(fontRegularBytes)
