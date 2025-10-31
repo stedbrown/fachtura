@@ -5,6 +5,8 @@ import { format } from 'date-fns'
 import { it, de, fr, enUS } from 'date-fns/locale'
 import { getPDFTranslations } from '@/lib/pdf-translations'
 
+// Note: Quotes don't have QR Bill, only regular content
+
 const localeMap: Record<string, any> = {
   it: it,
   de: de,
