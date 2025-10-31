@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib'
-import { SwissQRBill } from 'swissqrbill/svg'
-import sharp from 'sharp'
+import { SwissQRCode } from 'swissqrbill'
+import QRCode from 'qrcode'
 import { format } from 'date-fns'
 import { it, de, fr, enUS } from 'date-fns/locale'
 import { getPDFTranslations } from '@/lib/pdf-translations'
@@ -450,56 +450,138 @@ export async function GET(
     }
     const qrLanguage = qrLanguageMap[locale] || 'IT'
 
-    // Swiss QR Bill on separate page (standard approach)
-    // This avoids all font rendering issues with Sharp/SVG conversion
-    // The QR Bill will be on page 2 of the PDF
+    // Swiss QR Bill - manual rendering with pdf-lib
+    // This is the ONLY reliable way to get text in PDFs on Vercel
+    // We draw everything manually using StandardFonts (Helvetica)
     
-    const qrBillPage = pdfDoc.addPage([595, 842]) // A4 page for QR Bill
+    const qrBillPage = pdfDoc.addPage([595, 842]) // A4 for QR Bill
+    const qrFont = await pdfDoc.embedFont(StandardFonts.Helvetica)
+    const qrFontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
     
-    console.log('Generating QR Bill as SVG...')
+    console.log('Drawing Swiss QR Bill manually with pdf-lib...')
     
-    // Generate Swiss QR Bill as SVG
-    const swissQRBill = new SwissQRBill(qrBillData, {
-      language: qrLanguage,
-      outlines: false,
-      scissors: true,  // Show scissors on separate page
+    // Generate QR Code data string
+    const qrCodeData = SwissQRCode.from(qrBillData)
+    
+    // Generate QR Code as PNG using qrcode library
+    const qrCodePng = await QRCode.toBuffer(qrCodeData.toString(), {
+      type: 'png',
+      width: 600,
+      margin: 0,
+      errorCorrectionLevel: 'M'
     })
     
-    // Get SVG as string
-    let svgString = swissQRBill.toString()
+    const qrCodeImage = await pdfDoc.embedPng(qrCodePng)
     
-    console.log('QR Bill SVG generated, length:', svgString.length)
+    // Swiss QR Bill layout (bottom 105mm of A4 page)
+    const qrBillHeight = 297 // 105mm in points
+    const qrBillTop = qrBillHeight
     
-    // Replace fonts with Arial for Sharp compatibility
-    svgString = svgString.replace(/font-family="[^"]*"/g, 'font-family="Arial, Helvetica, sans-serif"')
-    svgString = svgString.replace(/font-family='[^']*'/g, "font-family='Arial, Helvetica, sans-serif'")
-    
-    console.log('Converting QR Bill SVG to PNG...')
-    
-    // Convert entire A4 page with QR Bill to PNG
-    // Swiss QR Bill is at bottom of A4 page (210mm x 297mm)
-    // At 300 DPI: 2480px x 3508px
-    const qrBillPngBuffer = await sharp(Buffer.from(svgString), {
-      density: 300
-    })
-      .resize(2480, 3508)  // Full A4 at 300 DPI
-      .png()
-      .toBuffer()
-    
-    console.log('QR Bill PNG generated, size:', qrBillPngBuffer.length)
-
-    // Embed the QR Bill image (full A4 page)
-    const qrBillImage = await pdfDoc.embedPng(qrBillPngBuffer)
-
-    // Draw the QR Bill image on the separate page
-    qrBillPage.drawImage(qrBillImage, {
-      x: 0,
-      y: 0,
-      width: 595,
-      height: 842,
+    // Draw scissors line
+    qrBillPage.drawLine({
+      start: { x: 0, y: qrBillTop },
+      end: { x: 595, y: qrBillTop },
+      thickness: 0.5,
+      dashArray: [4, 2],
+      color: rgb(0, 0, 0),
     })
     
-    console.log('QR Bill page added to PDF')
+    // LEFT SECTION - Receipt (62mm wide)
+    const receiptX = 5
+    let receiptY = qrBillTop - 10
+    
+    qrBillPage.drawText('Receipt', { x: receiptX, y: receiptY, size: 11, font: qrFontBold })
+    receiptY -= 20
+    
+    // Account / Payable to
+    qrBillPage.drawText('Account / Payable to', { x: receiptX, y: receiptY, size: 6, font: qrFontBold })
+    receiptY -= 10
+    qrBillPage.drawText(company.iban || '', { x: receiptX, y: receiptY, size: 8, font: qrFont })
+    receiptY -= 10
+    qrBillPage.drawText(company.company_name, { x: receiptX, y: receiptY, size: 8, font: qrFont })
+    receiptY -= 10
+    qrBillPage.drawText(`${company.address || ''}`, { x: receiptX, y: receiptY, size: 8, font: qrFont })
+    receiptY -= 10
+    qrBillPage.drawText(`${company.postal_code || ''} ${company.city || ''}`, { x: receiptX, y: receiptY, size: 8, font: qrFont })
+    receiptY -= 20
+    
+    // Payable by
+    qrBillPage.drawText('Payable by', { x: receiptX, y: receiptY, size: 6, font: qrFontBold })
+    receiptY -= 10
+    qrBillPage.drawText(invoice.client.name, { x: receiptX, y: receiptY, size: 8, font: qrFont })
+    receiptY -= 10
+    qrBillPage.drawText(`${invoice.client.address || ''}`, { x: receiptX, y: receiptY, size: 8, font: qrFont })
+    receiptY -= 10
+    qrBillPage.drawText(`${invoice.client.postal_code || ''} ${invoice.client.city || ''}`, { x: receiptX, y: receiptY, size: 8, font: qrFont })
+    receiptY -= 20
+    
+    // Currency & Amount
+    qrBillPage.drawText('Currency  Amount', { x: receiptX, y: receiptY, size: 6, font: qrFontBold })
+    receiptY -= 10
+    qrBillPage.drawText(`CHF       ${invoice.total.toFixed(2)}`, { x: receiptX, y: receiptY, size: 8, font: qrFont })
+    
+    // Vertical separator line
+    qrBillPage.drawLine({
+      start: { x: 175, y: 0 },
+      end: { x: 175, y: qrBillTop },
+      thickness: 0.5,
+      dashArray: [4, 2],
+      color: rgb(0, 0, 0),
+    })
+    
+    // RIGHT SECTION - Payment Part
+    const paymentX = 185
+    let paymentY = qrBillTop - 10
+    
+    qrBillPage.drawText('Payment part', { x: paymentX, y: paymentY, size: 11, font: qrFontBold })
+    paymentY -= 30
+    
+    // Draw QR Code (center in payment section)
+    const qrSize = 170
+    qrBillPage.drawImage(qrCodeImage, {
+      x: paymentX + 10,
+      y: paymentY - qrSize - 10,
+      width: qrSize,
+      height: qrSize,
+    })
+    
+    // Right column - Account / Payable to
+    const rightColX = paymentX + qrSize + 30
+    let rightY = paymentY
+    
+    qrBillPage.drawText('Account / Payable to', { x: rightColX, y: rightY, size: 6, font: qrFontBold })
+    rightY -= 10
+    qrBillPage.drawText(company.iban || '', { x: rightColX, y: rightY, size: 10, font: qrFont })
+    rightY -= 12
+    qrBillPage.drawText(company.company_name, { x: rightColX, y: rightY, size: 10, font: qrFont })
+    rightY -= 12
+    qrBillPage.drawText(`${company.address || ''}`, { x: rightColX, y: rightY, size: 10, font: qrFont })
+    rightY -= 12
+    qrBillPage.drawText(`${company.postal_code || ''} ${company.city || ''}`, { x: rightColX, y: rightY, size: 10, font: qrFont })
+    rightY -= 25
+    
+    // Reference
+    qrBillPage.drawText('Reference', { x: rightColX, y: rightY, size: 6, font: qrFontBold })
+    rightY -= 10
+    qrBillPage.drawText(`${t.qrInvoiceMessage} ${invoice.invoice_number}`, { x: rightColX, y: rightY, size: 10, font: qrFont })
+    rightY -= 25
+    
+    // Payable by
+    qrBillPage.drawText('Payable by', { x: rightColX, y: rightY, size: 6, font: qrFontBold })
+    rightY -= 10
+    qrBillPage.drawText(invoice.client.name, { x: rightColX, y: rightY, size: 10, font: qrFont })
+    rightY -= 12
+    qrBillPage.drawText(`${invoice.client.address || ''}`, { x: rightColX, y: rightY, size: 10, font: qrFont })
+    rightY -= 12
+    qrBillPage.drawText(`${invoice.client.postal_code || ''} ${invoice.client.city || ''}`, { x: rightColX, y: rightY, size: 10, font: qrFont })
+    rightY -= 25
+    
+    // Currency & Amount (bottom right)
+    const bottomY = 50
+    qrBillPage.drawText('Currency  Amount', { x: rightColX, y: bottomY + 20, size: 6, font: qrFontBold })
+    qrBillPage.drawText(`CHF       ${invoice.total.toFixed(2)}`, { x: rightColX, y: bottomY, size: 10, font: qrFont })
+    
+    console.log('Swiss QR Bill drawn manually')
 
     const pdfBytes = await pdfDoc.save()
 
