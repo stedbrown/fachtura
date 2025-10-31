@@ -124,48 +124,32 @@ export async function GET(
     // Register fontkit to support custom fonts
     pdfDoc.registerFontkit(fontkit)
     
-    // Load TTF fonts from public folder via HTTP
-    // This works on Vercel because files in /public are served statically
-    const baseUrl = new URL(request.url).origin
-    const fontRegularUrl = `${baseUrl}/fonts/Roboto-Regular.ttf`
-    const fontBoldUrl = `${baseUrl}/fonts/Roboto-Bold.ttf`
+    // Load Roboto fonts directly from Google Fonts repository (TTF format)
+    const fontRegularUrl = 'https://github.com/google/fonts/raw/main/apache/roboto/static/Roboto-Regular.ttf'
+    const fontBoldUrl = 'https://github.com/google/fonts/raw/main/apache/roboto/static/Roboto-Bold.ttf'
     
-    console.log('Loading TTF fonts from:', fontRegularUrl, fontBoldUrl)
+    console.log('Loading Roboto TTF fonts from Google Fonts')
     
     const [fontRegularResponse, fontBoldResponse] = await Promise.all([
-      fetch(fontRegularUrl, { 
-        method: 'GET',
-        headers: {
-          'Accept': 'application/octet-stream',
-        }
-      }),
-      fetch(fontBoldUrl, {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/octet-stream',
-        }
-      })
+      fetch(fontRegularUrl),
+      fetch(fontBoldUrl)
     ])
     
     if (!fontRegularResponse.ok || !fontBoldResponse.ok) {
-      console.error('Font loading failed:', {
-        regular: { status: fontRegularResponse.status, url: fontRegularUrl },
-        bold: { status: fontBoldResponse.status, url: fontBoldUrl }
-      })
-      throw new Error(`Failed to load fonts: Regular ${fontRegularResponse.status}, Bold ${fontBoldResponse.status}`)
+      console.error('Font loading failed:', fontRegularResponse.status, fontBoldResponse.status)
+      throw new Error(`Font fetch failed: Regular ${fontRegularResponse.status}, Bold ${fontBoldResponse.status}`)
     }
     
     const fontRegularBytes = new Uint8Array(await fontRegularResponse.arrayBuffer())
     const fontBoldBytes = new Uint8Array(await fontBoldResponse.arrayBuffer())
     
-    console.log('TTF Fonts loaded successfully, sizes:', {
-      regular: fontRegularBytes.length,
-      bold: fontBoldBytes.length
-    })
+    console.log('Fonts loaded successfully, sizes:', fontRegularBytes.length, fontBoldBytes.length)
     
     const page = pdfDoc.addPage([595, 842]) // A4
     const font = await pdfDoc.embedFont(fontRegularBytes)
     const fontBold = await pdfDoc.embedFont(fontBoldBytes)
+    
+    console.log('Fonts embedded in PDF')
 
     // Swiss QR Bill height is 297pt, so we have 545pt available for invoice content
     const qrBillHeight = 297
