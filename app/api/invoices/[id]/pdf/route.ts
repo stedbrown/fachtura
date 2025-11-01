@@ -2,10 +2,19 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib'
 import { SwissQRBill } from 'swissqrbill/svg'
-import { Resvg } from '@resvg/resvg-js'
+import { initWasm, Resvg } from '@resvg/resvg-wasm'
 import { format } from 'date-fns'
 import { it, de, fr, enUS } from 'date-fns/locale'
 import { getPDFTranslations } from '@/lib/pdf-translations'
+
+// Initialize WASM once
+let wasmInitialized = false
+async function ensureWasmInitialized() {
+  if (!wasmInitialized) {
+    await initWasm(fetch('https://unpkg.com/@resvg/resvg-wasm/index_bg.wasm'))
+    wasmInitialized = true
+  }
+}
 
 const localeMap: Record<string, any> = {
   it: it,
@@ -406,7 +415,10 @@ export async function GET(
         console.error('❌ Nome Azienda mancante! QR Bill richiede il nome dell\'azienda.')
         console.error('Vai in Impostazioni → Dati Azienda e inserisci il Nome Azienda')
       } else {
-        console.log('✅ IBAN presente, generazione QR Bill UFFICIALE con swissqrbill + resvg...')
+        console.log('✅ IBAN presente, generazione QR Bill UFFICIALE con swissqrbill + resvg-wasm...')
+        
+        // Initialize WASM
+        await ensureWasmInitialized()
         
         // Build QR Bill data for swissqrbill library
         const qrBillData: any = {
@@ -442,7 +454,7 @@ export async function GET(
         const svgString = qrBill.toString()
         console.log('SVG generated, length:', svgString.length)
         
-        // Convert SVG to PNG using resvg (supports all fonts!)
+        // Convert SVG to PNG using resvg-wasm (100% serverless compatible!)
         const resvg = new Resvg(svgString, {
           fitTo: {
             mode: 'width',
@@ -453,7 +465,7 @@ export async function GET(
         const pngData = resvg.render()
         const qrBillPng = pngData.asPng()
         
-        console.log('SVG converted to PNG with resvg, size:', qrBillPng.length)
+        console.log('SVG converted to PNG with resvg-wasm, size:', qrBillPng.length)
         
         // Embed PNG in PDF
         const qrBillImage = await pdfDoc.embedPng(qrBillPng)
@@ -472,7 +484,7 @@ export async function GET(
           height: qrBillHeight
         })
         
-        console.log('=== ✅ Swiss QR Bill UFFICIALE added with swissqrbill + resvg! ===')
+        console.log('=== ✅ Swiss QR Bill UFFICIALE added with swissqrbill + resvg-wasm! ===')
       }
     } catch (error) {
       console.error('=== ❌ ERROR creating Swiss QR Bill ===')
