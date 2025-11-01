@@ -349,8 +349,7 @@ export async function GET(
 
     try {
       const swissQRBill = new SwissQRBill(qrBillData, {
-        language: locale === 'de' ? 'DE' : locale === 'fr' ? 'FR' : locale === 'it' ? 'IT' : 'EN',
-        size: 'A4'
+        language: locale === 'de' ? 'DE' : locale === 'fr' ? 'FR' : locale === 'it' ? 'IT' : 'EN'
       })
 
       swissQRBill.attachTo(pdf)
