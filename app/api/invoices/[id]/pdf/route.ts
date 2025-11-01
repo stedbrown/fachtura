@@ -5,7 +5,7 @@ import { SwissQRBill } from 'swissqrbill/pdf'
 import { format } from 'date-fns'
 import { it, de, fr, enUS } from 'date-fns/locale'
 import { getPDFTranslations } from '@/lib/pdf-translations'
-import { Readable } from 'stream'
+import { Writable } from 'stream'
 
 const localeMap: Record<string, any> = {
   it: it,
@@ -433,30 +433,33 @@ export async function GET(
         console.log('Creating Swiss QR Bill with official library...')
         
         // Generate QR Bill as PDF using official library
-        // SwissQRBill returns a PDFKit document
-        const qrBillPDFKit = new SwissQRBill(qrBillData, {
+        const qrBillPDF = new SwissQRBill(qrBillData, {
           language: locale === 'de' ? 'DE' : locale === 'fr' ? 'FR' : locale === 'it' ? 'IT' : 'EN',
           scissors: true
         })
         
-        // Create a buffer to collect PDF stream from PDFKit
+        // Create a writable stream to collect PDF buffer
         const chunks: Buffer[] = []
         
-        // Collect chunks from PDFKit document and wait for completion
+        // Collect chunks using pipe to writable stream
         const qrBillPdfBuffer = await new Promise<Buffer>((resolve, reject) => {
-          qrBillPDFKit.on('data', (chunk: Buffer) => {
-            chunks.push(chunk)
+          const writableStream = new Writable({
+            write(chunk: Buffer, encoding, callback) {
+              chunks.push(chunk)
+              callback()
+            }
           })
           
-          qrBillPDFKit.on('end', () => {
+          writableStream.on('finish', () => {
             resolve(Buffer.concat(chunks))
           })
           
-          qrBillPDFKit.on('error', reject)
+          writableStream.on('error', reject)
           
-          // Finalize PDFKit document to trigger stream
-          qrBillPDFKit.end()
+          // Pipe QR Bill to writable stream
+          qrBillPDF.pipe(writableStream)
         })
+        
         console.log('QR Bill PDF generated, size:', qrBillPdfBuffer.length)
         
         // Load QR Bill PDF with pdf-lib
