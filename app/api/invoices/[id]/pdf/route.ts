@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib'
 import { SwissQRBill } from 'swissqrbill/svg'
-import { svg2pdf } from 'svg2pdf.js'
+import sharp from 'sharp'
 import { format } from 'date-fns'
 import { it, de, fr, enUS } from 'date-fns/locale'
 import { getPDFTranslations } from '@/lib/pdf-translations'
@@ -430,7 +430,7 @@ export async function GET(
           message: `${t.invoice} ${invoice.invoice_number}`
         }
         
-        console.log('Creating Swiss QR Bill with SVG + svg2pdf...')
+        console.log('Creating Swiss QR Bill with SVG + Sharp (font replacement trick)...')
         
         // Create SwissQRBill SVG instance
         const qrBill = new SwissQRBill(qrBillData, {
@@ -439,31 +439,43 @@ export async function GET(
         })
         
         // Get SVG as string
-        const svgString = qrBill.toString()
+        let svgString = qrBill.toString()
         console.log('SVG generated, length:', svgString.length)
+        
+        // FONT REPLACEMENT TRICK: Replace all Liberation Sans with Arial
+        // Sharp can render Arial/Helvetica but not Liberation Sans
+        svgString = svgString
+          .replace(/Liberation Sans/g, 'Arial, Helvetica, sans-serif')
+          .replace(/font-family="[^"]*"/g, 'font-family="Arial, Helvetica, sans-serif"')
+        
+        console.log('Fonts replaced in SVG')
+        
+        // Convert SVG to PNG using Sharp (with font replacement, it should work now)
+        const qrBillPng = await sharp(Buffer.from(svgString))
+          .resize(2100, 991) // Swiss QR Bill size (210mm x 105mm at 10 DPI)
+          .png()
+          .toBuffer()
+        
+        console.log('SVG converted to PNG, size:', qrBillPng.length)
+        
+        // Embed PNG in PDF
+        const qrBillImage = await pdfDoc.embedPng(qrBillPng)
         
         // Create a new page for QR Bill
         const qrPage = pdfDoc.addPage([595, 842]) // A4
         
-        // Convert SVG to PDF using svg2pdf.js
-        // svg2pdf works with pdf-lib pages directly
-        const { JSDOM } = await import('jsdom')
-        const dom = new JSDOM(svgString)
-        const svgElement = dom.window.document.querySelector('svg')
+        // Draw QR Bill at bottom of page (105mm = 297 points)
+        const qrBillHeight = 297
+        const qrBillWidth = 595
         
-        if (svgElement) {
-          // svg2pdf.js renders SVG directly into pdf-lib
-          await svg2pdf(svgElement, qrPage, {
-            x: 0,
-            y: 842 - 297, // Position at bottom (105mm = 297 points from bottom)
-            width: 595,
-            height: 297
-          })
-          
-          console.log('=== ✅ Swiss QR Bill added with SVG + svg2pdf! ===')
-        } else {
-          console.error('❌ Could not parse SVG element')
-        }
+        qrPage.drawImage(qrBillImage, {
+          x: 0,
+          y: 0,
+          width: qrBillWidth,
+          height: qrBillHeight,
+        })
+        
+        console.log('=== ✅ Swiss QR Bill added with Sharp + font replacement! ===')
       }
     } catch (error) {
       console.error('=== ❌ ERROR creating Swiss QR Bill ===')
