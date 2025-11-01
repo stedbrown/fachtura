@@ -158,7 +158,7 @@ export async function GET(
     }
 
     // Company info
-    page.drawText(company.name || '', { x: 50, y: yPosition, size: 11, font: fontBold, color: rgb(0, 0, 0) })
+    page.drawText(company.company_name || '', { x: 50, y: yPosition, size: 11, font: fontBold, color: rgb(0, 0, 0) })
     yPosition -= 15
     
     if (company.address) {
@@ -166,7 +166,7 @@ export async function GET(
       yPosition -= 12
     }
     
-    const cityLine = [company.zip, company.city].filter(Boolean).join(' ')
+    const cityLine = [company.postal_code, company.city].filter(Boolean).join(' ')
     if (cityLine) {
       page.drawText(cityLine, { x: 50, y: yPosition, size: 9, font, color: rgb(0, 0, 0) })
       yPosition -= 12
@@ -331,15 +331,15 @@ export async function GET(
     try {
       // Build QR Bill data
       const creditorData: any = {
-        name: company.name || '',
+        name: company.company_name || '',
         address: company.address || '',
         city: company.city || '',
         account: company.iban || '',
         country: getCountryCode(company.country)
       }
       
-      if (company.zip) {
-        creditorData.zip = typeof company.zip === 'number' ? company.zip : parseInt(String(company.zip))
+      if (company.postal_code) {
+        creditorData.zip = typeof company.postal_code === 'number' ? company.postal_code : parseInt(String(company.postal_code))
       }
 
       const debtorData: any = {
@@ -374,10 +374,10 @@ export async function GET(
       if (!company.iban || company.iban.trim() === '') {
         console.error('❌ IBAN mancante! QR Bill non può essere generato senza IBAN.')
         console.error('Vai in Impostazioni → Informazioni Pagamento e inserisci l\'IBAN')
-      } else if (!company.zip || company.zip.toString().trim() === '') {
+      } else if (!company.postal_code || company.postal_code.toString().trim() === '') {
         console.error('❌ CAP mancante! QR Bill richiede il CAP dell\'azienda.')
         console.error('Vai in Impostazioni → Dati Azienda e inserisci il CAP')
-      } else if (!company.name || company.name.trim() === '') {
+      } else if (!company.company_name || company.company_name.trim() === '') {
         console.error('❌ Nome Azienda mancante! QR Bill richiede il nome dell\'azienda.')
         console.error('Vai in Impostazioni → Dati Azienda e inserisci il Nome Azienda')
       } else {
