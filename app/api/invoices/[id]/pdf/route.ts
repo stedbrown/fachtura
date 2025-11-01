@@ -374,6 +374,12 @@ export async function GET(
       if (!company.iban || company.iban.trim() === '') {
         console.error('❌ IBAN mancante! QR Bill non può essere generato senza IBAN.')
         console.error('Vai in Impostazioni → Informazioni Pagamento e inserisci l\'IBAN')
+      } else if (!company.zip || company.zip.toString().trim() === '') {
+        console.error('❌ CAP mancante! QR Bill richiede il CAP dell\'azienda.')
+        console.error('Vai in Impostazioni → Dati Azienda e inserisci il CAP')
+      } else if (!company.name || company.name.trim() === '') {
+        console.error('❌ Nome Azienda mancante! QR Bill richiede il nome dell\'azienda.')
+        console.error('Vai in Impostazioni → Dati Azienda e inserisci il Nome Azienda')
       } else {
         console.log('✅ IBAN presente, generazione QR Bill...')
         
