@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib'
 import { SwissQRBill } from 'swissqrbill/pdf'
+import PDFKitDocument from 'pdfkit'
 import { format } from 'date-fns'
 import { it, de, fr, enUS } from 'date-fns/locale'
 import { getPDFTranslations } from '@/lib/pdf-translations'
-import { Writable } from 'stream'
 
 const localeMap: Record<string, any> = {
   it: it,
@@ -432,32 +432,38 @@ export async function GET(
         
         console.log('Creating Swiss QR Bill with official library...')
         
-        // Generate QR Bill as PDF using official library
-        const qrBillPDF = new SwissQRBill(qrBillData, {
+        // Create SwissQRBill instance
+        const qrBill = new SwissQRBill(qrBillData, {
           language: locale === 'de' ? 'DE' : locale === 'fr' ? 'FR' : locale === 'it' ? 'IT' : 'EN',
           scissors: true
         })
         
-        // Create a writable stream to collect PDF buffer
+        // Create a new PDFKit document for QR Bill
+        const pdfKitDoc = new PDFKitDocument({
+          autoFirstPage: false,
+          size: 'A4',
+          bufferPages: true
+        })
+        
+        // Attach QR Bill to PDFKit document
+        qrBill.attachTo(pdfKitDoc)
+        
+        // Collect PDFKit output into buffer
         const chunks: Buffer[] = []
         
-        // Collect chunks using pipe to writable stream
         const qrBillPdfBuffer = await new Promise<Buffer>((resolve, reject) => {
-          const writableStream = new Writable({
-            write(chunk: Buffer, encoding, callback) {
-              chunks.push(chunk)
-              callback()
-            }
+          pdfKitDoc.on('data', (chunk: Buffer) => {
+            chunks.push(chunk)
           })
           
-          writableStream.on('finish', () => {
+          pdfKitDoc.on('end', () => {
             resolve(Buffer.concat(chunks))
           })
           
-          writableStream.on('error', reject)
+          pdfKitDoc.on('error', reject)
           
-          // Pipe QR Bill to writable stream
-          qrBillPDF.pipe(writableStream)
+          // Finalize PDFKit document
+          pdfKitDoc.end()
         })
         
         console.log('QR Bill PDF generated, size:', qrBillPdfBuffer.length)
