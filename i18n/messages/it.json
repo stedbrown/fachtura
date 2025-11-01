@@ -119,7 +119,20 @@
     "alreadyHaveAccount": "Hai già un account?",
     "dontHaveAccount": "Non hai un account?",
     "loginHere": "Accedi qui",
-    "registerHere": "Registrati qui"
+    "registerHere": "Registrati qui",
+    "registrationSuccess": "Registrazione completata!",
+    "checkYourEmail": "Controlla la tua email",
+    "emailVerificationMessage": "Ti abbiamo inviato un'email di conferma a {email}. Clicca sul link nell'email per attivare il tuo account.",
+    "emailVerificationMessageShort": "Abbiamo inviato un'email di verifica. Controlla la tua casella di posta e clicca sul link di conferma.",
+    "resendEmail": "Invia di nuovo l'email",
+    "emailResent": "Email inviata nuovamente!",
+    "backToLogin": "Torna al login",
+    "invalidCredentials": "Email o password non corretti",
+    "emailNotConfirmed": "Email non confermata. Controlla la tua casella di posta.",
+    "userAlreadyExists": "Un utente con questa email esiste già",
+    "weakPassword": "La password deve contenere almeno 6 caratteri",
+    "accountCreated": "Account creato con successo",
+    "loginSuccess": "Accesso effettuato con successo"
   },
   "navigation": {
     "dashboard": "Dashboard",

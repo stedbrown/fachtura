@@ -119,7 +119,20 @@
     "alreadyHaveAccount": "Already have an account?",
     "dontHaveAccount": "Don't have an account?",
     "loginHere": "Login here",
-    "registerHere": "Register here"
+    "registerHere": "Register here",
+    "registrationSuccess": "Registration completed!",
+    "checkYourEmail": "Check your email",
+    "emailVerificationMessage": "We sent a confirmation email to {email}. Click the link in the email to activate your account.",
+    "emailVerificationMessageShort": "We sent a verification email. Check your inbox and click the confirmation link.",
+    "resendEmail": "Resend email",
+    "emailResent": "Email sent again!",
+    "backToLogin": "Back to login",
+    "invalidCredentials": "Invalid email or password",
+    "emailNotConfirmed": "Email not confirmed. Check your inbox.",
+    "userAlreadyExists": "A user with this email already exists",
+    "weakPassword": "Password must contain at least 6 characters",
+    "accountCreated": "Account created successfully",
+    "loginSuccess": "Login successful"
   },
   "navigation": {
     "dashboard": "Dashboard",

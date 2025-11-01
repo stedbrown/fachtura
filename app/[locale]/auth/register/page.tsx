@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { useTranslations } from 'next-intl'
+import { CheckCircle2, Mail, AlertCircle, Loader2 } from 'lucide-react'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -22,7 +23,10 @@ export default function RegisterPage() {
   const tErrors = useTranslations('errors')
   
   const [error, setError] = useState<string>('')
+  const [success, setSuccess] = useState(false)
+  const [registeredEmail, setRegisteredEmail] = useState('')
   const [loading, setLoading] = useState(false)
+  const [resending, setResending] = useState(false)
 
   const {
     register,
@@ -32,9 +36,37 @@ export default function RegisterPage() {
     resolver: zodResolver(registerSchema),
   })
 
+  const handleResendEmail = async () => {
+    if (!registeredEmail) return
+    
+    setResending(true)
+    try {
+      const supabase = createClient()
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: registeredEmail,
+      })
+
+      if (error) {
+        setError(error.message)
+      } else {
+        setError('')
+        // Show temporary success message (you could use a toast here)
+        const tempMsg = error
+        setError(t('emailResent'))
+        setTimeout(() => setError(''), 3000)
+      }
+    } catch (err) {
+      console.error('Resend error:', err)
+    } finally {
+      setResending(false)
+    }
+  }
+
   const onSubmit = async (data: RegisterInput) => {
     setLoading(true)
     setError('')
+    setSuccess(false)
 
     try {
       const supabase = createClient()
@@ -47,11 +79,19 @@ export default function RegisterPage() {
           data: {
             company_name: data.companyName,
           },
+          emailRedirectTo: `${window.location.origin}/${locale}/dashboard`,
         },
       })
 
       if (authError) {
-        setError(authError.message)
+        // Handle common errors with user-friendly messages
+        if (authError.message.includes('already registered')) {
+          setError(t('userAlreadyExists'))
+        } else if (authError.message.includes('password')) {
+          setError(t('weakPassword'))
+        } else {
+          setError(authError.message)
+        }
         return
       }
 
@@ -60,34 +100,33 @@ export default function RegisterPage() {
         return
       }
 
-      // Sign in to establish session
-      const { error: signInError } = await supabase.auth.signInWithPassword({
-        email: data.email,
-        password: data.password,
-      })
-
-      if (signInError) {
-        setError('Registrazione completata ma errore nel login: ' + signInError.message)
+      // Check if email confirmation is required
+      if (authData.user && !authData.session) {
+        // Email confirmation required - show success message
+        setRegisteredEmail(data.email)
+        setSuccess(true)
         return
       }
 
-      // Now create company settings with authenticated session
-      const { error: companyError } = await supabase
-        .from('company_settings')
-        .insert({
-          user_id: authData.user.id,
-          company_name: data.companyName,
-          country: 'Switzerland',
-        })
+      // If we have a session (email confirmation disabled), create company and redirect
+      if (authData.session) {
+        const { error: companyError } = await supabase
+          .from('company_settings')
+          .insert({
+            user_id: authData.user.id,
+            company_name: data.companyName,
+            country: 'Switzerland',
+          })
 
-      if (companyError) {
-        console.error('Error creating company settings:', companyError)
-        setError('Errore nella creazione delle impostazioni azienda: ' + companyError.message)
-        return
+        if (companyError) {
+          console.error('Error creating company settings:', companyError)
+          setError(tErrors('generic'))
+          return
+        }
+
+        router.push(`/${locale}/dashboard`)
+        router.refresh()
       }
-
-      router.push(`/${locale}/dashboard`)
-      router.refresh()
     } catch (err) {
       console.error('Registration error:', err)
       setError(tErrors('generic'))
@@ -96,6 +135,73 @@ export default function RegisterPage() {
     }
   }
 
+  // Success state - email verification required
+  if (success) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="space-y-1 text-center">
+            <div className="flex justify-center mb-4">
+              <div className="rounded-full bg-green-100 dark:bg-green-900/20 p-3">
+                <CheckCircle2 className="h-12 w-12 text-green-600 dark:text-green-400" />
+              </div>
+            </div>
+            <CardTitle className="text-2xl font-bold text-green-600 dark:text-green-400">
+              {t('registrationSuccess')}
+            </CardTitle>
+            <CardDescription className="text-base">
+              {t('checkYourEmail')}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+              <div className="flex items-start space-x-3">
+                <Mail className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
+                <div className="flex-1">
+                  <p className="text-sm text-blue-800 dark:text-blue-200 font-medium mb-1">
+                    {registeredEmail}
+                  </p>
+                  <p className="text-sm text-blue-700 dark:text-blue-300">
+                    {t('emailVerificationMessageShort')}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {error && (
+              <div className="bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 p-3 rounded-md text-sm text-center">
+                {error}
+              </div>
+            )}
+          </CardContent>
+          <CardFooter className="flex flex-col space-y-3">
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={handleResendEmail}
+              disabled={resending}
+            >
+              {resending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {tCommon('loading')}
+                </>
+              ) : (
+                t('resendEmail')
+              )}
+            </Button>
+            <Link href={`/${locale}/auth/login`} className="w-full">
+              <Button variant="ghost" className="w-full">
+                {t('backToLogin')}
+              </Button>
+            </Link>
+          </CardFooter>
+        </Card>
+      </div>
+    )
+  }
+
+  // Registration form
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
       <Card className="w-full max-w-md">
@@ -108,8 +214,13 @@ export default function RegisterPage() {
         <form onSubmit={handleSubmit(onSubmit)}>
           <CardContent className="space-y-4">
             {error && (
-              <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-3 rounded-md text-sm">
-                {error}
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
+                <div className="flex items-start space-x-2">
+                  <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-red-600 dark:text-red-400 flex-1">
+                    {error}
+                  </p>
+                </div>
               </div>
             )}
             <div className="space-y-2">
@@ -117,11 +228,15 @@ export default function RegisterPage() {
               <Input
                 id="companyName"
                 type="text"
-                placeholder="La mia azienda"
+                placeholder="Acme Inc."
                 {...register('companyName')}
+                disabled={loading}
               />
               {errors.companyName && (
-                <p className="text-sm text-red-600 dark:text-red-400">{errors.companyName.message}</p>
+                <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  {errors.companyName.message}
+                </p>
               )}
             </div>
             <div className="space-y-2">
@@ -131,9 +246,13 @@ export default function RegisterPage() {
                 type="email"
                 placeholder="nome@esempio.com"
                 {...register('email')}
+                disabled={loading}
               />
               {errors.email && (
-                <p className="text-sm text-red-600 dark:text-red-400">{errors.email.message}</p>
+                <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  {errors.email.message}
+                </p>
               )}
             </div>
             <div className="space-y-2">
@@ -141,10 +260,15 @@ export default function RegisterPage() {
               <Input
                 id="password"
                 type="password"
+                placeholder="••••••••"
                 {...register('password')}
+                disabled={loading}
               />
               {errors.password && (
-                <p className="text-sm text-red-600 dark:text-red-400">{errors.password.message}</p>
+                <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  {errors.password.message}
+                </p>
               )}
             </div>
             <div className="space-y-2">
@@ -152,20 +276,32 @@ export default function RegisterPage() {
               <Input
                 id="confirmPassword"
                 type="password"
+                placeholder="••••••••"
                 {...register('confirmPassword')}
+                disabled={loading}
               />
               {errors.confirmPassword && (
-                <p className="text-sm text-red-600 dark:text-red-400">{errors.confirmPassword.message}</p>
+                <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" />
+                  {errors.confirmPassword.message}
+                </p>
               )}
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? tCommon('loading') : t('register')}
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {tCommon('loading')}
+                </>
+              ) : (
+                t('register')
+              )}
             </Button>
             <p className="text-sm text-center text-gray-600 dark:text-gray-400">
               {t('alreadyHaveAccount')}{' '}
-              <Link href={`/${locale}/auth/login`} className="text-primary hover:underline">
+              <Link href={`/${locale}/auth/login`} className="text-primary hover:underline font-medium">
                 {t('loginHere')}
               </Link>
             </p>
@@ -175,4 +311,3 @@ export default function RegisterPage() {
     </div>
   )
 }
-

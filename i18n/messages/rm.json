@@ -119,7 +119,20 @@
     "alreadyHaveAccount": "Avais gia in conto?",
     "dontHaveAccount": "N'avais anc nagin conto?",
     "loginHere": "S'annunziar qua",
-    "registerHere": "S'inscriver qua"
+    "registerHere": "S'inscriver qua",
+    "registrationSuccess": "Registraziun cumplettada!",
+    "checkYourEmail": "Controllai voss e-mail",
+    "emailVerificationMessage": "Nus avain tramess in e-mail da conferm a {email}. Clicai sin il link en l'e-mail per activar voss conto.",
+    "emailVerificationMessageShort": "Nus avain tramess in e-mail da verificaziun. Controllai vossa posta entrada e clicai sin il link da conferm.",
+    "resendEmail": "Trametter puspè l'e-mail",
+    "emailResent": "E-mail tramess puspè!",
+    "backToLogin": "Turnar al login",
+    "invalidCredentials": "E-mail u pled-clav nunvalids",
+    "emailNotConfirmed": "E-mail betg confermà. Controllai vossa posta entrada.",
+    "userAlreadyExists": "In utilisader cun quest e-mail exista gia",
+    "weakPassword": "Il pled-clav sto cuntegnair almain 6 caracters",
+    "accountCreated": "Conto creà cun success",
+    "loginSuccess": "Annunzia cun success"
   },
   "navigation": {
     "dashboard": "Survista",

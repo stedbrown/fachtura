@@ -119,7 +119,20 @@
     "alreadyHaveAccount": "Haben Sie bereits ein Konto?",
     "dontHaveAccount": "Sie haben noch kein Konto?",
     "loginHere": "Hier anmelden",
-    "registerHere": "Hier registrieren"
+    "registerHere": "Hier registrieren",
+    "registrationSuccess": "Registrierung abgeschlossen!",
+    "checkYourEmail": "Überprüfen Sie Ihre E-Mail",
+    "emailVerificationMessage": "Wir haben eine Bestätigungs-E-Mail an {email} gesendet. Klicken Sie auf den Link in der E-Mail, um Ihr Konto zu aktivieren.",
+    "emailVerificationMessageShort": "Wir haben eine Bestätigungs-E-Mail gesendet. Überprüfen Sie Ihren Posteingang und klicken Sie auf den Bestätigungslink.",
+    "resendEmail": "E-Mail erneut senden",
+    "emailResent": "E-Mail erneut gesendet!",
+    "backToLogin": "Zurück zum Login",
+    "invalidCredentials": "Ungültige E-Mail oder Passwort",
+    "emailNotConfirmed": "E-Mail nicht bestätigt. Überprüfen Sie Ihren Posteingang.",
+    "userAlreadyExists": "Ein Benutzer mit dieser E-Mail existiert bereits",
+    "weakPassword": "Das Passwort muss mindestens 6 Zeichen enthalten",
+    "accountCreated": "Konto erfolgreich erstellt",
+    "loginSuccess": "Anmeldung erfolgreich"
   },
   "navigation": {
     "dashboard": "Dashboard",
