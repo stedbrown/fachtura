@@ -308,26 +308,43 @@ export async function GET(
     // Swiss QR Bill - Using official library
     console.log('Adding Swiss QR Bill with official library...')
 
-    const qrBillData = {
+    // Build QR Bill data with conditional fields
+    const creditorData: any = {
+      name: company.name || '',
+      address: company.address || '',
+      city: company.city || '',
+      account: company.iban || '',
+      country: getCountryCode(company.country)
+    }
+    
+    if (company.zip) {
+      creditorData.zip = typeof company.zip === 'number' ? company.zip : parseInt(String(company.zip))
+    }
+
+    const debtorData: any = {
+      name: invoice.customer_name || '',
+      address: invoice.customer_address || '',
+      city: invoice.customer_city || '',
+      country: getCountryCode(invoice.customer_country)
+    }
+    
+    if (invoice.customer_zip) {
+      debtorData.zip = typeof invoice.customer_zip === 'number' ? invoice.customer_zip : parseInt(String(invoice.customer_zip))
+    }
+
+    const qrBillData: any = {
       currency: invoice.currency || 'CHF',
       amount: invoice.total,
-      reference: invoice.invoice_number ? invoice.invoice_number.replace(/[^0-9]/g, '').padStart(27, '0') : undefined,
-      creditor: {
-        name: company.name || '',
-        address: company.address || '',
-        zip: company.zip ? parseInt(String(company.zip)) : undefined,
-        city: company.city || '',
-        account: company.iban || '',
-        country: getCountryCode(company.country)
-      },
-      debtor: {
-        name: invoice.customer_name || '',
-        address: invoice.customer_address || '',
-        zip: invoice.customer_zip ? parseInt(String(invoice.customer_zip)) : undefined,
-        city: invoice.customer_city || '',
-        country: getCountryCode(invoice.customer_country)
-      },
+      creditor: creditorData,
+      debtor: debtorData,
       message: `${t.invoice} ${invoice.invoice_number}`
+    }
+
+    if (invoice.invoice_number) {
+      const reference = invoice.invoice_number.replace(/[^0-9]/g, '').padStart(27, '0')
+      if (reference) {
+        qrBillData.reference = reference
+      }
     }
 
     try {
