@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import PDFDocument from 'pdfkit'
+import { PDFDocument, StandardFonts, rgb } from 'pdf-lib'
 import { format } from 'date-fns'
 import { it, de, fr, enUS } from 'date-fns/locale'
 import { getPDFTranslations } from '@/lib/pdf-translations'
@@ -17,11 +17,10 @@ const localeMap: Record<string, any> = {
 function cleanWebsiteForDisplay(website: string | null | undefined): string {
   if (!website) return ''
   
-  // Remove common prefixes for cleaner display
   let cleaned = website
     .replace(/^https?:\/\//i, '')
     .replace(/^www\./i, '')
-    .replace(/\/+$/, '') // Remove trailing slashes
+    .replace(/\/+$/, '')
   
   return cleaned
 }
@@ -71,121 +70,117 @@ export async function GET(
 
     console.log('Quote data loaded successfully')
 
-    // Create PDF with PDFKit
-    const pdf = new PDFDocument({ 
-      size: 'A4',
-      margin: 50,
-      bufferPages: true
-    })
+    // Create PDF with pdf-lib (works perfectly on serverless)
+    const pdfDoc = await PDFDocument.create()
+    const page = pdfDoc.addPage([595, 842]) // A4
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
+    const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
 
-    const chunks: Buffer[] = []
-    
-    pdf.on('data', (chunk: Buffer) => chunks.push(chunk))
-    
-    const pdfPromise = new Promise<Buffer>((resolve, reject) => {
-      pdf.on('end', () => resolve(Buffer.concat(chunks)))
-      pdf.on('error', reject)
-    })
+    let yPosition = 792 // Start from top
 
-    // Header with logo and company info
-    let yPosition = 50
-
+    // Logo (if exists)
     if (company.logo_url) {
       try {
         const logoResponse = await fetch(company.logo_url)
         const logoBuffer = await logoResponse.arrayBuffer()
-        pdf.image(Buffer.from(logoBuffer), 400, yPosition, { 
-          width: 150,
-          fit: [150, 100]
-        })
+        
+        let logoImage
+        const contentType = logoResponse.headers.get('content-type')
+        if (contentType?.includes('png')) {
+          logoImage = await pdfDoc.embedPng(logoBuffer)
+        } else if (contentType?.includes('jpeg') || contentType?.includes('jpg')) {
+          logoImage = await pdfDoc.embedJpg(logoBuffer)
+        }
+
+        if (logoImage) {
+          const logoDims = logoImage.scale(0.3)
+          page.drawImage(logoImage, {
+            x: 450,
+            y: yPosition - 60,
+            width: logoDims.width,
+            height: logoDims.height,
+          })
+        }
       } catch (error) {
         console.error('Error loading logo:', error)
       }
     }
 
-    // Company info (left side)
-    pdf.fontSize(10)
-    pdf.font('Helvetica-Bold').text(company.name || '', 50, yPosition)
-    yPosition += 15
+    // Company info
+    page.drawText(company.name || '', { x: 50, y: yPosition, size: 11, font: fontBold, color: rgb(0, 0, 0) })
+    yPosition -= 15
     
     if (company.address) {
-      pdf.font('Helvetica').text(company.address, 50, yPosition)
-      yPosition += 12
+      page.drawText(company.address, { x: 50, y: yPosition, size: 9, font, color: rgb(0, 0, 0) })
+      yPosition -= 12
     }
     
     const cityLine = [company.zip, company.city].filter(Boolean).join(' ')
     if (cityLine) {
-      pdf.text(cityLine, 50, yPosition)
-      yPosition += 12
+      page.drawText(cityLine, { x: 50, y: yPosition, size: 9, font, color: rgb(0, 0, 0) })
+      yPosition -= 12
     }
     
     if (company.country) {
-      pdf.text(company.country, 50, yPosition)
-      yPosition += 12
+      page.drawText(company.country, { x: 50, y: yPosition, size: 9, font, color: rgb(0, 0, 0) })
+      yPosition -= 12
     }
     
-    yPosition += 10
+    yPosition -= 10
     
     if (company.vat_number) {
-      pdf.text(`${t.vatNumber}: ${company.vat_number}`, 50, yPosition)
-      yPosition += 12
+      page.drawText(`${t.vatNumber}: ${company.vat_number}`, { x: 50, y: yPosition, size: 8, font, color: rgb(0, 0, 0) })
+      yPosition -= 12
     }
     
     if (company.email) {
-      pdf.text(`${t.email}: ${company.email}`, 50, yPosition)
-      yPosition += 12
+      page.drawText(`${t.email}: ${company.email}`, { x: 50, y: yPosition, size: 8, font, color: rgb(0, 0, 0) })
+      yPosition -= 12
     }
     
     if (company.phone) {
-      pdf.text(`${t.phone}: ${company.phone}`, 50, yPosition)
-      yPosition += 12
+      page.drawText(`${t.phone}: ${company.phone}`, { x: 50, y: yPosition, size: 8, font, color: rgb(0, 0, 0) })
+      yPosition -= 12
     }
     
     if (company.website) {
       const displayWebsite = cleanWebsiteForDisplay(company.website)
-      pdf.text(`${t.website}: ${displayWebsite}`, 50, yPosition)
-      yPosition += 12
+      page.drawText(`${t.website}: ${displayWebsite}`, { x: 50, y: yPosition, size: 8, font, color: rgb(0, 0, 0) })
+      yPosition -= 12
     }
 
-    yPosition += 30
+    yPosition -= 30
 
     // Customer info
-    pdf.fontSize(12)
-    pdf.font('Helvetica-Bold').text(t.billTo, 50, yPosition)
-    yPosition += 20
+    page.drawText(t.billTo, { x: 50, y: yPosition, size: 11, font: fontBold, color: rgb(0, 0, 0) })
+    yPosition -= 20
 
-    pdf.fontSize(10)
-    pdf.font('Helvetica').text(quote.customer_name || '', 50, yPosition)
-    yPosition += 15
+    page.drawText(quote.customer_name || '', { x: 50, y: yPosition, size: 10, font, color: rgb(0, 0, 0) })
+    yPosition -= 15
 
     if (quote.customer_address) {
-      pdf.text(quote.customer_address, 50, yPosition)
-      yPosition += 12
+      page.drawText(quote.customer_address, { x: 50, y: yPosition, size: 9, font, color: rgb(0, 0, 0) })
+      yPosition -= 12
     }
 
-    const customerCityLine = [quote.customer_zip, quote.customer_city]
-      .filter(Boolean)
-      .join(' ')
+    const customerCityLine = [quote.customer_zip, quote.customer_city].filter(Boolean).join(' ')
     if (customerCityLine) {
-      pdf.text(customerCityLine, 50, yPosition)
-      yPosition += 12
+      page.drawText(customerCityLine, { x: 50, y: yPosition, size: 9, font, color: rgb(0, 0, 0) })
+      yPosition -= 12
     }
 
     if (quote.customer_country) {
-      pdf.text(quote.customer_country, 50, yPosition)
-      yPosition += 12
+      page.drawText(quote.customer_country, { x: 50, y: yPosition, size: 9, font, color: rgb(0, 0, 0) })
+      yPosition -= 12
     }
 
-    yPosition += 30
+    yPosition -= 30
 
-    // Quote title and details
-    pdf.fontSize(20)
-    pdf.font('Helvetica-Bold').text(t.quote.toUpperCase(), 50, yPosition)
-    yPosition += 30
+    // Quote title
+    page.drawText(t.quote.toUpperCase(), { x: 50, y: yPosition, size: 20, font: fontBold, color: rgb(0, 0, 0) })
+    yPosition -= 30
 
-    pdf.fontSize(10)
-    pdf.font('Helvetica')
-    
+    // Quote details
     const details = [
       `${t.quoteNumber}: ${quote.quote_number}`,
       `${t.date}: ${format(new Date(quote.issue_date), 'dd MMMM yyyy', { locale: dateLocale })}`,
@@ -194,14 +189,14 @@ export async function GET(
 
     details.forEach(detail => {
       if (detail) {
-        pdf.text(detail, 50, yPosition)
-        yPosition += 15
+        page.drawText(detail, { x: 50, y: yPosition, size: 10, font, color: rgb(0, 0, 0) })
+        yPosition -= 15
       }
     })
 
-    yPosition += 20
+    yPosition -= 20
 
-    // Items table
+    // Items table header
     const tableTop = yPosition
     const itemCodeX = 50
     const descriptionX = 120
@@ -209,83 +204,81 @@ export async function GET(
     const priceX = 420
     const totalX = 490
 
-    // Table header
-    pdf.fontSize(10)
-    pdf.font('Helvetica-Bold')
-    pdf.text(t.itemCode, itemCodeX, tableTop)
-    pdf.text(t.description, descriptionX, tableTop)
-    pdf.text(t.quantity, quantityX, tableTop)
-    pdf.text(t.price, priceX, tableTop)
-    pdf.text(t.total, totalX, tableTop)
+    page.drawText(t.itemCode, { x: itemCodeX, y: tableTop, size: 10, font: fontBold, color: rgb(0, 0, 0) })
+    page.drawText(t.description, { x: descriptionX, y: tableTop, size: 10, font: fontBold, color: rgb(0, 0, 0) })
+    page.drawText(t.quantity, { x: quantityX, y: tableTop, size: 10, font: fontBold, color: rgb(0, 0, 0) })
+    page.drawText(t.price, { x: priceX, y: tableTop, size: 10, font: fontBold, color: rgb(0, 0, 0) })
+    page.drawText(t.total, { x: totalX, y: tableTop, size: 10, font: fontBold, color: rgb(0, 0, 0) })
 
-    yPosition = tableTop + 20
+    yPosition = tableTop - 20
 
-    // Draw header line
-    pdf.moveTo(50, yPosition).lineTo(550, yPosition).stroke()
-    yPosition += 10
+    // Header line
+    page.drawLine({
+      start: { x: 50, y: yPosition },
+      end: { x: 550, y: yPosition },
+      thickness: 1,
+      color: rgb(0, 0, 0),
+    })
+    yPosition -= 15
 
     // Items
-    pdf.font('Helvetica')
     const items = quote.items || []
-    
     items.forEach((item: any) => {
       const itemTotal = (item.quantity || 0) * (item.unit_price || 0)
       
-      pdf.text(item.code || '-', itemCodeX, yPosition, { width: 60 })
-      pdf.text(item.description || '', descriptionX, yPosition, { width: 220 })
-      pdf.text(String(item.quantity || 0), quantityX, yPosition)
-      pdf.text(`${(item.unit_price || 0).toFixed(2)}`, priceX, yPosition)
-      pdf.text(`${itemTotal.toFixed(2)}`, totalX, yPosition)
+      page.drawText(item.code || '-', { x: itemCodeX, y: yPosition, size: 9, font, color: rgb(0, 0, 0) })
+      page.drawText(item.description || '', { x: descriptionX, y: yPosition, size: 9, font, color: rgb(0, 0, 0), maxWidth: 220 })
+      page.drawText(String(item.quantity || 0), { x: quantityX, y: yPosition, size: 9, font, color: rgb(0, 0, 0) })
+      page.drawText(`${(item.unit_price || 0).toFixed(2)}`, { x: priceX, y: yPosition, size: 9, font, color: rgb(0, 0, 0) })
+      page.drawText(`${itemTotal.toFixed(2)}`, { x: totalX, y: yPosition, size: 9, font, color: rgb(0, 0, 0) })
       
-      yPosition += 20
+      yPosition -= 20
     })
 
-    yPosition += 10
-    pdf.moveTo(50, yPosition).lineTo(550, yPosition).stroke()
-    yPosition += 20
+    yPosition -= 10
+    page.drawLine({
+      start: { x: 50, y: yPosition },
+      end: { x: 550, y: yPosition },
+      thickness: 1,
+      color: rgb(0, 0, 0) })
+    yPosition -= 20
 
     // Totals
-    pdf.font('Helvetica-Bold')
-    
     const subtotal = quote.subtotal || 0
     const taxAmount = quote.tax || 0
     const total = quote.total || 0
 
-    pdf.text(t.subtotal, 400, yPosition)
-    pdf.text(`${subtotal.toFixed(2)} ${quote.currency || 'CHF'}`, 490, yPosition)
-    yPosition += 20
+    page.drawText(t.subtotal, { x: 400, y: yPosition, size: 10, font: fontBold, color: rgb(0, 0, 0) })
+    page.drawText(`${subtotal.toFixed(2)} ${quote.currency || 'CHF'}`, { x: 490, y: yPosition, size: 10, font, color: rgb(0, 0, 0) })
+    yPosition -= 20
 
     if (quote.tax_rate) {
-      pdf.text(`${t.tax} (${quote.tax_rate}%)`, 400, yPosition)
-      pdf.text(`${taxAmount.toFixed(2)} ${quote.currency || 'CHF'}`, 490, yPosition)
-      yPosition += 20
+      page.drawText(`${t.tax} (${quote.tax_rate}%)`, { x: 400, y: yPosition, size: 10, font: fontBold, color: rgb(0, 0, 0) })
+      page.drawText(`${taxAmount.toFixed(2)} ${quote.currency || 'CHF'}`, { x: 490, y: yPosition, size: 10, font, color: rgb(0, 0, 0) })
+      yPosition -= 20
     }
 
-    pdf.fontSize(12)
-    pdf.text(t.total, 400, yPosition)
-    pdf.text(`${total.toFixed(2)} ${quote.currency || 'CHF'}`, 490, yPosition)
+    page.drawText(t.total, { x: 400, y: yPosition, size: 12, font: fontBold, color: rgb(0, 0, 0) })
+    page.drawText(`${total.toFixed(2)} ${quote.currency || 'CHF'}`, { x: 490, y: yPosition, size: 12, font: fontBold, color: rgb(0, 0, 0) })
 
-    yPosition += 40
+    yPosition -= 40
 
     // Notes
     if (quote.notes) {
-      pdf.fontSize(10)
-      pdf.font('Helvetica-Bold').text(t.notes, 50, yPosition)
-      yPosition += 15
-      pdf.font('Helvetica').text(quote.notes, 50, yPosition, { width: 500 })
+      page.drawText(t.notes, { x: 50, y: yPosition, size: 10, font: fontBold, color: rgb(0, 0, 0) })
+      yPosition -= 15
+      page.drawText(quote.notes, { x: 50, y: yPosition, size: 9, font, color: rgb(0, 0, 0), maxWidth: 500 })
     }
 
-    pdf.end()
+    const pdfBytes = await pdfDoc.save()
 
-    const pdfBuffer = await pdfPromise
+    console.log('PDF generated successfully, size:', pdfBytes.length)
 
-    console.log('PDF generated successfully, size:', pdfBuffer.length)
-
-    return new NextResponse(new Uint8Array(pdfBuffer), {
+    return new NextResponse(pdfBytes, {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="${t.quote.toLowerCase()}-${quote.quote_number}.pdf"`,
-        'Content-Length': String(pdfBuffer.length)
+        'Content-Length': String(pdfBytes.length)
       },
     })
   } catch (error) {
