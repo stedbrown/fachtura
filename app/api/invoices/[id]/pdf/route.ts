@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib'
-import { SwissQRBill } from 'swissqrbill/pdf'
-import PDFKitDocument from 'pdfkit'
+import { SwissQRBill } from 'swissqrbill/svg'
+import { svg2pdf } from 'svg2pdf.js'
 import { format } from 'date-fns'
 import { it, de, fr, enUS } from 'date-fns/locale'
 import { getPDFTranslations } from '@/lib/pdf-translations'
@@ -430,52 +430,40 @@ export async function GET(
           message: `${t.invoice} ${invoice.invoice_number}`
         }
         
-        console.log('Creating Swiss QR Bill with official library...')
+        console.log('Creating Swiss QR Bill with SVG + svg2pdf...')
         
-        // Create SwissQRBill instance
+        // Create SwissQRBill SVG instance
         const qrBill = new SwissQRBill(qrBillData, {
           language: locale === 'de' ? 'DE' : locale === 'fr' ? 'FR' : locale === 'it' ? 'IT' : 'EN',
           scissors: true
         })
         
-        // Create a new PDFKit document for QR Bill
-        const pdfKitDoc = new PDFKitDocument({
-          autoFirstPage: false,
-          size: 'A4',
-          bufferPages: true
-        })
+        // Get SVG as string
+        const svgString = qrBill.toString()
+        console.log('SVG generated, length:', svgString.length)
         
-        // Attach QR Bill to PDFKit document
-        qrBill.attachTo(pdfKitDoc)
+        // Create a new page for QR Bill
+        const qrPage = pdfDoc.addPage([595, 842]) // A4
         
-        // Collect PDFKit output into buffer
-        const chunks: Buffer[] = []
+        // Convert SVG to PDF using svg2pdf.js
+        // svg2pdf works with pdf-lib pages directly
+        const { JSDOM } = await import('jsdom')
+        const dom = new JSDOM(svgString)
+        const svgElement = dom.window.document.querySelector('svg')
         
-        const qrBillPdfBuffer = await new Promise<Buffer>((resolve, reject) => {
-          pdfKitDoc.on('data', (chunk: Buffer) => {
-            chunks.push(chunk)
+        if (svgElement) {
+          // svg2pdf.js renders SVG directly into pdf-lib
+          await svg2pdf(svgElement, qrPage, {
+            x: 0,
+            y: 842 - 297, // Position at bottom (105mm = 297 points from bottom)
+            width: 595,
+            height: 297
           })
           
-          pdfKitDoc.on('end', () => {
-            resolve(Buffer.concat(chunks))
-          })
-          
-          pdfKitDoc.on('error', reject)
-          
-          // Finalize PDFKit document
-          pdfKitDoc.end()
-        })
-        
-        console.log('QR Bill PDF generated, size:', qrBillPdfBuffer.length)
-        
-        // Load QR Bill PDF with pdf-lib
-        const qrBillPdf = await PDFDocument.load(qrBillPdfBuffer)
-        
-        // Copy QR Bill page to main PDF
-        const [qrBillPage] = await pdfDoc.copyPages(qrBillPdf, [0])
-        pdfDoc.addPage(qrBillPage)
-        
-        console.log('=== ✅ Swiss QR Bill added with official library! ===')
+          console.log('=== ✅ Swiss QR Bill added with SVG + svg2pdf! ===')
+        } else {
+          console.error('❌ Could not parse SVG element')
+        }
       }
     } catch (error) {
       console.error('=== ❌ ERROR creating Swiss QR Bill ===')
