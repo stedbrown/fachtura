@@ -274,7 +274,7 @@ export async function GET(
 
     console.log('PDF generated successfully, size:', pdfBytes.length)
 
-    return new NextResponse(pdfBytes, {
+    return new NextResponse(pdfBytes.buffer, {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="${t.quote.toLowerCase()}-${quote.quote_number}.pdf"`,
