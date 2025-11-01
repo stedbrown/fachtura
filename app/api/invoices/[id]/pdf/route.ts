@@ -433,24 +433,30 @@ export async function GET(
         console.log('Creating Swiss QR Bill with official library...')
         
         // Generate QR Bill as PDF using official library
-        const qrBill = new SwissQRBill(qrBillData, {
+        // SwissQRBill returns a PDFKit document
+        const qrBillPDFKit = new SwissQRBill(qrBillData, {
           language: locale === 'de' ? 'DE' : locale === 'fr' ? 'FR' : locale === 'it' ? 'IT' : 'EN',
           scissors: true
         })
         
-        // Create a buffer to collect PDF stream
+        // Create a buffer to collect PDF stream from PDFKit
         const chunks: Buffer[] = []
-        const stream = qrBill.stream
         
-        // Collect chunks
-        await new Promise<void>((resolve, reject) => {
-          stream.on('data', (chunk: Buffer) => chunks.push(chunk))
-          stream.on('end', () => resolve())
-          stream.on('error', reject)
-          stream.end()
+        // Collect chunks from PDFKit document and wait for completion
+        const qrBillPdfBuffer = await new Promise<Buffer>((resolve, reject) => {
+          qrBillPDFKit.on('data', (chunk: Buffer) => {
+            chunks.push(chunk)
+          })
+          
+          qrBillPDFKit.on('end', () => {
+            resolve(Buffer.concat(chunks))
+          })
+          
+          qrBillPDFKit.on('error', reject)
+          
+          // Finalize PDFKit document to trigger stream
+          qrBillPDFKit.end()
         })
-        
-        const qrBillPdfBuffer = Buffer.concat(chunks)
         console.log('QR Bill PDF generated, size:', qrBillPdfBuffer.length)
         
         // Load QR Bill PDF with pdf-lib
