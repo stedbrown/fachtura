@@ -76,7 +76,17 @@ export async function GET(
 
     const { data: invoice, error: invoiceError } = await supabase
       .from('invoices')
-      .select('*')
+      .select(`
+        *,
+        invoice_items (
+          id,
+          description,
+          quantity,
+          unit_price,
+          tax_rate,
+          line_total
+        )
+      `)
       .eq('id', id)
       .eq('user_id', user.id)
       .single()
@@ -273,11 +283,16 @@ export async function GET(
     yPosition -= 15
 
     // Items
-    const items = invoice.items || []
-    items.forEach((item: any) => {
+    const items = invoice.invoice_items || []
+    console.log('Invoice items count:', items.length)
+    
+    items.forEach((item: any, index: number) => {
       const itemTotal = (item.quantity || 0) * (item.unit_price || 0)
       
-      page.drawText(item.code || '-', { x: itemCodeX, y: yPosition, size: 9, font, color: rgb(0, 0, 0) })
+      console.log(`Item ${index + 1}:`, { description: item.description, quantity: item.quantity, unit_price: item.unit_price })
+      
+      // No "code" field in database, so we show item number
+      page.drawText(`${index + 1}`, { x: itemCodeX, y: yPosition, size: 9, font, color: rgb(0, 0, 0) })
       page.drawText(item.description || '', { x: descriptionX, y: yPosition, size: 9, font, color: rgb(0, 0, 0), maxWidth: 220 })
       page.drawText(String(item.quantity || 0), { x: quantityX, y: yPosition, size: 9, font, color: rgb(0, 0, 0) })
       page.drawText(`${(item.unit_price || 0).toFixed(2)}`, { x: priceX, y: yPosition, size: 9, font, color: rgb(0, 0, 0) })

@@ -45,7 +45,17 @@ export async function GET(
 
     const { data: quote, error: quoteError } = await supabase
       .from('quotes')
-      .select('*')
+      .select(`
+        *,
+        quote_items (
+          id,
+          description,
+          quantity,
+          unit_price,
+          tax_rate,
+          line_total
+        )
+      `)
       .eq('id', id)
       .eq('user_id', user.id)
       .single()
@@ -81,6 +91,7 @@ export async function GET(
     // Logo (if exists)
     if (company.logo_url) {
       try {
+        console.log('Loading logo from:', company.logo_url)
         const logoResponse = await fetch(company.logo_url)
         const logoBuffer = await logoResponse.arrayBuffer()
         
@@ -93,12 +104,31 @@ export async function GET(
         }
 
         if (logoImage) {
-          const logoDims = logoImage.scale(0.3)
+          // Calculate proportional size (max 100x60)
+          const maxWidth = 100
+          const maxHeight = 60
+          const imgWidth = logoImage.width
+          const imgHeight = logoImage.height
+          
+          let finalWidth = imgWidth
+          let finalHeight = imgHeight
+          
+          // Scale down if too large
+          if (imgWidth > maxWidth || imgHeight > maxHeight) {
+            const widthRatio = maxWidth / imgWidth
+            const heightRatio = maxHeight / imgHeight
+            const scale = Math.min(widthRatio, heightRatio)
+            finalWidth = imgWidth * scale
+            finalHeight = imgHeight * scale
+          }
+          
+          console.log('Logo dimensions:', { original: { w: imgWidth, h: imgHeight }, final: { w: finalWidth, h: finalHeight } })
+          
           page.drawImage(logoImage, {
-            x: 450,
-            y: yPosition - 60,
-            width: logoDims.width,
-            height: logoDims.height,
+            x: 495 - finalWidth, // Align right
+            y: yPosition - finalHeight - 10,
+            width: finalWidth,
+            height: finalHeight,
           })
         }
       } catch (error) {
@@ -107,7 +137,7 @@ export async function GET(
     }
 
     // Company info
-    page.drawText(company.name || '', { x: 50, y: yPosition, size: 11, font: fontBold, color: rgb(0, 0, 0) })
+    page.drawText(company.company_name || '', { x: 50, y: yPosition, size: 11, font: fontBold, color: rgb(0, 0, 0) })
     yPosition -= 15
     
     if (company.address) {
@@ -115,7 +145,7 @@ export async function GET(
       yPosition -= 12
     }
     
-    const cityLine = [company.zip, company.city].filter(Boolean).join(' ')
+    const cityLine = [company.postal_code, company.city].filter(Boolean).join(' ')
     if (cityLine) {
       page.drawText(cityLine, { x: 50, y: yPosition, size: 9, font, color: rgb(0, 0, 0) })
       yPosition -= 12
@@ -222,11 +252,16 @@ export async function GET(
     yPosition -= 15
 
     // Items
-    const items = quote.items || []
-    items.forEach((item: any) => {
+    const items = quote.quote_items || []
+    console.log('Quote items count:', items.length)
+    
+    items.forEach((item: any, index: number) => {
       const itemTotal = (item.quantity || 0) * (item.unit_price || 0)
       
-      page.drawText(item.code || '-', { x: itemCodeX, y: yPosition, size: 9, font, color: rgb(0, 0, 0) })
+      console.log(`Item ${index + 1}:`, { description: item.description, quantity: item.quantity, unit_price: item.unit_price })
+      
+      // No "code" field in database, so we show item number
+      page.drawText(`${index + 1}`, { x: itemCodeX, y: yPosition, size: 9, font, color: rgb(0, 0, 0) })
       page.drawText(item.description || '', { x: descriptionX, y: yPosition, size: 9, font, color: rgb(0, 0, 0), maxWidth: 220 })
       page.drawText(String(item.quantity || 0), { x: quantityX, y: yPosition, size: 9, font, color: rgb(0, 0, 0) })
       page.drawText(`${(item.unit_price || 0).toFixed(2)}`, { x: priceX, y: yPosition, size: 9, font, color: rgb(0, 0, 0) })
