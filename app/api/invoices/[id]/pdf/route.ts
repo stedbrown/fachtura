@@ -1,19 +1,74 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib'
-import { SwissQRBill } from 'swissqrbill/svg'
-import { initWasm, Resvg } from '@resvg/resvg-wasm'
+import QRCode from 'qrcode'
 import { format } from 'date-fns'
 import { it, de, fr, enUS } from 'date-fns/locale'
 import { getPDFTranslations } from '@/lib/pdf-translations'
 
-// Initialize WASM once
-let wasmInitialized = false
-async function ensureWasmInitialized() {
-  if (!wasmInitialized) {
-    await initWasm(fetch('https://unpkg.com/@resvg/resvg-wasm/index_bg.wasm'))
-    wasmInitialized = true
+// Helper to generate Swiss QR Code data (ISO 20022)
+function generateSwissQRData(params: {
+  iban: string
+  creditorName: string
+  creditorAddress: string
+  creditorZip: string | number
+  creditorCity: string
+  creditorCountry: string
+  debtorName?: string
+  debtorAddress?: string
+  debtorZip?: string | number
+  debtorCity?: string
+  debtorCountry?: string
+  amount: number
+  currency: string
+  message?: string
+}): string {
+  const lines: string[] = []
+  
+  lines.push('SPC')     // QR Type
+  lines.push('0200')    // Version
+  lines.push('1')       // Coding (UTF-8)
+  lines.push(params.iban.replace(/\s/g, ''))  // IBAN
+  
+  // Creditor (structured)
+  lines.push('S')  // Address type: Structured
+  lines.push(params.creditorName)
+  lines.push(params.creditorAddress)
+  lines.push('')  // Building number
+  lines.push(String(params.creditorZip))
+  lines.push(params.creditorCity)
+  lines.push(params.creditorCountry)
+  
+  // Ultimate Creditor (7 empty)
+  for (let i = 0; i < 7; i++) lines.push('')
+  
+  // Amount
+  lines.push(params.amount.toFixed(2))
+  lines.push(params.currency)
+  
+  // Debtor
+  if (params.debtorName) {
+    lines.push('S')
+    lines.push(params.debtorName)
+    lines.push(params.debtorAddress || '')
+    lines.push('')
+    lines.push(String(params.debtorZip || ''))
+    lines.push(params.debtorCity || '')
+    lines.push(params.debtorCountry || '')
+  } else {
+    for (let i = 0; i < 7; i++) lines.push('')
   }
+  
+  // Reference type
+  lines.push('NON')
+  lines.push('')  // Reference
+  lines.push(params.message || '')  // Message
+  lines.push('EPD')  // Trailer
+  lines.push('')  // Billing info
+  lines.push('')  // AV1
+  lines.push('')  // AV2
+  
+  return lines.join('\r\n')
 }
 
 const localeMap: Record<string, any> = {
@@ -415,76 +470,182 @@ export async function GET(
         console.error('❌ Nome Azienda mancante! QR Bill richiede il nome dell\'azienda.')
         console.error('Vai in Impostazioni → Dati Azienda e inserisci il Nome Azienda')
       } else {
-        console.log('✅ IBAN presente, generazione QR Bill UFFICIALE con swissqrbill + resvg-wasm...')
+        console.log('✅ IBAN presente, generazione Swiss QR Bill con layout manuale ufficiale...')
         
-        // Initialize WASM
-        await ensureWasmInitialized()
-        
-        // Build QR Bill data for swissqrbill library
-        const qrBillData: any = {
+        // Generate QR Code data (ISO 20022)
+        const qrData = generateSwissQRData({
+          iban: company.iban || '',
+          creditorName: company.company_name || '',
+          creditorAddress: company.address || '',
+          creditorZip: company.postal_code || '',
+          creditorCity: company.city || '',
+          creditorCountry: getCountryCode(company.country),
+          debtorName: client.name,
+          debtorAddress: client.address,
+          debtorZip: client.postal_code,
+          debtorCity: client.city,
+          debtorCountry: getCountryCode(client.country),
+          amount: invoice.total || 0,
           currency: invoice.currency || 'CHF',
-          amount: invoice.total,
-          creditor: {
-            name: company.company_name || '',
-            address: company.address || '',
-            zip: company.postal_code || '',
-            city: company.city || '',
-            account: company.iban || '',
-            country: getCountryCode(company.country)
-          },
-          debtor: {
-            name: client.name || '',
-            address: client.address || '',
-            zip: client.postal_code || '',
-            city: client.city || '',
-            country: getCountryCode(client.country)
-          },
           message: `${t.invoice} ${invoice.invoice_number}`
-        }
-        
-        console.log('QR Bill data prepared:', JSON.stringify(qrBillData, null, 2))
-        
-        // Create SwissQRBill SVG instance
-        const qrBill = new SwissQRBill(qrBillData, {
-          language: locale === 'de' ? 'DE' : locale === 'fr' ? 'FR' : locale === 'it' ? 'IT' : 'EN',
-          scissors: true
         })
         
-        // Get SVG as string
-        const svgString = qrBill.toString()
-        console.log('SVG generated, length:', svgString.length)
+        console.log('QR Data generated (ISO 20022)')
         
-        // Convert SVG to PNG using resvg-wasm (100% serverless compatible!)
-        const resvg = new Resvg(svgString, {
-          fitTo: {
-            mode: 'width',
-            value: 2100 // 210mm at 10 DPI
-          }
+        // Generate QR Code image (46mm x 46mm = 130pt)
+        const qrCodeBuffer = await QRCode.toBuffer(qrData, {
+          width: 166,
+          margin: 0,
+          errorCorrectionLevel: 'M'
         })
         
-        const pngData = resvg.render()
-        const qrBillPng = pngData.asPng()
+        const qrCodeImage = await pdfDoc.embedPng(qrCodeBuffer)
+        console.log('QR Code image generated')
         
-        console.log('SVG converted to PNG with resvg-wasm, size:', qrBillPng.length)
-        
-        // Embed PNG in PDF
-        const qrBillImage = await pdfDoc.embedPng(qrBillPng)
-        
-        // Create a new page for QR Bill
+        // Create new page for QR Bill
         const qrPage = pdfDoc.addPage([595, 842]) // A4
         
-        // Draw QR Bill at bottom of page (105mm = 297 points)
-        const qrBillHeight = 297
-        const qrBillWidth = 595
+        // QR Bill dimensions (105mm = 297pt from bottom)
+        const qrBillY = 842 - 297
         
-        qrPage.drawImage(qrBillImage, {
-          x: 0,
-          y: 842 - qrBillHeight,
-          width: qrBillWidth,
-          height: qrBillHeight
+        // === SCISSORS LINE ===
+        qrPage.drawLine({
+          start: { x: 0, y: qrBillY },
+          end: { x: 595, y: qrBillY },
+          thickness: 0.75,
+          color: rgb(0, 0, 0),
+          dashArray: [2, 2]
         })
         
-        console.log('=== ✅ Swiss QR Bill UFFICIALE added with swissqrbill + resvg-wasm! ===')
+        // Scissors symbol
+        qrPage.drawText('✂', { x: 10, y: qrBillY - 5, size: 10, font, color: rgb(0, 0, 0) })
+        
+        // === RECEIPT SECTION (Left, 62mm = 175.7pt) ===
+        const receiptX = 5
+        let receiptY = qrBillY - 20
+        
+        // Title
+        qrPage.drawText(t.receipt, { x: receiptX, y: receiptY, size: 11, font: fontBold, color: rgb(0, 0, 0) })
+        receiptY -= 25
+        
+        // Account / Payable to
+        qrPage.drawText(t.accountPayableTo, { x: receiptX, y: receiptY, size: 6, font: fontBold, color: rgb(0, 0, 0) })
+        receiptY -= 10
+        qrPage.drawText(company.iban || '', { x: receiptX, y: receiptY, size: 8, font, color: rgb(0, 0, 0) })
+        receiptY -= 10
+        qrPage.drawText(company.company_name || '', { x: receiptX, y: receiptY, size: 8, font, color: rgb(0, 0, 0), maxWidth: 165 })
+        receiptY -= 10
+        qrPage.drawText(`${company.address || ''}`, { x: receiptX, y: receiptY, size: 8, font, color: rgb(0, 0, 0), maxWidth: 165 })
+        receiptY -= 10
+        qrPage.drawText(`${company.postal_code || ''} ${company.city || ''}`, { x: receiptX, y: receiptY, size: 8, font, color: rgb(0, 0, 0) })
+        receiptY -= 20
+        
+        // Payable by
+        qrPage.drawText(t.payableBy, { x: receiptX, y: receiptY, size: 6, font: fontBold, color: rgb(0, 0, 0) })
+        receiptY -= 10
+        if (client.name) {
+          qrPage.drawText(client.name, { x: receiptX, y: receiptY, size: 8, font, color: rgb(0, 0, 0), maxWidth: 165 })
+          receiptY -= 10
+          qrPage.drawText(`${client.address || ''}`, { x: receiptX, y: receiptY, size: 8, font, color: rgb(0, 0, 0), maxWidth: 165 })
+          receiptY -= 10
+          qrPage.drawText(`${client.postal_code || ''} ${client.city || ''}`, { x: receiptX, y: receiptY, size: 8, font, color: rgb(0, 0, 0) })
+        }
+        receiptY -= 25
+        
+        // Currency and Amount
+        qrPage.drawText(t.currency, { x: receiptX, y: receiptY, size: 6, font: fontBold, color: rgb(0, 0, 0) })
+        qrPage.drawText(t.amount, { x: receiptX + 35, y: receiptY, size: 6, font: fontBold, color: rgb(0, 0, 0) })
+        receiptY -= 10
+        qrPage.drawText(invoice.currency || 'CHF', { x: receiptX, y: receiptY, size: 8, font, color: rgb(0, 0, 0) })
+        qrPage.drawText((invoice.total || 0).toFixed(2), { x: receiptX + 35, y: receiptY, size: 8, font, color: rgb(0, 0, 0) })
+        
+        // Vertical separator line
+        qrPage.drawLine({
+          start: { x: 198, y: qrBillY },
+          end: { x: 198, y: 842 },
+          thickness: 0.75,
+          color: rgb(0, 0, 0),
+          dashArray: [2, 2]
+        })
+        
+        // === PAYMENT PART SECTION (Right) ===
+        const paymentX = 210
+        let paymentY = qrBillY - 20
+        
+        // Title
+        qrPage.drawText(t.paymentPart, { x: paymentX, y: paymentY, size: 11, font: fontBold, color: rgb(0, 0, 0) })
+        paymentY -= 35
+        
+        // QR Code (46mm x 46mm)
+        qrPage.drawImage(qrCodeImage, {
+          x: paymentX,
+          y: paymentY - 166,
+          width: 166,
+          height: 166
+        })
+        
+        // Swiss Cross in QR Code center
+        const crossSize = 7
+        const crossX = paymentX + 83
+        const crossY = paymentY - 83
+        qrPage.drawRectangle({
+          x: crossX - crossSize,
+          y: crossY - crossSize,
+          width: crossSize * 2,
+          height: crossSize * 2,
+          color: rgb(1, 1, 1),
+          borderColor: rgb(0, 0, 0),
+          borderWidth: 1.5
+        })
+        qrPage.drawLine({
+          start: { x: crossX - 4, y: crossY },
+          end: { x: crossX + 4, y: crossY },
+          thickness: 1.5,
+          color: rgb(0, 0, 0)
+        })
+        qrPage.drawLine({
+          start: { x: crossX, y: crossY - 4 },
+          end: { x: crossX, y: crossY + 4 },
+          thickness: 1.5,
+          color: rgb(0, 0, 0)
+        })
+        
+        // Right side info
+        const infoX = paymentX + 186
+        let infoY = paymentY - 10
+        
+        // Currency and Amount
+        qrPage.drawText(t.currency, { x: infoX, y: infoY, size: 8, font: fontBold, color: rgb(0, 0, 0) })
+        qrPage.drawText(t.amount, { x: infoX + 50, y: infoY, size: 8, font: fontBold, color: rgb(0, 0, 0) })
+        infoY -= 15
+        qrPage.drawText(invoice.currency || 'CHF', { x: infoX, y: infoY, size: 10, font, color: rgb(0, 0, 0) })
+        qrPage.drawText((invoice.total || 0).toFixed(2), { x: infoX + 50, y: infoY, size: 10, font, color: rgb(0, 0, 0) })
+        infoY -= 30
+        
+        // Account / Payable to
+        qrPage.drawText(t.accountPayableTo, { x: infoX, y: infoY, size: 8, font: fontBold, color: rgb(0, 0, 0) })
+        infoY -= 12
+        qrPage.drawText(company.iban || '', { x: infoX, y: infoY, size: 9, font, color: rgb(0, 0, 0) })
+        infoY -= 10
+        qrPage.drawText(company.company_name || '', { x: infoX, y: infoY, size: 9, font, color: rgb(0, 0, 0), maxWidth: 180 })
+        infoY -= 10
+        qrPage.drawText(`${company.address || ''}`, { x: infoX, y: infoY, size: 9, font, color: rgb(0, 0, 0), maxWidth: 180 })
+        infoY -= 10
+        qrPage.drawText(`${company.postal_code || ''} ${company.city || ''}`, { x: infoX, y: infoY, size: 9, font, color: rgb(0, 0, 0) })
+        infoY -= 25
+        
+        // Payable by
+        qrPage.drawText(t.payableBy, { x: infoX, y: infoY, size: 8, font: fontBold, color: rgb(0, 0, 0) })
+        infoY -= 12
+        if (client.name) {
+          qrPage.drawText(client.name, { x: infoX, y: infoY, size: 9, font, color: rgb(0, 0, 0), maxWidth: 180 })
+          infoY -= 10
+          qrPage.drawText(`${client.address || ''}`, { x: infoX, y: infoY, size: 9, font, color: rgb(0, 0, 0), maxWidth: 180 })
+          infoY -= 10
+          qrPage.drawText(`${client.postal_code || ''} ${client.city || ''}`, { x: infoX, y: infoY, size: 9, font, color: rgb(0, 0, 0) })
+        }
+        
+        console.log('=== ✅ Swiss QR Bill UFFICIALE (manual layout) completato! ===')
       }
     } catch (error) {
       console.error('=== ❌ ERROR creating Swiss QR Bill ===')
