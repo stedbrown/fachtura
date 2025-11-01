@@ -387,12 +387,11 @@ export async function GET(
         message: `${t.invoice} ${invoice.invoice_number}`
       }
 
-      if (invoice.invoice_number) {
-        const reference = invoice.invoice_number.replace(/[^0-9]/g, '').padStart(27, '0')
-        if (reference) {
-          qrBillData.reference = reference
-        }
-      }
+      // QR-Reference requires QR-IBAN (not regular IBAN)
+      // QR-IBAN typically starts with institution number 30-31
+      // For now, we skip reference and use message field instead
+      // User can add QR-IBAN later in settings if they want QR-Reference support
+      console.log('Skipping QR-Reference (requires QR-IBAN, current IBAN is regular)')
 
       console.log('QR Bill data prepared:', JSON.stringify(qrBillData, null, 2))
 
