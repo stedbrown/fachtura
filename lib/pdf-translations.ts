@@ -37,6 +37,13 @@ export const pdfTranslations = {
     invoiceNumber: 'Numero Fattura',
     quoteNumber: 'Numero Preventivo',
     itemCode: 'Codice',
+    // QR Bill fields
+    receipt: 'Ricevuta',
+    accountPayableTo: 'Conto / Pagabile a',
+    payableBy: 'Pagabile da',
+    paymentPart: 'Sezione pagamento',
+    currency: 'Valuta',
+    amount: 'Importo',
     // QR Bill message (ASCII-safe, no accents for QR code compatibility)
     qrInvoiceMessage: 'Factura',
     qrQuoteMessage: 'Preventivo',
@@ -78,6 +85,13 @@ export const pdfTranslations = {
     invoiceNumber: 'Invoice Number',
     quoteNumber: 'Quote Number',
     itemCode: 'Code',
+    // QR Bill fields
+    receipt: 'Receipt',
+    accountPayableTo: 'Account / Payable to',
+    payableBy: 'Payable by',
+    paymentPart: 'Payment part',
+    currency: 'Currency',
+    amount: 'Amount',
     // QR Bill message (ASCII-safe, no accents for QR code compatibility)
     qrInvoiceMessage: 'Invoice',
     qrQuoteMessage: 'Quote',
@@ -119,6 +133,13 @@ export const pdfTranslations = {
     invoiceNumber: 'Rechnungsnummer',
     quoteNumber: 'Offertennummer',
     itemCode: 'Code',
+    // QR Bill fields
+    receipt: 'Empfangsschein',
+    accountPayableTo: 'Konto / Zahlbar an',
+    payableBy: 'Zahlbar durch',
+    paymentPart: 'Zahlteil',
+    currency: 'Währung',
+    amount: 'Betrag',
     // QR Bill message (ASCII-safe, no accents for QR code compatibility)
     qrInvoiceMessage: 'Rechnung',
     qrQuoteMessage: 'Offerte',
@@ -160,6 +181,13 @@ export const pdfTranslations = {
     invoiceNumber: 'Numéro de Facture',
     quoteNumber: 'Numéro de Devis',
     itemCode: 'Code',
+    // QR Bill fields
+    receipt: 'Récépissé',
+    accountPayableTo: 'Compte / Payable à',
+    payableBy: 'Payable par',
+    paymentPart: 'Section paiement',
+    currency: 'Monnaie',
+    amount: 'Montant',
     // QR Bill message (ASCII-safe, no accents for QR code compatibility)
     qrInvoiceMessage: 'Facture',
     qrQuoteMessage: 'Devis',
@@ -201,6 +229,13 @@ export const pdfTranslations = {
     invoiceNumber: 'Numer da Factura',
     quoteNumber: 'Numer da Preventiv',
     itemCode: 'Code',
+    // QR Bill fields
+    receipt: 'Retschavida',
+    accountPayableTo: 'Conto / Pajabel a',
+    payableBy: 'Pajabel da',
+    paymentPart: 'Secziun pajament',
+    currency: 'Valuta',
+    amount: 'Import',
     // QR Bill message (ASCII-safe, no accents for QR code compatibility)
     qrInvoiceMessage: 'Factura',
     qrQuoteMessage: 'Preventiv',
