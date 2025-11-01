@@ -112,6 +112,7 @@ export async function GET(
     // Logo (if exists)
     if (company.logo_url) {
       try {
+        console.log('Loading logo from:', company.logo_url)
         const logoResponse = await fetch(company.logo_url)
         const logoBuffer = await logoResponse.arrayBuffer()
         
@@ -124,12 +125,31 @@ export async function GET(
         }
 
         if (logoImage) {
-          const logoDims = logoImage.scale(0.3)
+          // Calculate proportional size (max 100x60)
+          const maxWidth = 100
+          const maxHeight = 60
+          const imgWidth = logoImage.width
+          const imgHeight = logoImage.height
+          
+          let finalWidth = imgWidth
+          let finalHeight = imgHeight
+          
+          // Scale down if too large
+          if (imgWidth > maxWidth || imgHeight > maxHeight) {
+            const widthRatio = maxWidth / imgWidth
+            const heightRatio = maxHeight / imgHeight
+            const scale = Math.min(widthRatio, heightRatio)
+            finalWidth = imgWidth * scale
+            finalHeight = imgHeight * scale
+          }
+          
+          console.log('Logo dimensions:', { original: { w: imgWidth, h: imgHeight }, final: { w: finalWidth, h: finalHeight } })
+          
           page.drawImage(logoImage, {
-            x: 450,
-            y: yPosition - 60,
-            width: logoDims.width,
-            height: logoDims.height,
+            x: 495 - finalWidth, // Align right
+            y: yPosition - finalHeight - 10,
+            width: finalWidth,
+            height: finalHeight,
           })
         }
       } catch (error) {
@@ -303,7 +323,10 @@ export async function GET(
     }
 
     // Swiss QR Bill - Using OFFICIAL swissqrbill library (SVG mode for serverless)
-    console.log('Adding Swiss QR Bill with OFFICIAL library (SVG)...')
+    console.log('=== Starting Swiss QR Bill generation ===')
+    console.log('Company IBAN:', company.iban)
+    console.log('Invoice total:', invoice.total)
+    console.log('Currency:', invoice.currency)
 
     try {
       // Build QR Bill data
@@ -345,44 +368,67 @@ export async function GET(
         }
       }
 
-      // Generate Swiss QR Bill as SVG with OFFICIAL library
-      const swissQRBill = new SwissQRBillSVG(qrBillData, {
-        language: locale === 'de' ? 'DE' : locale === 'fr' ? 'FR' : locale === 'it' ? 'IT' : 'EN'
-      })
+      console.log('QR Bill data prepared:', JSON.stringify(qrBillData, null, 2))
 
-      // Get SVG string
-      const svgString = swissQRBill.toString()
-      console.log('Swiss QR Bill SVG generated, length:', svgString.length)
+      // Check if we have minimum required data
+      if (!company.iban || company.iban.trim() === '') {
+        console.error('❌ IBAN mancante! QR Bill non può essere generato senza IBAN.')
+        console.error('Vai in Impostazioni → Informazioni Pagamento e inserisci l\'IBAN')
+      } else {
+        console.log('✅ IBAN presente, generazione QR Bill...')
+        
+        // Generate Swiss QR Bill as SVG with OFFICIAL library
+        console.log('Creating SwissQRBillSVG instance...')
+        const swissQRBill = new SwissQRBillSVG(qrBillData, {
+          language: locale === 'de' ? 'DE' : locale === 'fr' ? 'FR' : locale === 'it' ? 'IT' : 'EN'
+        })
+        console.log('✅ SwissQRBillSVG instance created')
 
-      // Convert SVG to PNG using Sharp
-      const qrBillPng = await sharp(Buffer.from(svgString))
-        .resize(2100, 991) // Swiss QR Bill size in pixels
-        .png()
-        .toBuffer()
+        // Get SVG string
+        console.log('Converting to SVG string...')
+        const svgString = swissQRBill.toString()
+        console.log('✅ SVG generated, length:', svgString.length)
+        console.log('SVG preview:', svgString.substring(0, 200))
 
-      console.log('Swiss QR Bill converted to PNG, size:', qrBillPng.length)
+        // Convert SVG to PNG using Sharp
+        console.log('Converting SVG to PNG with Sharp...')
+        const qrBillPng = await sharp(Buffer.from(svgString))
+          .resize(2100, 991) // Swiss QR Bill size in pixels
+          .png()
+          .toBuffer()
+        console.log('✅ Converted to PNG, size:', qrBillPng.length)
 
-      // Embed PNG in PDF
-      const qrBillImage = await pdfDoc.embedPng(qrBillPng)
-      
-      // Add new page for QR Bill
-      const qrPage = pdfDoc.addPage([595, 842])
-      
-      // Draw QR Bill at bottom of page (105mm = 297 points)
-      const qrBillWidth = 595
-      const qrBillHeight = 280
-      
-      qrPage.drawImage(qrBillImage, {
-        x: 0,
-        y: 0,
-        width: qrBillWidth,
-        height: qrBillHeight,
-      })
+        // Embed PNG in PDF
+        console.log('Embedding PNG in PDF...')
+        const qrBillImage = await pdfDoc.embedPng(qrBillPng)
+        console.log('✅ PNG embedded')
+        
+        // Add new page for QR Bill
+        console.log('Adding new page for QR Bill...')
+        const qrPage = pdfDoc.addPage([595, 842])
+        console.log('✅ Page added')
+        
+        // Draw QR Bill at bottom of page (105mm = 297 points)
+        const qrBillWidth = 595
+        const qrBillHeight = 280
+        
+        console.log('Drawing QR Bill image on page...')
+        qrPage.drawImage(qrBillImage, {
+          x: 0,
+          y: 0,
+          width: qrBillWidth,
+          height: qrBillHeight,
+        })
+        console.log('✅ QR Bill drawn on page')
 
-      console.log('Swiss QR Bill added to PDF successfully')
+        console.log('=== ✅ Swiss QR Bill added successfully! ===')
+      }
     } catch (error) {
-      console.error('Error creating Swiss QR Bill:', error)
-      // Continue without QR Bill if it fails
+      console.error('=== ❌ ERROR creating Swiss QR Bill ===')
+      console.error('Error type:', error instanceof Error ? error.constructor.name : typeof error)
+      console.error('Error message:', error instanceof Error ? error.message : String(error))
+      console.error('Error stack:', error instanceof Error ? error.stack : 'No stack')
+      console.error('Continuing without QR Bill...')
     }
 
     const pdfBytes = await pdfDoc.save()
