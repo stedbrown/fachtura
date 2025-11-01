@@ -47,6 +47,16 @@ export async function GET(
       .from('quotes')
       .select(`
         *,
+        client:clients (
+          id,
+          name,
+          email,
+          phone,
+          address,
+          city,
+          postal_code,
+          country
+        ),
         quote_items (
           id,
           description,
@@ -185,22 +195,23 @@ export async function GET(
     page.drawText(t.billTo, { x: 50, y: yPosition, size: 11, font: fontBold, color: rgb(0, 0, 0) })
     yPosition -= 20
 
-    page.drawText(quote.customer_name || '', { x: 50, y: yPosition, size: 10, font, color: rgb(0, 0, 0) })
+    const client = quote.client || {}
+    page.drawText(client.name || '', { x: 50, y: yPosition, size: 10, font, color: rgb(0, 0, 0) })
     yPosition -= 15
 
-    if (quote.customer_address) {
-      page.drawText(quote.customer_address, { x: 50, y: yPosition, size: 9, font, color: rgb(0, 0, 0) })
+    if (client.address) {
+      page.drawText(client.address, { x: 50, y: yPosition, size: 9, font, color: rgb(0, 0, 0) })
       yPosition -= 12
     }
 
-    const customerCityLine = [quote.customer_zip, quote.customer_city].filter(Boolean).join(' ')
+    const customerCityLine = [client.postal_code, client.city].filter(Boolean).join(' ')
     if (customerCityLine) {
       page.drawText(customerCityLine, { x: 50, y: yPosition, size: 9, font, color: rgb(0, 0, 0) })
       yPosition -= 12
     }
 
-    if (quote.customer_country) {
-      page.drawText(quote.customer_country, { x: 50, y: yPosition, size: 9, font, color: rgb(0, 0, 0) })
+    if (client.country) {
+      page.drawText(client.country, { x: 50, y: yPosition, size: 9, font, color: rgb(0, 0, 0) })
       yPosition -= 12
     }
 

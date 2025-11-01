@@ -78,6 +78,16 @@ export async function GET(
       .from('invoices')
       .select(`
         *,
+        client:clients (
+          id,
+          name,
+          email,
+          phone,
+          address,
+          city,
+          postal_code,
+          country
+        ),
         invoice_items (
           id,
           description,
@@ -216,22 +226,23 @@ export async function GET(
     page.drawText(t.billTo, { x: 50, y: yPosition, size: 11, font: fontBold, color: rgb(0, 0, 0) })
     yPosition -= 20
 
-    page.drawText(invoice.customer_name || '', { x: 50, y: yPosition, size: 10, font, color: rgb(0, 0, 0) })
+    const client = invoice.client || {}
+    page.drawText(client.name || '', { x: 50, y: yPosition, size: 10, font, color: rgb(0, 0, 0) })
     yPosition -= 15
 
-    if (invoice.customer_address) {
-      page.drawText(invoice.customer_address, { x: 50, y: yPosition, size: 9, font, color: rgb(0, 0, 0) })
+    if (client.address) {
+      page.drawText(client.address, { x: 50, y: yPosition, size: 9, font, color: rgb(0, 0, 0) })
       yPosition -= 12
     }
 
-    const customerCityLine = [invoice.customer_zip, invoice.customer_city].filter(Boolean).join(' ')
+    const customerCityLine = [client.postal_code, client.city].filter(Boolean).join(' ')
     if (customerCityLine) {
       page.drawText(customerCityLine, { x: 50, y: yPosition, size: 9, font, color: rgb(0, 0, 0) })
       yPosition -= 12
     }
 
-    if (invoice.customer_country) {
-      page.drawText(invoice.customer_country, { x: 50, y: yPosition, size: 9, font, color: rgb(0, 0, 0) })
+    if (client.country) {
+      page.drawText(client.country, { x: 50, y: yPosition, size: 9, font, color: rgb(0, 0, 0) })
       yPosition -= 12
     }
 
@@ -358,14 +369,14 @@ export async function GET(
       }
 
       const debtorData: any = {
-        name: invoice.customer_name || '',
-        address: invoice.customer_address || '',
-        city: invoice.customer_city || '',
-        country: getCountryCode(invoice.customer_country)
+        name: client.name || '',
+        address: client.address || '',
+        city: client.city || '',
+        country: getCountryCode(client.country)
       }
       
-      if (invoice.customer_zip) {
-        debtorData.zip = typeof invoice.customer_zip === 'number' ? invoice.customer_zip : parseInt(String(invoice.customer_zip))
+      if (client.postal_code) {
+        debtorData.zip = typeof client.postal_code === 'number' ? client.postal_code : parseInt(String(client.postal_code))
       }
 
       const qrBillData: any = {
