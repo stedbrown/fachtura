@@ -214,7 +214,7 @@ export async function GET(
     // Invoice details
     const details = [
       `${t.invoiceNumber}: ${invoice.invoice_number}`,
-      `${t.date}: ${format(new Date(invoice.issue_date), 'dd MMMM yyyy', { locale: dateLocale })}`,
+      invoice.issue_date ? `${t.date}: ${format(new Date(invoice.issue_date), 'dd MMMM yyyy', { locale: dateLocale })}` : null,
       invoice.due_date ? `${t.dueDate}: ${format(new Date(invoice.due_date), 'dd MMMM yyyy', { locale: dateLocale })}` : null,
     ].filter(Boolean)
 
