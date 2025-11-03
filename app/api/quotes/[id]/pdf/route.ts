@@ -296,15 +296,24 @@ export async function GET(
     const taxAmount = quote.tax || 0
     const total = quote.total || 0
 
+    // Calculate average tax rate from items for display
+    let avgTaxRate = 0
+    if (items.length > 0) {
+      const totalTaxRate = items.reduce((sum: number, item: any) => sum + (item.tax_rate || 0), 0)
+      avgTaxRate = totalTaxRate / items.length
+    }
+
     pdf.fontSize(10).font('Helvetica-Bold')
     pdf.text(t.subtotal, 400, yPosition)
     pdf.font('Helvetica')
     pdf.text(`${subtotal.toFixed(2)} ${quote.currency || 'CHF'}`, 490, yPosition)
     yPosition += 20
 
-    if (quote.tax_rate) {
+    // Show tax if there is any tax amount or if items have tax rate
+    if (taxAmount > 0 || avgTaxRate > 0) {
+      const displayTaxRate = avgTaxRate > 0 ? avgTaxRate.toFixed(2) : '0'
       pdf.font('Helvetica-Bold')
-      pdf.text(`${t.tax} (${quote.tax_rate}%)`, 400, yPosition)
+      pdf.text(`${t.tax} (${displayTaxRate}%)`, 400, yPosition)
       pdf.font('Helvetica')
       pdf.text(`${taxAmount.toFixed(2)} ${quote.currency || 'CHF'}`, 490, yPosition)
       yPosition += 20
