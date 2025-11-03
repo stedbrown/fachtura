@@ -138,9 +138,9 @@ export async function GET(
       bufferPages: true
     })
 
-    let yPosition = pdf.page.height - 50 // Start from top (accounting for margin)
+    let yPosition = 50 // Start from top
 
-    // Logo (if exists)
+    // Logo (if exists) - Top right
     if (company.logo_url) {
       try {
         console.log('Loading logo from:', company.logo_url)
@@ -169,11 +169,11 @@ export async function GET(
       }
     }
 
-    // Company info
+    // Company info - Top left
     pdf.fontSize(11).font('Helvetica-Bold')
-    pdf.text(company.company_name || '', 50, 50)
+    pdf.text(company.company_name || '', 50, yPosition)
+    yPosition += 15
     
-    yPosition = 65
     pdf.fontSize(9).font('Helvetica')
     
     if (company.address) {
@@ -192,36 +192,36 @@ export async function GET(
       yPosition += 12
     }
     
-    yPosition += 10
+    yPosition += 5
     
     pdf.fontSize(8)
     
     if (company.vat_number) {
       pdf.text(`${t.vatNumber}: ${company.vat_number}`, 50, yPosition)
-      yPosition += 12
+      yPosition += 10
     }
     
     if (company.email) {
       pdf.text(`${t.email}: ${company.email}`, 50, yPosition)
-      yPosition += 12
+      yPosition += 10
     }
     
     if (company.phone) {
       pdf.text(`${t.phone}: ${company.phone}`, 50, yPosition)
-      yPosition += 12
+      yPosition += 10
     }
     
     if (company.website) {
       const displayWebsite = cleanWebsiteForDisplay(company.website)
       pdf.text(`${t.website}: ${displayWebsite}`, 50, yPosition)
-      yPosition += 12
+      yPosition += 10
     }
 
-    // Customer info - Positioned for Swiss envelope window (right side)
+    // Customer address - Positioned for Swiss envelope window (right side)
     // Swiss C5/C6 envelope: window at ~100mm from left, ~45mm from top
-    // A4 coordinates: window area at x:~320pt (113mm), y:~715pt (45mm from top)
-    const windowX = 320 // Horizontal position for envelope window
-    const windowY = 715 // Vertical position for envelope window (45mm from top of A4)
+    // A4: 210mm width, window starts at ~100mm, content safe area starts at ~105mm
+    const windowX = 320 // ~113mm from left
+    const windowY = 127 // ~45mm from top (842pt - 715pt = 127pt from top in PDFKit coords)
     
     const client = invoice.client || {}
     let clientY = windowY
@@ -229,30 +229,31 @@ export async function GET(
     // Client name
     pdf.fontSize(11).font('Helvetica-Bold')
     pdf.text(client.name || '', windowX, clientY)
-    clientY -= 15
+    clientY += 15
 
     // Client address
     if (client.address) {
       pdf.fontSize(10).font('Helvetica')
       pdf.text(client.address, windowX, clientY)
-      clientY -= 13
+      clientY += 13
     }
 
     // Client postal code and city
     const customerCityLine = [client.postal_code, client.city].filter(Boolean).join(' ')
     if (customerCityLine) {
       pdf.text(customerCityLine, windowX, clientY)
-      clientY -= 13
+      clientY += 13
     }
 
     // Client country
     if (client.country) {
       pdf.text(client.country, windowX, clientY)
-      clientY -= 13
+      clientY += 13
     }
 
-    // Continue with invoice content below
-    yPosition = 600 // Position for invoice title and content
+    // Continue with invoice content below both company and client info
+    // Ensure we start below the longest column
+    yPosition = Math.max(yPosition, clientY) + 40
 
     // Invoice title
     pdf.fontSize(20).font('Helvetica-Bold')
