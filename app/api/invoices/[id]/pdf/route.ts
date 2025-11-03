@@ -1,75 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { PDFDocument, StandardFonts, rgb } from 'pdf-lib'
-import QRCode from 'qrcode'
+import PDFDocument from 'pdfkit'
+import { SwissQRBill } from 'swissqrbill/pdf'
 import { format } from 'date-fns'
 import { it, de, fr, enUS } from 'date-fns/locale'
 import { getPDFTranslations } from '@/lib/pdf-translations'
-
-// Helper to generate Swiss QR Code data (ISO 20022)
-function generateSwissQRData(params: {
-  iban: string
-  creditorName: string
-  creditorAddress: string
-  creditorZip: string | number
-  creditorCity: string
-  creditorCountry: string
-  debtorName?: string
-  debtorAddress?: string
-  debtorZip?: string | number
-  debtorCity?: string
-  debtorCountry?: string
-  amount: number
-  currency: string
-  message?: string
-}): string {
-  const lines: string[] = []
-  
-  lines.push('SPC')     // QR Type
-  lines.push('0200')    // Version
-  lines.push('1')       // Coding (UTF-8)
-  lines.push(params.iban.replace(/\s/g, ''))  // IBAN
-  
-  // Creditor (structured)
-  lines.push('S')  // Address type: Structured
-  lines.push(params.creditorName)
-  lines.push(params.creditorAddress)
-  lines.push('')  // Building number
-  lines.push(String(params.creditorZip))
-  lines.push(params.creditorCity)
-  lines.push(params.creditorCountry)
-  
-  // Ultimate Creditor (7 empty)
-  for (let i = 0; i < 7; i++) lines.push('')
-  
-  // Amount
-  lines.push(params.amount.toFixed(2))
-  lines.push(params.currency)
-  
-  // Debtor
-  if (params.debtorName) {
-    lines.push('S')
-    lines.push(params.debtorName)
-    lines.push(params.debtorAddress || '')
-    lines.push('')
-    lines.push(String(params.debtorZip || ''))
-    lines.push(params.debtorCity || '')
-    lines.push(params.debtorCountry || '')
-  } else {
-    for (let i = 0; i < 7; i++) lines.push('')
-  }
-  
-  // Reference type
-  lines.push('NON')
-  lines.push('')  // Reference
-  lines.push(params.message || '')  // Message
-  lines.push('EPD')  // Trailer
-  lines.push('')  // Billing info
-  lines.push('')  // AV1
-  lines.push('')  // AV2
-  
-  return lines.join('\r\n')
-}
+import { Readable } from 'stream'
 
 const localeMap: Record<string, any> = {
   it: it,
@@ -118,6 +54,16 @@ function cleanWebsiteForDisplay(website: string | null | undefined): string {
     .replace(/\/+$/, '')
   
   return cleaned
+}
+
+// Helper to convert PDFKit stream to Buffer
+function streamToBuffer(stream: InstanceType<typeof PDFDocument>): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    const chunks: Buffer[] = []
+    stream.on('data', (chunk: Buffer) => chunks.push(chunk))
+    stream.on('end', () => resolve(Buffer.concat(chunks)))
+    stream.on('error', reject)
+  })
 }
 
 export async function GET(
@@ -185,13 +131,14 @@ export async function GET(
 
     console.log('Invoice data loaded successfully')
 
-    // Create PDF with pdf-lib (works perfectly on serverless)
-    const pdfDoc = await PDFDocument.create()
-    const page = pdfDoc.addPage([595, 842]) // A4
-    const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
-    const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
+    // Create PDF with PDFKit
+    const pdf = new PDFDocument({ 
+      size: 'A4',
+      margin: 50,
+      bufferPages: true
+    })
 
-    let yPosition = 792 // Start from top
+    let yPosition = pdf.page.height - 50 // Start from top (accounting for margin)
 
     // Logo (if exists)
     if (company.logo_url) {
@@ -200,41 +147,22 @@ export async function GET(
         const logoResponse = await fetch(company.logo_url)
         const logoBuffer = await logoResponse.arrayBuffer()
         
-        let logoImage
         const contentType = logoResponse.headers.get('content-type')
-        if (contentType?.includes('png')) {
-          logoImage = await pdfDoc.embedPng(logoBuffer)
-        } else if (contentType?.includes('jpeg') || contentType?.includes('jpg')) {
-          logoImage = await pdfDoc.embedJpg(logoBuffer)
-        }
-
-        if (logoImage) {
-          // Calculate proportional size (max 100x60)
-          const maxWidth = 100
-          const maxHeight = 60
-          const imgWidth = logoImage.width
-          const imgHeight = logoImage.height
-          
-          let finalWidth = imgWidth
-          let finalHeight = imgHeight
-          
-          // Scale down if too large
-          if (imgWidth > maxWidth || imgHeight > maxHeight) {
-            const widthRatio = maxWidth / imgWidth
-            const heightRatio = maxHeight / imgHeight
-            const scale = Math.min(widthRatio, heightRatio)
-            finalWidth = imgWidth * scale
-            finalHeight = imgHeight * scale
+        
+        try {
+          if (contentType?.includes('png')) {
+            pdf.image(Buffer.from(logoBuffer), 445, 50, { 
+              fit: [100, 60],
+              align: 'right'
+            })
+          } else if (contentType?.includes('jpeg') || contentType?.includes('jpg')) {
+            pdf.image(Buffer.from(logoBuffer), 445, 50, { 
+              fit: [100, 60],
+              align: 'right'
+            })
           }
-          
-          console.log('Logo dimensions:', { original: { w: imgWidth, h: imgHeight }, final: { w: finalWidth, h: finalHeight } })
-          
-          page.drawImage(logoImage, {
-            x: 495 - finalWidth, // Align right
-            y: yPosition - finalHeight - 10,
-            width: finalWidth,
-            height: finalHeight,
-          })
+        } catch (imgError) {
+          console.error('Error embedding logo:', imgError)
         }
       } catch (error) {
         console.error('Error loading logo:', error)
@@ -242,81 +170,92 @@ export async function GET(
     }
 
     // Company info
-    page.drawText(company.company_name || '', { x: 50, y: yPosition, size: 11, font: fontBold, color: rgb(0, 0, 0) })
-    yPosition -= 15
+    pdf.fontSize(11).font('Helvetica-Bold')
+    pdf.text(company.company_name || '', 50, 50)
+    
+    yPosition = 65
+    pdf.fontSize(9).font('Helvetica')
     
     if (company.address) {
-      page.drawText(company.address, { x: 50, y: yPosition, size: 9, font, color: rgb(0, 0, 0) })
-      yPosition -= 12
+      pdf.text(company.address, 50, yPosition)
+      yPosition += 12
     }
     
     const cityLine = [company.postal_code, company.city].filter(Boolean).join(' ')
     if (cityLine) {
-      page.drawText(cityLine, { x: 50, y: yPosition, size: 9, font, color: rgb(0, 0, 0) })
-      yPosition -= 12
+      pdf.text(cityLine, 50, yPosition)
+      yPosition += 12
     }
     
     if (company.country) {
-      page.drawText(company.country, { x: 50, y: yPosition, size: 9, font, color: rgb(0, 0, 0) })
-      yPosition -= 12
+      pdf.text(company.country, 50, yPosition)
+      yPosition += 12
     }
     
-    yPosition -= 10
+    yPosition += 10
+    
+    pdf.fontSize(8)
     
     if (company.vat_number) {
-      page.drawText(`${t.vatNumber}: ${company.vat_number}`, { x: 50, y: yPosition, size: 8, font, color: rgb(0, 0, 0) })
-      yPosition -= 12
+      pdf.text(`${t.vatNumber}: ${company.vat_number}`, 50, yPosition)
+      yPosition += 12
     }
     
     if (company.email) {
-      page.drawText(`${t.email}: ${company.email}`, { x: 50, y: yPosition, size: 8, font, color: rgb(0, 0, 0) })
-      yPosition -= 12
+      pdf.text(`${t.email}: ${company.email}`, 50, yPosition)
+      yPosition += 12
     }
     
     if (company.phone) {
-      page.drawText(`${t.phone}: ${company.phone}`, { x: 50, y: yPosition, size: 8, font, color: rgb(0, 0, 0) })
-      yPosition -= 12
+      pdf.text(`${t.phone}: ${company.phone}`, 50, yPosition)
+      yPosition += 12
     }
     
     if (company.website) {
       const displayWebsite = cleanWebsiteForDisplay(company.website)
-      page.drawText(`${t.website}: ${displayWebsite}`, { x: 50, y: yPosition, size: 8, font, color: rgb(0, 0, 0) })
-      yPosition -= 12
+      pdf.text(`${t.website}: ${displayWebsite}`, 50, yPosition)
+      yPosition += 12
     }
 
-    yPosition -= 30
+    yPosition += 30
 
     // Customer info
-    page.drawText(t.billTo, { x: 50, y: yPosition, size: 11, font: fontBold, color: rgb(0, 0, 0) })
-    yPosition -= 20
+    pdf.fontSize(11).font('Helvetica-Bold')
+    pdf.text(t.billTo, 50, yPosition)
+    yPosition += 20
 
     const client = invoice.client || {}
-    page.drawText(client.name || '', { x: 50, y: yPosition, size: 10, font, color: rgb(0, 0, 0) })
-    yPosition -= 15
+    pdf.fontSize(10).font('Helvetica')
+    pdf.text(client.name || '', 50, yPosition)
+    yPosition += 15
 
     if (client.address) {
-      page.drawText(client.address, { x: 50, y: yPosition, size: 9, font, color: rgb(0, 0, 0) })
-      yPosition -= 12
+      pdf.fontSize(9)
+      pdf.text(client.address, 50, yPosition)
+      yPosition += 12
     }
 
     const customerCityLine = [client.postal_code, client.city].filter(Boolean).join(' ')
     if (customerCityLine) {
-      page.drawText(customerCityLine, { x: 50, y: yPosition, size: 9, font, color: rgb(0, 0, 0) })
-      yPosition -= 12
+      pdf.text(customerCityLine, 50, yPosition)
+      yPosition += 12
     }
 
     if (client.country) {
-      page.drawText(client.country, { x: 50, y: yPosition, size: 9, font, color: rgb(0, 0, 0) })
-      yPosition -= 12
+      pdf.text(client.country, 50, yPosition)
+      yPosition += 12
     }
 
-    yPosition -= 30
+    yPosition += 30
 
     // Invoice title
-    page.drawText(t.invoice.toUpperCase(), { x: 50, y: yPosition, size: 20, font: fontBold, color: rgb(0, 0, 0) })
-    yPosition -= 30
+    pdf.fontSize(20).font('Helvetica-Bold')
+    pdf.text(t.invoice.toUpperCase(), 50, yPosition)
+    yPosition += 30
 
     // Invoice details
+    pdf.fontSize(10).font('Helvetica')
+    
     const details = [
       `${t.invoiceNumber}: ${invoice.invoice_number}`,
       invoice.issue_date ? `${t.date}: ${format(new Date(invoice.issue_date), 'dd MMMM yyyy', { locale: dateLocale })}` : null,
@@ -325,12 +264,12 @@ export async function GET(
 
     details.forEach(detail => {
       if (detail) {
-        page.drawText(detail, { x: 50, y: yPosition, size: 10, font, color: rgb(0, 0, 0) })
-        yPosition -= 15
+        pdf.text(detail, 50, yPosition)
+        yPosition += 15
       }
     })
 
-    yPosition -= 20
+    yPosition += 20
 
     // Items table header
     const tableTop = yPosition
@@ -340,312 +279,152 @@ export async function GET(
     const priceX = 420
     const totalX = 490
 
-    page.drawText(t.itemCode, { x: itemCodeX, y: tableTop, size: 10, font: fontBold, color: rgb(0, 0, 0) })
-    page.drawText(t.description, { x: descriptionX, y: tableTop, size: 10, font: fontBold, color: rgb(0, 0, 0) })
-    page.drawText(t.quantity, { x: quantityX, y: tableTop, size: 10, font: fontBold, color: rgb(0, 0, 0) })
-    page.drawText(t.price, { x: priceX, y: tableTop, size: 10, font: fontBold, color: rgb(0, 0, 0) })
-    page.drawText(t.total, { x: totalX, y: tableTop, size: 10, font: fontBold, color: rgb(0, 0, 0) })
+    pdf.fontSize(10).font('Helvetica-Bold')
+    pdf.text(t.itemCode, itemCodeX, tableTop)
+    pdf.text(t.description, descriptionX, tableTop)
+    pdf.text(t.quantity, quantityX, tableTop)
+    pdf.text(t.price, priceX, tableTop)
+    pdf.text(t.total, totalX, tableTop)
 
-    yPosition = tableTop - 20
+    yPosition = tableTop + 20
 
     // Header line
-    page.drawLine({
-      start: { x: 50, y: yPosition },
-      end: { x: 550, y: yPosition },
-      thickness: 1,
-      color: rgb(0, 0, 0),
-    })
-    yPosition -= 15
+    pdf.moveTo(50, yPosition)
+       .lineTo(545, yPosition)
+       .stroke()
+    yPosition += 15
 
     // Items
     const items = invoice.invoice_items || []
-    console.log('Invoice items count:', items.length)
+    pdf.fontSize(9).font('Helvetica')
     
     items.forEach((item: any, index: number) => {
       const itemTotal = (item.quantity || 0) * (item.unit_price || 0)
       
-      console.log(`Item ${index + 1}:`, { description: item.description, quantity: item.quantity, unit_price: item.unit_price })
+      // Check if we need a new page
+      if (yPosition > 700) {
+        pdf.addPage()
+        yPosition = 50
+      }
       
-      // No "code" field in database, so we show item number
-      page.drawText(`${index + 1}`, { x: itemCodeX, y: yPosition, size: 9, font, color: rgb(0, 0, 0) })
-      page.drawText(item.description || '', { x: descriptionX, y: yPosition, size: 9, font, color: rgb(0, 0, 0), maxWidth: 220 })
-      page.drawText(String(item.quantity || 0), { x: quantityX, y: yPosition, size: 9, font, color: rgb(0, 0, 0) })
-      page.drawText(`${(item.unit_price || 0).toFixed(2)}`, { x: priceX, y: yPosition, size: 9, font, color: rgb(0, 0, 0) })
-      page.drawText(`${itemTotal.toFixed(2)}`, { x: totalX, y: yPosition, size: 9, font, color: rgb(0, 0, 0) })
+      pdf.text(`${index + 1}`, itemCodeX, yPosition)
+      pdf.text(item.description || '', descriptionX, yPosition, { width: 220 })
+      pdf.text(String(item.quantity || 0), quantityX, yPosition)
+      pdf.text(`${(item.unit_price || 0).toFixed(2)}`, priceX, yPosition)
+      pdf.text(`${itemTotal.toFixed(2)}`, totalX, yPosition)
       
-      yPosition -= 20
+      yPosition += 20
     })
 
-    yPosition -= 10
-    page.drawLine({
-      start: { x: 50, y: yPosition },
-      end: { x: 550, y: yPosition },
-      thickness: 1,
-      color: rgb(0, 0, 0),
-    })
-    yPosition -= 20
+    yPosition += 10
+    pdf.moveTo(50, yPosition)
+       .lineTo(545, yPosition)
+       .stroke()
+    yPosition += 20
 
     // Totals
     const subtotal = invoice.subtotal || 0
     const taxAmount = invoice.tax || 0
     const total = invoice.total || 0
 
-    page.drawText(t.subtotal, { x: 400, y: yPosition, size: 10, font: fontBold, color: rgb(0, 0, 0) })
-    page.drawText(`${subtotal.toFixed(2)} ${invoice.currency || 'CHF'}`, { x: 490, y: yPosition, size: 10, font, color: rgb(0, 0, 0) })
-    yPosition -= 20
+    pdf.fontSize(10).font('Helvetica-Bold')
+    pdf.text(t.subtotal, 400, yPosition)
+    pdf.font('Helvetica')
+    pdf.text(`${subtotal.toFixed(2)} ${invoice.currency || 'CHF'}`, 490, yPosition)
+    yPosition += 20
 
     if (invoice.tax_rate) {
-      page.drawText(`${t.tax} (${invoice.tax_rate}%)`, { x: 400, y: yPosition, size: 10, font: fontBold, color: rgb(0, 0, 0) })
-      page.drawText(`${taxAmount.toFixed(2)} ${invoice.currency || 'CHF'}`, { x: 490, y: yPosition, size: 10, font, color: rgb(0, 0, 0) })
-      yPosition -= 20
+      pdf.font('Helvetica-Bold')
+      pdf.text(`${t.tax} (${invoice.tax_rate}%)`, 400, yPosition)
+      pdf.font('Helvetica')
+      pdf.text(`${taxAmount.toFixed(2)} ${invoice.currency || 'CHF'}`, 490, yPosition)
+      yPosition += 20
     }
 
-    page.drawText(t.total, { x: 400, y: yPosition, size: 12, font: fontBold, color: rgb(0, 0, 0) })
-    page.drawText(`${total.toFixed(2)} ${invoice.currency || 'CHF'}`, { x: 490, y: yPosition, size: 12, font: fontBold, color: rgb(0, 0, 0) })
+    pdf.fontSize(12).font('Helvetica-Bold')
+    pdf.text(t.total, 400, yPosition)
+    pdf.text(`${total.toFixed(2)} ${invoice.currency || 'CHF'}`, 490, yPosition)
 
-    yPosition -= 40
+    yPosition += 40
 
     // Notes
-    if (invoice.notes) {
-      page.drawText(t.notes, { x: 50, y: yPosition, size: 10, font: fontBold, color: rgb(0, 0, 0) })
-      yPosition -= 15
-      page.drawText(invoice.notes, { x: 50, y: yPosition, size: 9, font, color: rgb(0, 0, 0), maxWidth: 500 })
+    if (invoice.notes && yPosition < 650) {
+      pdf.fontSize(10).font('Helvetica-Bold')
+      pdf.text(t.notes, 50, yPosition)
+      yPosition += 15
+      pdf.fontSize(9).font('Helvetica')
+      pdf.text(invoice.notes, 50, yPosition, { width: 500 })
     }
 
-    // Swiss QR Bill - Using OFFICIAL swissqrbill library (SVG mode for serverless)
-    console.log('=== Starting Swiss QR Bill generation ===')
+    // Swiss QR Bill - Using OFFICIAL swissqrbill library
+    console.log('=== Starting Swiss QR Bill generation with official library ===')
     console.log('Company IBAN:', company.iban)
     console.log('Invoice total:', invoice.total)
     console.log('Currency:', invoice.currency)
 
     try {
-      // Build QR Bill data
-      const creditorData: any = {
-        name: company.company_name || '',
-        address: company.address || '',
-        city: company.city || '',
-        account: company.iban || '',
-        country: getCountryCode(company.country)
-      }
-      
-      if (company.postal_code) {
-        creditorData.zip = typeof company.postal_code === 'number' ? company.postal_code : parseInt(String(company.postal_code))
-      }
-
-      const debtorData: any = {
-        name: client.name || '',
-        address: client.address || '',
-        city: client.city || '',
-        country: getCountryCode(client.country)
-      }
-      
-      if (client.postal_code) {
-        debtorData.zip = typeof client.postal_code === 'number' ? client.postal_code : parseInt(String(client.postal_code))
-      }
-
-      const qrBillData: any = {
-        currency: invoice.currency || 'CHF',
-        amount: invoice.total,
-        creditor: creditorData,
-        debtor: debtorData,
-        message: `${t.invoice} ${invoice.invoice_number}`
-      }
-
-      // QR-Reference requires QR-IBAN (not regular IBAN)
-      // QR-IBAN typically starts with institution number 30-31
-      // For now, we skip reference and use message field instead
-      // User can add QR-IBAN later in settings if they want QR-Reference support
-      console.log('Skipping QR-Reference (requires QR-IBAN, current IBAN is regular)')
-
-      console.log('QR Bill data prepared:', JSON.stringify(qrBillData, null, 2))
-
       // Check if we have minimum required data
       if (!company.iban || company.iban.trim() === '') {
-        console.error('❌ IBAN mancante! QR Bill non può essere generato senza IBAN.')
-        console.error('Vai in Impostazioni → Informazioni Pagamento e inserisci l\'IBAN')
+        console.error('❌ IBAN missing! QR Bill cannot be generated without IBAN.')
+        console.error('Go to Settings → Payment Information and enter the IBAN')
       } else if (!company.postal_code || company.postal_code.toString().trim() === '') {
-        console.error('❌ CAP mancante! QR Bill richiede il CAP dell\'azienda.')
-        console.error('Vai in Impostazioni → Dati Azienda e inserisci il CAP')
+        console.error('❌ Postal code missing! QR Bill requires company postal code.')
+        console.error('Go to Settings → Company Data and enter the postal code')
       } else if (!company.company_name || company.company_name.trim() === '') {
-        console.error('❌ Nome Azienda mancante! QR Bill richiede il nome dell\'azienda.')
-        console.error('Vai in Impostazioni → Dati Azienda e inserisci il Nome Azienda')
+        console.error('❌ Company name missing! QR Bill requires company name.')
+        console.error('Go to Settings → Company Data and enter the company name')
       } else {
-        console.log('✅ IBAN presente, generazione Swiss QR Bill con layout manuale ufficiale...')
+        console.log('✅ IBAN present, generating Swiss QR Bill with official library...')
         
-        // Generate QR Code data (ISO 20022)
-        const qrData = generateSwissQRData({
-          iban: company.iban || '',
-          creditorName: company.company_name || '',
-          creditorAddress: company.address || '',
-          creditorZip: company.postal_code || '',
-          creditorCity: company.city || '',
-          creditorCountry: getCountryCode(company.country),
-          debtorName: client.name,
-          debtorAddress: client.address,
-          debtorZip: client.postal_code,
-          debtorCity: client.city,
-          debtorCountry: getCountryCode(client.country),
+        // Prepare data for SwissQRBill (official library format)
+        const qrBillData: any = {
+          currency: (invoice.currency || 'CHF') as 'CHF' | 'EUR',
           amount: invoice.total || 0,
-          currency: invoice.currency || 'CHF',
-          message: `${t.invoice} ${invoice.invoice_number}`
-        })
-        
-        console.log('QR Data generated (ISO 20022)')
-        
-        // Generate QR Code image (46mm x 46mm = 130pt)
-        const qrCodeBuffer = await QRCode.toBuffer(qrData, {
-          width: 166,
-          margin: 0,
-          errorCorrectionLevel: 'M'
-        })
-        
-        const qrCodeImage = await pdfDoc.embedPng(qrCodeBuffer)
-        console.log('QR Code image generated')
-        
-        // Create new page for QR Bill
-        const qrPage = pdfDoc.addPage([595, 842]) // A4
-        
-        // QR Bill dimensions (105mm = 297pt from bottom)
-        const qrBillY = 842 - 297
-        
-        // === SCISSORS LINE ===
-        qrPage.drawLine({
-          start: { x: 0, y: qrBillY },
-          end: { x: 595, y: qrBillY },
-          thickness: 0.75,
-          color: rgb(0, 0, 0),
-          dashArray: [2, 2]
-        })
-        
-        // Scissors symbol
-        qrPage.drawText('✂', { x: 10, y: qrBillY - 5, size: 10, font, color: rgb(0, 0, 0) })
-        
-        // === RECEIPT SECTION (Left, 62mm = 175.7pt) ===
-        const receiptX = 5
-        let receiptY = qrBillY - 20
-        
-        // Title
-        qrPage.drawText(t.receipt, { x: receiptX, y: receiptY, size: 11, font: fontBold, color: rgb(0, 0, 0) })
-        receiptY -= 25
-        
-        // Account / Payable to
-        qrPage.drawText(t.accountPayableTo, { x: receiptX, y: receiptY, size: 6, font: fontBold, color: rgb(0, 0, 0) })
-        receiptY -= 10
-        qrPage.drawText(company.iban || '', { x: receiptX, y: receiptY, size: 8, font, color: rgb(0, 0, 0) })
-        receiptY -= 10
-        qrPage.drawText(company.company_name || '', { x: receiptX, y: receiptY, size: 8, font, color: rgb(0, 0, 0), maxWidth: 165 })
-        receiptY -= 10
-        qrPage.drawText(`${company.address || ''}`, { x: receiptX, y: receiptY, size: 8, font, color: rgb(0, 0, 0), maxWidth: 165 })
-        receiptY -= 10
-        qrPage.drawText(`${company.postal_code || ''} ${company.city || ''}`, { x: receiptX, y: receiptY, size: 8, font, color: rgb(0, 0, 0) })
-        receiptY -= 20
-        
-        // Payable by
-        qrPage.drawText(t.payableBy, { x: receiptX, y: receiptY, size: 6, font: fontBold, color: rgb(0, 0, 0) })
-        receiptY -= 10
-        if (client.name) {
-          qrPage.drawText(client.name, { x: receiptX, y: receiptY, size: 8, font, color: rgb(0, 0, 0), maxWidth: 165 })
-          receiptY -= 10
-          qrPage.drawText(`${client.address || ''}`, { x: receiptX, y: receiptY, size: 8, font, color: rgb(0, 0, 0), maxWidth: 165 })
-          receiptY -= 10
-          qrPage.drawText(`${client.postal_code || ''} ${client.city || ''}`, { x: receiptX, y: receiptY, size: 8, font, color: rgb(0, 0, 0) })
+          creditor: {
+            name: company.company_name || '',
+            address: company.address || '',
+            zip: parseInt(String(company.postal_code || '0')),
+            city: company.city || '',
+            country: getCountryCode(company.country),
+            account: company.iban.replace(/\s/g, ''), // Remove spaces from IBAN
+          },
+          message: `${t.invoice} ${invoice.invoice_number}`,
         }
-        receiptY -= 25
-        
-        // Currency and Amount
-        qrPage.drawText(t.currency, { x: receiptX, y: receiptY, size: 6, font: fontBold, color: rgb(0, 0, 0) })
-        qrPage.drawText(t.amount, { x: receiptX + 35, y: receiptY, size: 6, font: fontBold, color: rgb(0, 0, 0) })
-        receiptY -= 10
-        qrPage.drawText(invoice.currency || 'CHF', { x: receiptX, y: receiptY, size: 8, font, color: rgb(0, 0, 0) })
-        qrPage.drawText((invoice.total || 0).toFixed(2), { x: receiptX + 35, y: receiptY, size: 8, font, color: rgb(0, 0, 0) })
-        
-        // Vertical separator line
-        qrPage.drawLine({
-          start: { x: 198, y: qrBillY },
-          end: { x: 198, y: 842 },
-          thickness: 0.75,
-          color: rgb(0, 0, 0),
-          dashArray: [2, 2]
-        })
-        
-        // === PAYMENT PART SECTION (Right) ===
-        const paymentX = 210
-        let paymentY = qrBillY - 20
-        
-        // Title
-        qrPage.drawText(t.paymentPart, { x: paymentX, y: paymentY, size: 11, font: fontBold, color: rgb(0, 0, 0) })
-        paymentY -= 35
-        
-        // QR Code (46mm x 46mm)
-        qrPage.drawImage(qrCodeImage, {
-          x: paymentX,
-          y: paymentY - 166,
-          width: 166,
-          height: 166
-        })
-        
-        // Swiss Cross in QR Code center
-        const crossSize = 7
-        const crossX = paymentX + 83
-        const crossY = paymentY - 83
-        qrPage.drawRectangle({
-          x: crossX - crossSize,
-          y: crossY - crossSize,
-          width: crossSize * 2,
-          height: crossSize * 2,
-          color: rgb(1, 1, 1),
-          borderColor: rgb(0, 0, 0),
-          borderWidth: 1.5
-        })
-        qrPage.drawLine({
-          start: { x: crossX - 4, y: crossY },
-          end: { x: crossX + 4, y: crossY },
-          thickness: 1.5,
-          color: rgb(0, 0, 0)
-        })
-        qrPage.drawLine({
-          start: { x: crossX, y: crossY - 4 },
-          end: { x: crossX, y: crossY + 4 },
-          thickness: 1.5,
-          color: rgb(0, 0, 0)
-        })
-        
-        // Right side info
-        const infoX = paymentX + 186
-        let infoY = paymentY - 10
-        
-        // Currency and Amount
-        qrPage.drawText(t.currency, { x: infoX, y: infoY, size: 8, font: fontBold, color: rgb(0, 0, 0) })
-        qrPage.drawText(t.amount, { x: infoX + 50, y: infoY, size: 8, font: fontBold, color: rgb(0, 0, 0) })
-        infoY -= 15
-        qrPage.drawText(invoice.currency || 'CHF', { x: infoX, y: infoY, size: 10, font, color: rgb(0, 0, 0) })
-        qrPage.drawText((invoice.total || 0).toFixed(2), { x: infoX + 50, y: infoY, size: 10, font, color: rgb(0, 0, 0) })
-        infoY -= 30
-        
-        // Account / Payable to
-        qrPage.drawText(t.accountPayableTo, { x: infoX, y: infoY, size: 8, font: fontBold, color: rgb(0, 0, 0) })
-        infoY -= 12
-        qrPage.drawText(company.iban || '', { x: infoX, y: infoY, size: 9, font, color: rgb(0, 0, 0) })
-        infoY -= 10
-        qrPage.drawText(company.company_name || '', { x: infoX, y: infoY, size: 9, font, color: rgb(0, 0, 0), maxWidth: 180 })
-        infoY -= 10
-        qrPage.drawText(`${company.address || ''}`, { x: infoX, y: infoY, size: 9, font, color: rgb(0, 0, 0), maxWidth: 180 })
-        infoY -= 10
-        qrPage.drawText(`${company.postal_code || ''} ${company.city || ''}`, { x: infoX, y: infoY, size: 9, font, color: rgb(0, 0, 0) })
-        infoY -= 25
-        
-        // Payable by
-        qrPage.drawText(t.payableBy, { x: infoX, y: infoY, size: 8, font: fontBold, color: rgb(0, 0, 0) })
-        infoY -= 12
+
+        // Add debtor info if available
         if (client.name) {
-          qrPage.drawText(client.name, { x: infoX, y: infoY, size: 9, font, color: rgb(0, 0, 0), maxWidth: 180 })
-          infoY -= 10
-          qrPage.drawText(`${client.address || ''}`, { x: infoX, y: infoY, size: 9, font, color: rgb(0, 0, 0), maxWidth: 180 })
-          infoY -= 10
-          qrPage.drawText(`${client.postal_code || ''} ${client.city || ''}`, { x: infoX, y: infoY, size: 9, font, color: rgb(0, 0, 0) })
+          qrBillData.debtor = {
+            name: client.name,
+            address: client.address || '',
+            zip: parseInt(String(client.postal_code || '0')),
+            city: client.city || '',
+            country: getCountryCode(client.country),
+          }
         }
-        
-        console.log('=== ✅ Swiss QR Bill UFFICIALE (manual layout) completato! ===')
+
+        // Add language option based on locale
+        const qrLanguageMap: Record<string, 'DE' | 'EN' | 'IT' | 'FR'> = {
+          de: 'DE',
+          en: 'EN',
+          it: 'IT',
+          fr: 'FR',
+          rm: 'IT', // Romansh defaults to Italian
+        }
+
+        console.log('Creating SwissQRBill with data:', JSON.stringify(qrBillData, null, 2))
+
+        // Create SwissQRBill instance with official library
+        const swissQRBill = new SwissQRBill(qrBillData, {
+          language: qrLanguageMap[locale] || 'IT',
+          scissors: true,
+        })
+
+        console.log('SwissQRBill instance created successfully')
+
+        // Attach QR Bill to PDF (creates new page automatically)
+        swissQRBill.attachTo(pdf)
+
+        console.log('=== ✅ Swiss QR Bill OFFICIAL (swissqrbill library) attached successfully! ===')
       }
     } catch (error) {
       console.error('=== ❌ ERROR creating Swiss QR Bill ===')
@@ -655,18 +434,22 @@ export async function GET(
       console.error('Continuing without QR Bill...')
     }
 
-    const pdfBytes = await pdfDoc.save()
+    // Finalize PDF
+    pdf.end()
 
-    console.log('PDF generated successfully, size:', pdfBytes.length)
+    // Convert stream to buffer
+    const pdfBuffer = await streamToBuffer(pdf)
 
-    // Convert Uint8Array to Buffer for NextResponse
-    const pdfBuffer = Buffer.from(pdfBytes)
+    console.log('PDF generated successfully, size:', pdfBuffer.length)
 
-    return new NextResponse(pdfBuffer, {
+    // Convert Buffer to Uint8Array for NextResponse compatibility
+    const pdfUint8Array = new Uint8Array(pdfBuffer)
+
+    return new NextResponse(pdfUint8Array, {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="${t.invoice.toLowerCase()}-${invoice.invoice_number}.pdf"`,
-        'Content-Length': String(pdfBytes.length)
+        'Content-Length': String(pdfBuffer.length)
       },
     })
   } catch (error) {

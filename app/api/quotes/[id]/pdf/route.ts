@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { PDFDocument, StandardFonts, rgb } from 'pdf-lib'
+import PDFDocument from 'pdfkit'
 import { format } from 'date-fns'
 import { it, de, fr, enUS } from 'date-fns/locale'
 import { getPDFTranslations } from '@/lib/pdf-translations'
@@ -23,6 +23,16 @@ function cleanWebsiteForDisplay(website: string | null | undefined): string {
     .replace(/\/+$/, '')
   
   return cleaned
+}
+
+// Helper to convert PDFKit stream to Buffer
+function streamToBuffer(stream: InstanceType<typeof PDFDocument>): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    const chunks: Buffer[] = []
+    stream.on('data', (chunk: Buffer) => chunks.push(chunk))
+    stream.on('end', () => resolve(Buffer.concat(chunks)))
+    stream.on('error', reject)
+  })
 }
 
 export async function GET(
@@ -90,13 +100,14 @@ export async function GET(
 
     console.log('Quote data loaded successfully')
 
-    // Create PDF with pdf-lib (works perfectly on serverless)
-    const pdfDoc = await PDFDocument.create()
-    const page = pdfDoc.addPage([595, 842]) // A4
-    const font = await pdfDoc.embedFont(StandardFonts.Helvetica)
-    const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
+    // Create PDF with PDFKit
+    const pdf = new PDFDocument({ 
+      size: 'A4',
+      margin: 50,
+      bufferPages: true
+    })
 
-    let yPosition = 792 // Start from top
+    let yPosition = pdf.page.height - 50 // Start from top (accounting for margin)
 
     // Logo (if exists)
     if (company.logo_url) {
@@ -105,41 +116,22 @@ export async function GET(
         const logoResponse = await fetch(company.logo_url)
         const logoBuffer = await logoResponse.arrayBuffer()
         
-        let logoImage
         const contentType = logoResponse.headers.get('content-type')
-        if (contentType?.includes('png')) {
-          logoImage = await pdfDoc.embedPng(logoBuffer)
-        } else if (contentType?.includes('jpeg') || contentType?.includes('jpg')) {
-          logoImage = await pdfDoc.embedJpg(logoBuffer)
-        }
-
-        if (logoImage) {
-          // Calculate proportional size (max 100x60)
-          const maxWidth = 100
-          const maxHeight = 60
-          const imgWidth = logoImage.width
-          const imgHeight = logoImage.height
-          
-          let finalWidth = imgWidth
-          let finalHeight = imgHeight
-          
-          // Scale down if too large
-          if (imgWidth > maxWidth || imgHeight > maxHeight) {
-            const widthRatio = maxWidth / imgWidth
-            const heightRatio = maxHeight / imgHeight
-            const scale = Math.min(widthRatio, heightRatio)
-            finalWidth = imgWidth * scale
-            finalHeight = imgHeight * scale
+        
+        try {
+          if (contentType?.includes('png')) {
+            pdf.image(Buffer.from(logoBuffer), 445, 50, { 
+              fit: [100, 60],
+              align: 'right'
+            })
+          } else if (contentType?.includes('jpeg') || contentType?.includes('jpg')) {
+            pdf.image(Buffer.from(logoBuffer), 445, 50, { 
+              fit: [100, 60],
+              align: 'right'
+            })
           }
-          
-          console.log('Logo dimensions:', { original: { w: imgWidth, h: imgHeight }, final: { w: finalWidth, h: finalHeight } })
-          
-          page.drawImage(logoImage, {
-            x: 495 - finalWidth, // Align right
-            y: yPosition - finalHeight - 10,
-            width: finalWidth,
-            height: finalHeight,
-          })
+        } catch (imgError) {
+          console.error('Error embedding logo:', imgError)
         }
       } catch (error) {
         console.error('Error loading logo:', error)
@@ -147,81 +139,92 @@ export async function GET(
     }
 
     // Company info
-    page.drawText(company.company_name || '', { x: 50, y: yPosition, size: 11, font: fontBold, color: rgb(0, 0, 0) })
-    yPosition -= 15
+    pdf.fontSize(11).font('Helvetica-Bold')
+    pdf.text(company.company_name || '', 50, 50)
+    
+    yPosition = 65
+    pdf.fontSize(9).font('Helvetica')
     
     if (company.address) {
-      page.drawText(company.address, { x: 50, y: yPosition, size: 9, font, color: rgb(0, 0, 0) })
-      yPosition -= 12
+      pdf.text(company.address, 50, yPosition)
+      yPosition += 12
     }
     
     const cityLine = [company.postal_code, company.city].filter(Boolean).join(' ')
     if (cityLine) {
-      page.drawText(cityLine, { x: 50, y: yPosition, size: 9, font, color: rgb(0, 0, 0) })
-      yPosition -= 12
+      pdf.text(cityLine, 50, yPosition)
+      yPosition += 12
     }
     
     if (company.country) {
-      page.drawText(company.country, { x: 50, y: yPosition, size: 9, font, color: rgb(0, 0, 0) })
-      yPosition -= 12
+      pdf.text(company.country, 50, yPosition)
+      yPosition += 12
     }
     
-    yPosition -= 10
+    yPosition += 10
+    
+    pdf.fontSize(8)
     
     if (company.vat_number) {
-      page.drawText(`${t.vatNumber}: ${company.vat_number}`, { x: 50, y: yPosition, size: 8, font, color: rgb(0, 0, 0) })
-      yPosition -= 12
+      pdf.text(`${t.vatNumber}: ${company.vat_number}`, 50, yPosition)
+      yPosition += 12
     }
     
     if (company.email) {
-      page.drawText(`${t.email}: ${company.email}`, { x: 50, y: yPosition, size: 8, font, color: rgb(0, 0, 0) })
-      yPosition -= 12
+      pdf.text(`${t.email}: ${company.email}`, 50, yPosition)
+      yPosition += 12
     }
     
     if (company.phone) {
-      page.drawText(`${t.phone}: ${company.phone}`, { x: 50, y: yPosition, size: 8, font, color: rgb(0, 0, 0) })
-      yPosition -= 12
+      pdf.text(`${t.phone}: ${company.phone}`, 50, yPosition)
+      yPosition += 12
     }
     
     if (company.website) {
       const displayWebsite = cleanWebsiteForDisplay(company.website)
-      page.drawText(`${t.website}: ${displayWebsite}`, { x: 50, y: yPosition, size: 8, font, color: rgb(0, 0, 0) })
-      yPosition -= 12
+      pdf.text(`${t.website}: ${displayWebsite}`, 50, yPosition)
+      yPosition += 12
     }
 
-    yPosition -= 30
+    yPosition += 30
 
     // Customer info
-    page.drawText(t.billTo, { x: 50, y: yPosition, size: 11, font: fontBold, color: rgb(0, 0, 0) })
-    yPosition -= 20
+    pdf.fontSize(11).font('Helvetica-Bold')
+    pdf.text(t.billTo, 50, yPosition)
+    yPosition += 20
 
     const client = quote.client || {}
-    page.drawText(client.name || '', { x: 50, y: yPosition, size: 10, font, color: rgb(0, 0, 0) })
-    yPosition -= 15
+    pdf.fontSize(10).font('Helvetica')
+    pdf.text(client.name || '', 50, yPosition)
+    yPosition += 15
 
     if (client.address) {
-      page.drawText(client.address, { x: 50, y: yPosition, size: 9, font, color: rgb(0, 0, 0) })
-      yPosition -= 12
+      pdf.fontSize(9)
+      pdf.text(client.address, 50, yPosition)
+      yPosition += 12
     }
 
     const customerCityLine = [client.postal_code, client.city].filter(Boolean).join(' ')
     if (customerCityLine) {
-      page.drawText(customerCityLine, { x: 50, y: yPosition, size: 9, font, color: rgb(0, 0, 0) })
-      yPosition -= 12
+      pdf.text(customerCityLine, 50, yPosition)
+      yPosition += 12
     }
 
     if (client.country) {
-      page.drawText(client.country, { x: 50, y: yPosition, size: 9, font, color: rgb(0, 0, 0) })
-      yPosition -= 12
+      pdf.text(client.country, 50, yPosition)
+      yPosition += 12
     }
 
-    yPosition -= 30
+    yPosition += 30
 
     // Quote title
-    page.drawText(t.quote.toUpperCase(), { x: 50, y: yPosition, size: 20, font: fontBold, color: rgb(0, 0, 0) })
-    yPosition -= 30
+    pdf.fontSize(20).font('Helvetica-Bold')
+    pdf.text(t.quote.toUpperCase(), 50, yPosition)
+    yPosition += 30
 
     // Quote details
+    pdf.fontSize(10).font('Helvetica')
+    
     const details = [
       `${t.quoteNumber}: ${quote.quote_number}`,
       quote.issue_date ? `${t.date}: ${format(new Date(quote.issue_date), 'dd MMMM yyyy', { locale: dateLocale })}` : null,
@@ -230,12 +233,12 @@ export async function GET(
 
     details.forEach(detail => {
       if (detail) {
-        page.drawText(detail, { x: 50, y: yPosition, size: 10, font, color: rgb(0, 0, 0) })
-        yPosition -= 15
+        pdf.text(detail, 50, yPosition)
+        yPosition += 15
       }
     })
 
-    yPosition -= 20
+    yPosition += 20
 
     // Items table header
     const tableTop = yPosition
@@ -245,89 +248,99 @@ export async function GET(
     const priceX = 420
     const totalX = 490
 
-    page.drawText(t.itemCode, { x: itemCodeX, y: tableTop, size: 10, font: fontBold, color: rgb(0, 0, 0) })
-    page.drawText(t.description, { x: descriptionX, y: tableTop, size: 10, font: fontBold, color: rgb(0, 0, 0) })
-    page.drawText(t.quantity, { x: quantityX, y: tableTop, size: 10, font: fontBold, color: rgb(0, 0, 0) })
-    page.drawText(t.price, { x: priceX, y: tableTop, size: 10, font: fontBold, color: rgb(0, 0, 0) })
-    page.drawText(t.total, { x: totalX, y: tableTop, size: 10, font: fontBold, color: rgb(0, 0, 0) })
+    pdf.fontSize(10).font('Helvetica-Bold')
+    pdf.text(t.itemCode, itemCodeX, tableTop)
+    pdf.text(t.description, descriptionX, tableTop)
+    pdf.text(t.quantity, quantityX, tableTop)
+    pdf.text(t.price, priceX, tableTop)
+    pdf.text(t.total, totalX, tableTop)
 
-    yPosition = tableTop - 20
+    yPosition = tableTop + 20
 
     // Header line
-    page.drawLine({
-      start: { x: 50, y: yPosition },
-      end: { x: 550, y: yPosition },
-      thickness: 1,
-      color: rgb(0, 0, 0),
-    })
-    yPosition -= 15
+    pdf.moveTo(50, yPosition)
+       .lineTo(545, yPosition)
+       .stroke()
+    yPosition += 15
 
     // Items
     const items = quote.quote_items || []
-    console.log('Quote items count:', items.length)
+    pdf.fontSize(9).font('Helvetica')
     
     items.forEach((item: any, index: number) => {
       const itemTotal = (item.quantity || 0) * (item.unit_price || 0)
       
-      console.log(`Item ${index + 1}:`, { description: item.description, quantity: item.quantity, unit_price: item.unit_price })
+      // Check if we need a new page
+      if (yPosition > 700) {
+        pdf.addPage()
+        yPosition = 50
+      }
       
-      // No "code" field in database, so we show item number
-      page.drawText(`${index + 1}`, { x: itemCodeX, y: yPosition, size: 9, font, color: rgb(0, 0, 0) })
-      page.drawText(item.description || '', { x: descriptionX, y: yPosition, size: 9, font, color: rgb(0, 0, 0), maxWidth: 220 })
-      page.drawText(String(item.quantity || 0), { x: quantityX, y: yPosition, size: 9, font, color: rgb(0, 0, 0) })
-      page.drawText(`${(item.unit_price || 0).toFixed(2)}`, { x: priceX, y: yPosition, size: 9, font, color: rgb(0, 0, 0) })
-      page.drawText(`${itemTotal.toFixed(2)}`, { x: totalX, y: yPosition, size: 9, font, color: rgb(0, 0, 0) })
+      pdf.text(`${index + 1}`, itemCodeX, yPosition)
+      pdf.text(item.description || '', descriptionX, yPosition, { width: 220 })
+      pdf.text(String(item.quantity || 0), quantityX, yPosition)
+      pdf.text(`${(item.unit_price || 0).toFixed(2)}`, priceX, yPosition)
+      pdf.text(`${itemTotal.toFixed(2)}`, totalX, yPosition)
       
-      yPosition -= 20
+      yPosition += 20
     })
 
-    yPosition -= 10
-    page.drawLine({
-      start: { x: 50, y: yPosition },
-      end: { x: 550, y: yPosition },
-      thickness: 1,
-      color: rgb(0, 0, 0) })
-    yPosition -= 20
+    yPosition += 10
+    pdf.moveTo(50, yPosition)
+       .lineTo(545, yPosition)
+       .stroke()
+    yPosition += 20
 
     // Totals
     const subtotal = quote.subtotal || 0
     const taxAmount = quote.tax || 0
     const total = quote.total || 0
 
-    page.drawText(t.subtotal, { x: 400, y: yPosition, size: 10, font: fontBold, color: rgb(0, 0, 0) })
-    page.drawText(`${subtotal.toFixed(2)} ${quote.currency || 'CHF'}`, { x: 490, y: yPosition, size: 10, font, color: rgb(0, 0, 0) })
-    yPosition -= 20
+    pdf.fontSize(10).font('Helvetica-Bold')
+    pdf.text(t.subtotal, 400, yPosition)
+    pdf.font('Helvetica')
+    pdf.text(`${subtotal.toFixed(2)} ${quote.currency || 'CHF'}`, 490, yPosition)
+    yPosition += 20
 
     if (quote.tax_rate) {
-      page.drawText(`${t.tax} (${quote.tax_rate}%)`, { x: 400, y: yPosition, size: 10, font: fontBold, color: rgb(0, 0, 0) })
-      page.drawText(`${taxAmount.toFixed(2)} ${quote.currency || 'CHF'}`, { x: 490, y: yPosition, size: 10, font, color: rgb(0, 0, 0) })
-      yPosition -= 20
+      pdf.font('Helvetica-Bold')
+      pdf.text(`${t.tax} (${quote.tax_rate}%)`, 400, yPosition)
+      pdf.font('Helvetica')
+      pdf.text(`${taxAmount.toFixed(2)} ${quote.currency || 'CHF'}`, 490, yPosition)
+      yPosition += 20
     }
 
-    page.drawText(t.total, { x: 400, y: yPosition, size: 12, font: fontBold, color: rgb(0, 0, 0) })
-    page.drawText(`${total.toFixed(2)} ${quote.currency || 'CHF'}`, { x: 490, y: yPosition, size: 12, font: fontBold, color: rgb(0, 0, 0) })
+    pdf.fontSize(12).font('Helvetica-Bold')
+    pdf.text(t.total, 400, yPosition)
+    pdf.text(`${total.toFixed(2)} ${quote.currency || 'CHF'}`, 490, yPosition)
 
-    yPosition -= 40
+    yPosition += 40
 
     // Notes
-    if (quote.notes) {
-      page.drawText(t.notes, { x: 50, y: yPosition, size: 10, font: fontBold, color: rgb(0, 0, 0) })
-      yPosition -= 15
-      page.drawText(quote.notes, { x: 50, y: yPosition, size: 9, font, color: rgb(0, 0, 0), maxWidth: 500 })
+    if (quote.notes && yPosition < 700) {
+      pdf.fontSize(10).font('Helvetica-Bold')
+      pdf.text(t.notes, 50, yPosition)
+      yPosition += 15
+      pdf.fontSize(9).font('Helvetica')
+      pdf.text(quote.notes, 50, yPosition, { width: 500 })
     }
 
-    const pdfBytes = await pdfDoc.save()
+    // Finalize PDF
+    pdf.end()
 
-    console.log('PDF generated successfully, size:', pdfBytes.length)
+    // Convert stream to buffer
+    const pdfBuffer = await streamToBuffer(pdf)
 
-    // Convert Uint8Array to Buffer for NextResponse
-    const pdfBuffer = Buffer.from(pdfBytes)
+    console.log('PDF generated successfully, size:', pdfBuffer.length)
 
-    return new NextResponse(pdfBuffer, {
+    // Convert Buffer to Uint8Array for NextResponse compatibility
+    const pdfUint8Array = new Uint8Array(pdfBuffer)
+
+    return new NextResponse(pdfUint8Array, {
       headers: {
         'Content-Type': 'application/pdf',
         'Content-Disposition': `attachment; filename="${t.quote.toLowerCase()}-${quote.quote_number}.pdf"`,
-        'Content-Length': String(pdfBytes.length)
+        'Content-Length': String(pdfBuffer.length)
       },
     })
   } catch (error) {

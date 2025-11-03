@@ -14,6 +14,8 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // Exclude PDFKit and swissqrbill from bundling (use node_modules directly)
+  serverExternalPackages: ['pdfkit', 'swissqrbill'],
 };
 
 export default withNextIntl(nextConfig);
