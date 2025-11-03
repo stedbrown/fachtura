@@ -217,36 +217,42 @@ export async function GET(
       yPosition += 12
     }
 
-    yPosition += 30
-
-    // Customer info
-    pdf.fontSize(11).font('Helvetica-Bold')
-    pdf.text(t.billTo, 50, yPosition)
-    yPosition += 20
-
+    // Customer info - Positioned for Swiss envelope window (right side)
+    // Swiss C5/C6 envelope: window at ~100mm from left, ~45mm from top
+    // A4 coordinates: window area at x:~320pt (113mm), y:~715pt (45mm from top)
+    const windowX = 320 // Horizontal position for envelope window
+    const windowY = 715 // Vertical position for envelope window (45mm from top of A4)
+    
     const client = invoice.client || {}
-    pdf.fontSize(10).font('Helvetica')
-    pdf.text(client.name || '', 50, yPosition)
-    yPosition += 15
+    let clientY = windowY
+    
+    // Client name
+    pdf.fontSize(11).font('Helvetica-Bold')
+    pdf.text(client.name || '', windowX, clientY)
+    clientY -= 15
 
+    // Client address
     if (client.address) {
-      pdf.fontSize(9)
-      pdf.text(client.address, 50, yPosition)
-      yPosition += 12
+      pdf.fontSize(10).font('Helvetica')
+      pdf.text(client.address, windowX, clientY)
+      clientY -= 13
     }
 
+    // Client postal code and city
     const customerCityLine = [client.postal_code, client.city].filter(Boolean).join(' ')
     if (customerCityLine) {
-      pdf.text(customerCityLine, 50, yPosition)
-      yPosition += 12
+      pdf.text(customerCityLine, windowX, clientY)
+      clientY -= 13
     }
 
+    // Client country
     if (client.country) {
-      pdf.text(client.country, 50, yPosition)
-      yPosition += 12
+      pdf.text(client.country, windowX, clientY)
+      clientY -= 13
     }
 
-    yPosition += 30
+    // Continue with invoice content below
+    yPosition = 600 // Position for invoice title and content
 
     // Invoice title
     pdf.fontSize(20).font('Helvetica-Bold')
