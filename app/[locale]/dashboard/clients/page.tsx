@@ -16,7 +16,7 @@ import { Plus, Pencil, Trash2, Archive, ArchiveRestore } from 'lucide-react'
 import { ClientDialog } from '@/components/clients/client-dialog'
 import { DeleteDialog } from '@/components/delete-dialog'
 import { ClientFilters, type ClientFilterState } from '@/components/client-filters'
-import { exportToCSV, exportToExcel } from '@/lib/export-utils'
+import { exportFormattedToCSV, exportFormattedToExcel } from '@/lib/export-utils'
 import type { Client } from '@/lib/types/database'
 import type { ClientInput } from '@/lib/validations/client'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -231,10 +231,13 @@ export default function ClientsPage() {
       [t('fields.country')]: client.country || '-',
     }))
 
+    const timestamp = new Date().toISOString().split('T')[0]
+    const filename = `clients_${timestamp}`
+
     if (exportFormat === 'csv') {
-      exportToCSV(dataToExport, 'clients')
+      exportFormattedToCSV(dataToExport, filename)
     } else {
-      exportToExcel(dataToExport, 'clients')
+      exportFormattedToExcel(dataToExport, filename)
     }
   }
 
