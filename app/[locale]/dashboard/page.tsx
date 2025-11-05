@@ -1,5 +1,4 @@
 import { createClient } from '@/lib/supabase/server'
-import { Users, FileText, Receipt, DollarSign, AlertCircle, Clock } from 'lucide-react'
 import { getTranslations } from 'next-intl/server'
 import { startOfMonth, endOfMonth, subMonths, format } from 'date-fns'
 import { DashboardChartsWrapper } from '@/components/dashboard-charts-wrapper'
@@ -180,7 +179,7 @@ export default async function DashboardPage({
   const stats: Array<{
     title: string
     value: string | number
-    icon: any
+    icon: string
     description: string
     trend?: number
     trendLabel?: string
@@ -190,7 +189,7 @@ export default async function DashboardPage({
     {
       title: t('totalRevenue'),
       value: `CHF ${totalRevenue.toFixed(2)}`,
-      icon: DollarSign,
+      icon: 'DollarSign',
       description: t('paidInvoices'),
       trend: revenueTrend,
       trendLabel: revenueTrend >= 0 ? t('vsLastMonth') : t('vsLastMonth'),
@@ -199,21 +198,21 @@ export default async function DashboardPage({
     {
       title: tNav('clients'),
       value: clientsCount.count || 0,
-      icon: Users,
+      icon: 'Users',
       description: t('activeClients'),
       link: '/dashboard/clients',
     },
     {
       title: t('pendingInvoices'),
       value: invoicesStats.issued,
-      icon: Clock,
+      icon: 'Clock',
       description: t('awaitingPayment'),
       link: '/dashboard/invoices?status=issued',
     },
     {
       title: t('overdueInvoices'),
       value: invoicesStats.overdue,
-      icon: AlertCircle,
+      icon: 'AlertCircle',
       description: `CHF ${overdueTotal.toFixed(2)}`,
       variant: overdueInvoices.data && overdueInvoices.data.length > 0 ? 'destructive' : 'default',
       link: '/dashboard/invoices?status=overdue',
