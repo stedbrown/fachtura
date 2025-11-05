@@ -382,7 +382,11 @@ export default function QuotesPage() {
               </TableHeader>
               <TableBody>
                 {filteredQuotes.map((quote) => (
-                  <TableRow key={quote.id}>
+                  <TableRow 
+                    key={quote.id}
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => router.push(`/${locale}/dashboard/quotes/${quote.id}`)}
+                  >
                     <TableCell className="font-medium">
                       {quote.quote_number}
                     </TableCell>
@@ -398,18 +402,8 @@ export default function QuotesPage() {
                         {t(`status.${quote.status}`)}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                       <div className="flex justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() =>
-                            router.push(`/${locale}/dashboard/quotes/${quote.id}`)
-                          }
-                          title={tCommon('view')}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
                         {!showArchived && (
                           <>
                             <Button

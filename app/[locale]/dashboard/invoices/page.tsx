@@ -384,7 +384,11 @@ export default function InvoicesPage() {
               </TableHeader>
               <TableBody>
                 {filteredInvoices.map((invoice) => (
-                  <TableRow key={invoice.id}>
+                  <TableRow 
+                    key={invoice.id}
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => router.push(`/${locale}/dashboard/invoices/${invoice.id}`)}
+                  >
                     <TableCell className="font-medium">
                       {invoice.invoice_number}
                     </TableCell>
@@ -407,23 +411,15 @@ export default function InvoicesPage() {
                         {t(`status.${invoice.status}`)}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                       <div className="flex justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() =>
-                            router.push(`/${locale}/dashboard/invoices/${invoice.id}`)
-                          }
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
                         {!showArchived && (
                           <>
                             <Button
                               variant="ghost"
                               size="icon"
                               onClick={() => handleDownloadPDF(invoice.id)}
+                              title={tCommon('download')}
                             >
                               <Download className="h-4 w-4" />
                             </Button>
@@ -431,6 +427,7 @@ export default function InvoicesPage() {
                               variant="ghost"
                               size="icon"
                               onClick={() => confirmDelete(invoice.id)}
+                              title={tCommon('delete')}
                             >
                               <Trash2 className="h-4 w-4 text-red-600" />
                             </Button>

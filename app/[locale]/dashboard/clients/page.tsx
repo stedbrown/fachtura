@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -15,15 +15,18 @@ import {
 import { Plus, Pencil, Trash2, Archive, ArchiveRestore } from 'lucide-react'
 import { ClientDialog } from '@/components/clients/client-dialog'
 import { DeleteDialog } from '@/components/delete-dialog'
+import { ClientFilters, type ClientFilterState } from '@/components/client-filters'
+import { exportToCSV, exportToExcel } from '@/lib/export-utils'
 import type { Client } from '@/lib/types/database'
 import type { ClientInput } from '@/lib/validations/client'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useTranslations } from 'next-intl'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 export default function ClientsPage() {
   const params = useParams()
+  const router = useRouter()
   const locale = params.locale as string
   const t = useTranslations('clients')
   const tCommon = useTranslations('common')
@@ -38,6 +41,7 @@ export default function ClientsPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [clientToDelete, setClientToDelete] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [filters, setFilters] = useState<ClientFilterState>({})
 
   useEffect(() => {
     loadClients()
@@ -180,6 +184,64 @@ export default function ClientsPage() {
     }
   }
 
+  // Filter clients based on active filters
+  const filteredClients = useMemo(() => {
+    let result = clients
+
+    // Name filter
+    if (filters.searchName) {
+      result = result.filter((client) =>
+        client.name.toLowerCase().includes(filters.searchName!.toLowerCase())
+      )
+    }
+
+    // Email filter
+    if (filters.searchEmail) {
+      result = result.filter((client) =>
+        client.email?.toLowerCase().includes(filters.searchEmail!.toLowerCase())
+      )
+    }
+
+    // City filter
+    if (filters.searchCity) {
+      result = result.filter((client) =>
+        client.city?.toLowerCase().includes(filters.searchCity!.toLowerCase())
+      )
+    }
+
+    // Country filter
+    if (filters.searchCountry) {
+      result = result.filter((client) =>
+        client.country?.toLowerCase().includes(filters.searchCountry!.toLowerCase())
+      )
+    }
+
+    return result
+  }, [clients, filters])
+
+  // Export function
+  const handleExport = (exportFormat: 'csv' | 'excel') => {
+    const dataToExport = filteredClients.map((client) => ({
+      [t('fields.name')]: client.name,
+      [t('fields.email')]: client.email || '-',
+      [t('fields.phone')]: client.phone || '-',
+      [t('fields.address')]: client.address || '-',
+      [t('fields.city')]: client.city || '-',
+      [t('fields.postalCode')]: client.postal_code || '-',
+      [t('fields.country')]: client.country || '-',
+    }))
+
+    if (exportFormat === 'csv') {
+      exportToCSV(dataToExport, 'clients')
+    } else {
+      exportToExcel(dataToExport, 'clients')
+    }
+  }
+
+  const handleRowClick = (clientId: string) => {
+    router.push(`/${locale}/dashboard/clients/${clientId}`)
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -205,6 +267,13 @@ export default function ClientsPage() {
         </TabsList>
       </Tabs>
 
+      {/* Filters and Export */}
+      <ClientFilters
+        filters={filters}
+        onFiltersChange={setFilters}
+        onExport={handleExport}
+      />
+
       <Card>
         <CardHeader>
           <CardTitle>{showArchived ? t('archivedTitle') : t('listTitle')}</CardTitle>
@@ -217,7 +286,7 @@ export default function ClientsPage() {
             <p className="text-center py-8 text-muted-foreground">
               {tCommon('loading')}
             </p>
-          ) : clients.length === 0 ? (
+          ) : filteredClients.length === 0 ? (
             <p className="text-center py-8 text-muted-foreground">
               {t('noClients')}
             </p>
@@ -233,20 +302,19 @@ export default function ClientsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {clients.map((client) => (
-                  <TableRow key={client.id}>
+                {filteredClients.map((client) => (
+                  <TableRow 
+                    key={client.id}
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => handleRowClick(client.id)}
+                  >
                     <TableCell className="font-medium">
-                      <Link
-                        href={`/${locale}/dashboard/clients/${client.id}`}
-                        className="text-primary hover:underline"
-                      >
-                        {client.name}
-                      </Link>
+                      {client.name}
                     </TableCell>
                     <TableCell>{client.email || '-'}</TableCell>
                     <TableCell>{client.phone || '-'}</TableCell>
                     <TableCell>{client.city || '-'}</TableCell>
-                    <TableCell className="text-right">
+                    <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                       <div className="flex justify-end gap-2">
                         {!showArchived && (
                           <>
