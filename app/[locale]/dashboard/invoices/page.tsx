@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useMemo } from 'react'
-import { useRouter, useParams } from 'next/navigation'
+import { useRouter, useParams, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -50,6 +50,7 @@ function getInvoiceStatusVariant(status: string): 'default' | 'secondary' | 'des
 export default function InvoicesPage() {
   const router = useRouter()
   const params = useParams()
+  const searchParams = useSearchParams()
   const locale = params.locale as string
   const t = useTranslations('invoices')
   const tCommon = useTranslations('common')
@@ -63,6 +64,14 @@ export default function InvoicesPage() {
   const [invoiceToDelete, setInvoiceToDelete] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const [filters, setFilters] = useState<FilterState>({})
+
+  // Initialize filters from URL params
+  useEffect(() => {
+    const statusParam = searchParams.get('status')
+    if (statusParam) {
+      setFilters({ status: statusParam })
+    }
+  }, [searchParams])
 
   useEffect(() => {
     updateOverdueInvoicesAndLoad()

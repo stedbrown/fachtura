@@ -1,9 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Users, FileText, Receipt, DollarSign, TrendingUp, TrendingDown, AlertCircle, Clock } from 'lucide-react'
+import { Users, FileText, Receipt, DollarSign, AlertCircle, Clock } from 'lucide-react'
 import { getTranslations } from 'next-intl/server'
 import { startOfMonth, endOfMonth, subMonths, format } from 'date-fns'
 import { DashboardChartsWrapper } from '@/components/dashboard-charts-wrapper'
+import { DashboardStats, OverdueAlert } from '@/components/dashboard-stats'
 import { updateOverdueInvoices } from '@/lib/utils/update-overdue-invoices'
 
 export default async function DashboardPage({
@@ -185,18 +185,21 @@ export default async function DashboardPage({
       description: t('paidInvoices'),
       trend: revenueTrend,
       trendLabel: revenueTrend >= 0 ? t('vsLastMonth') : t('vsLastMonth'),
+      link: '/dashboard/invoices?status=paid',
     },
     {
       title: tNav('clients'),
       value: clientsCount.count || 0,
       icon: Users,
       description: t('activeClients'),
+      link: '/dashboard/clients',
     },
     {
       title: t('pendingInvoices'),
       value: invoicesStats.issued,
       icon: Clock,
       description: t('awaitingPayment'),
+      link: '/dashboard/invoices?status=issued',
     },
     {
       title: t('overdueInvoices'),
@@ -204,6 +207,7 @@ export default async function DashboardPage({
       icon: AlertCircle,
       description: `CHF ${overdueTotal.toFixed(2)}`,
       variant: overdueInvoices.data && overdueInvoices.data.length > 0 ? 'destructive' : 'default',
+      link: '/dashboard/invoices?status=overdue',
     },
   ]
 
@@ -218,48 +222,15 @@ export default async function DashboardPage({
 
       {/* Overdue Alert Banner */}
       {invoicesStats.overdue > 0 && (
-        <Card className="border-destructive bg-destructive/5">
-          <CardContent className="pt-6">
-            <div className="flex items-start gap-4">
-              <AlertCircle className="h-5 w-5 text-destructive mt-0.5" />
-              <div className="flex-1">
-                <h3 className="font-semibold text-destructive mb-1">
-                  {t('overdueInvoices')}: {invoicesStats.overdue}
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  {t('overdueAlert', { count: invoicesStats.overdue, amount: overdueTotal.toFixed(2) })}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <OverdueAlert 
+          count={invoicesStats.overdue}
+          amount={overdueTotal.toFixed(2)}
+          locale={locale}
+        />
       )}
 
       {/* KPI Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {stats.map((stat) => (
-          <Card key={stat.title} className={stat.variant === 'destructive' ? 'border-destructive' : ''}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                {stat.title}
-              </CardTitle>
-              <stat.icon className={`h-4 w-4 ${stat.variant === 'destructive' ? 'text-destructive' : 'text-muted-foreground'}`} />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
-              <p className="text-xs text-muted-foreground">
-                {stat.description}
-              </p>
-              {stat.trend !== undefined && (
-                <div className={`flex items-center gap-1 text-xs mt-1 ${stat.trend >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {stat.trend >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                  <span>{Math.abs(stat.trend).toFixed(1)}% {stat.trendLabel}</span>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <DashboardStats stats={stats} locale={locale} />
 
       {/* Charts */}
       <DashboardChartsWrapper 
