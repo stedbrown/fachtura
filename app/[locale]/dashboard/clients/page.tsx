@@ -291,7 +291,7 @@ export default function ClientsPage() {
             </p>
           ) : filteredClients.length === 0 ? (
             <p className="text-center py-8 text-muted-foreground">
-              {t('noClients')}
+              {clients.length === 0 ? t('noClients') : tCommon('noResults')}
             </p>
           ) : (
             <Table>
