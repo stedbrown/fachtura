@@ -153,6 +153,7 @@
     "pendingInvoices": "Ausstehende Rechnungen",
     "awaitingPayment": "Warten auf Zahlung",
     "overdueInvoices": "Überfällige Rechnungen",
+    "overdueAlert": "Sie haben {count} überfällige Rechnungen mit einem Gesamtwert von CHF {amount}. Überprüfen und Kunden kontaktieren.",
     "vsLastMonth": "vs letzter Monat",
     "revenueChart": "Monatlicher Umsatz",
     "revenueChartDescription": "Umsatzentwicklung der letzten 12 Monate",

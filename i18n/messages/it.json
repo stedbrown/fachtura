@@ -153,6 +153,7 @@
     "pendingInvoices": "Fatture in Attesa",
     "awaitingPayment": "In attesa di pagamento",
     "overdueInvoices": "Fatture Scadute",
+    "overdueAlert": "Hai {count} fatture scadute per un totale di CHF {amount}. Verifica e contatta i clienti.",
     "vsLastMonth": "vs mese scorso",
     "revenueChart": "Fatturato Mensile",
     "revenueChartDescription": "Andamento del fatturato negli ultimi 12 mesi",

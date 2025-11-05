@@ -153,6 +153,7 @@
     "pendingInvoices": "Facturas pendents",
     "awaitingPayment": "En spetga da pajament",
     "overdueInvoices": "Facturas scrudadas",
+    "overdueAlert": "Vus avais {count} facturas scrudadas per in total da CHF {amount}. Verifitgai e contactai ils clients.",
     "vsLastMonth": "vs mais passà",
     "revenueChart": "Cifra da fatschenta mensila",
     "revenueChartDescription": "Svilup da la cifra da fatschenta dals ultims 12 mais",

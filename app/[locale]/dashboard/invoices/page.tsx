@@ -65,9 +65,22 @@ export default function InvoicesPage() {
   const [filters, setFilters] = useState<FilterState>({})
 
   useEffect(() => {
-    loadInvoices()
-    loadClients()
+    updateOverdueInvoicesAndLoad()
   }, [showArchived])
+
+  // Update overdue invoices before loading
+  const updateOverdueInvoicesAndLoad = async () => {
+    try {
+      // Call API to update overdue invoices
+      await fetch('/api/invoices/update-overdue', { method: 'POST' })
+    } catch (error) {
+      console.error('Error updating overdue invoices:', error)
+    } finally {
+      // Load invoices and clients regardless of update result
+      loadInvoices()
+      loadClients()
+    }
+  }
 
   const loadInvoices = async () => {
     setLoading(true)

@@ -153,6 +153,7 @@
     "pendingInvoices": "Pending Invoices",
     "awaitingPayment": "Awaiting payment",
     "overdueInvoices": "Overdue Invoices",
+    "overdueAlert": "You have {count} overdue invoices totaling CHF {amount}. Review and contact clients.",
     "vsLastMonth": "vs last month",
     "revenueChart": "Monthly Revenue",
     "revenueChartDescription": "Revenue trend over the last 12 months",

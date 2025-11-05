@@ -4,6 +4,7 @@ import { Users, FileText, Receipt, DollarSign, TrendingUp, TrendingDown, AlertCi
 import { getTranslations } from 'next-intl/server'
 import { startOfMonth, endOfMonth, subMonths, format } from 'date-fns'
 import { DashboardChartsWrapper } from '@/components/dashboard-charts-wrapper'
+import { updateOverdueInvoices } from '@/lib/utils/update-overdue-invoices'
 
 export default async function DashboardPage({
   params,
@@ -20,6 +21,9 @@ export default async function DashboardPage({
   } = await supabase.auth.getUser()
 
   if (!user) return null
+
+  // Automatically update overdue invoices before loading dashboard data
+  await updateOverdueInvoices()
 
   // Get current and previous month dates
   const now = new Date()
@@ -211,6 +215,25 @@ export default async function DashboardPage({
           {t('subtitle')}
         </p>
       </div>
+
+      {/* Overdue Alert Banner */}
+      {invoicesStats.overdue > 0 && (
+        <Card className="border-destructive bg-destructive/5">
+          <CardContent className="pt-6">
+            <div className="flex items-start gap-4">
+              <AlertCircle className="h-5 w-5 text-destructive mt-0.5" />
+              <div className="flex-1">
+                <h3 className="font-semibold text-destructive mb-1">
+                  {t('overdueInvoices')}: {invoicesStats.overdue}
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  {t('overdueAlert', { count: invoicesStats.overdue, amount: overdueTotal.toFixed(2) })}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* KPI Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

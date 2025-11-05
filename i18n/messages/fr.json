@@ -153,6 +153,7 @@
     "pendingInvoices": "Factures en attente",
     "awaitingPayment": "En attente de paiement",
     "overdueInvoices": "Factures en retard",
+    "overdueAlert": "Vous avez {count} factures en retard pour un total de CHF {amount}. Vérifiez et contactez les clients.",
     "vsLastMonth": "vs mois dernier",
     "revenueChart": "Chiffre d'affaires mensuel",
     "revenueChartDescription": "Évolution du chiffre d'affaires sur 12 mois",
