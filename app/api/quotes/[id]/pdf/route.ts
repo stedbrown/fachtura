@@ -339,6 +339,37 @@ export async function GET(
       yPosition += 15
       pdf.fontSize(9).font('Helvetica')
       pdf.text(quote.notes, 50, yPosition, { width: 500 })
+      yPosition += 25
+    }
+
+    // Terms and Conditions (from company settings)
+    if (company.quote_terms_conditions && yPosition < 700) {
+      pdf.fontSize(10).font('Helvetica-Bold')
+      pdf.text(t.termsConditions, 50, yPosition)
+      yPosition += 15
+      pdf.fontSize(9).font('Helvetica')
+      pdf.text(company.quote_terms_conditions, 50, yPosition, { width: 500 })
+      yPosition += 25
+    }
+
+    // Payment Methods (from company settings)
+    if (company.payment_methods && yPosition < 700) {
+      pdf.fontSize(10).font('Helvetica-Bold')
+      pdf.text('Metodi di Pagamento', 50, yPosition)
+      yPosition += 15
+      pdf.fontSize(9).font('Helvetica')
+      pdf.text(company.payment_methods, 50, yPosition, { width: 500 })
+      yPosition += 20
+    }
+
+    // Footer Text (from company settings)
+    if (company.quote_footer_text && yPosition < 700) {
+      pdf.fontSize(8).font('Helvetica')
+      pdf.text(company.quote_footer_text, 50, yPosition, { 
+        width: 495, 
+        align: 'center' 
+      })
+      yPosition += 20
     }
 
     // Finalize PDF

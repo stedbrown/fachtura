@@ -370,6 +370,46 @@ export async function GET(
       yPosition += 15
       pdf.fontSize(9).font('Helvetica')
       pdf.text(invoice.notes, 50, yPosition, { width: 500 })
+      yPosition += 25
+    }
+
+    // Payment Terms (from company settings)
+    if (company.invoice_payment_terms && yPosition < 650) {
+      pdf.fontSize(10).font('Helvetica-Bold')
+      pdf.text(t.paymentTerms, 50, yPosition)
+      yPosition += 15
+      pdf.fontSize(9).font('Helvetica')
+      pdf.text(company.invoice_payment_terms, 50, yPosition, { width: 500 })
+      yPosition += 25
+    }
+
+    // Payment Methods (from company settings)
+    if (company.payment_methods && yPosition < 650) {
+      pdf.fontSize(10).font('Helvetica-Bold')
+      pdf.text('Metodi di Pagamento', 50, yPosition)
+      yPosition += 15
+      pdf.fontSize(9).font('Helvetica')
+      pdf.text(company.payment_methods, 50, yPosition, { width: 500 })
+      yPosition += 20
+    }
+
+    // Late Payment Fee (from company settings)
+    if (company.late_payment_fee && yPosition < 650) {
+      pdf.fontSize(9).font('Helvetica-Bold')
+      pdf.text('Penale per ritardo: ', 50, yPosition, { continued: true })
+      pdf.font('Helvetica')
+      pdf.text(company.late_payment_fee)
+      yPosition += 20
+    }
+
+    // Footer Text (from company settings)
+    if (company.invoice_footer_text && yPosition < 650) {
+      pdf.fontSize(8).font('Helvetica')
+      pdf.text(company.invoice_footer_text, 50, yPosition, { 
+        width: 495, 
+        align: 'center' 
+      })
+      yPosition += 20
     }
 
     // Swiss QR Bill - Using OFFICIAL swissqrbill library
