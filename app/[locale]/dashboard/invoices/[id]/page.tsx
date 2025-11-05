@@ -15,7 +15,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { ArrowLeft, Download, Trash2, ChevronDown } from 'lucide-react'
+import { ArrowLeft, Download, Trash2, ChevronDown, Share2 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { format } from 'date-fns'
 import { it, de, fr, enUS, type Locale } from 'date-fns/locale'
@@ -149,6 +149,57 @@ export default function InvoiceDetailPage() {
     }
   }
 
+  async function handleSharePDF() {
+    try {
+      // Check if Web Share API is supported
+      if (!navigator.share) {
+        toast.error(t('shareNotSupported'))
+        return
+      }
+
+      console.log('📤 Starting PDF share for invoice:', invoiceId)
+      const url = `/api/invoices/${invoiceId}/pdf?locale=${locale}`
+      
+      const response = await fetch(url)
+      
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error('❌ PDF generation failed:', errorText)
+        toast.error(tCommon('error'))
+        return
+      }
+      
+      const blob = await response.blob()
+      const fileName = `Fattura-${invoice?.invoice_number || 'documento'}.pdf`
+      const file = new File([blob], fileName, { type: 'application/pdf' })
+
+      // Check if sharing files is supported
+      if (navigator.canShare && !navigator.canShare({ files: [file] })) {
+        toast.error(t('shareFilesNotSupported'))
+        return
+      }
+
+      await navigator.share({
+        title: `${t('invoice')} ${invoice?.invoice_number}`,
+        text: `${t('shareText', { 
+          clientName: invoice?.client?.name || '', 
+          invoiceNumber: invoice?.invoice_number || '' 
+        })}`,
+        files: [file],
+      })
+      
+      console.log('✅ PDF shared successfully')
+      toast.success(t('sharedSuccessfully'))
+    } catch (error: any) {
+      // User cancelled the share
+      if (error.name === 'AbortError') {
+        console.log('ℹ️ Share cancelled by user')
+        return
+      }
+      console.error('❌ Error sharing PDF:', error)
+      toast.error(t('shareError'))
+    }
+  }
 
   async function handleDelete() {
     setIsDeleting(true)
@@ -241,6 +292,10 @@ export default function InvoiceDetailPage() {
           <Button variant="outline" onClick={handleDownloadPDF}>
             <Download className="h-4 w-4 mr-2" />
             {tCommon('download')}
+          </Button>
+          <Button variant="outline" onClick={handleSharePDF}>
+            <Share2 className="h-4 w-4 mr-2" />
+            {tCommon('share')}
           </Button>
           <Button
             variant="ghost"
