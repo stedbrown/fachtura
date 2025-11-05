@@ -282,6 +282,12 @@
     "restore": "Wiederherstellen",
     "permanentDelete": "Dauerhaft löschen",
     "changeStatus": "Status ändern",
+    "invoice": "Rechnung",
+    "shareText": "Sehr geehrte/r {clientName}, anbei finden Sie die Rechnung {invoiceNumber}.",
+    "shareNotSupported": "Das Teilen wird auf diesem Gerät nicht unterstützt",
+    "shareFilesNotSupported": "Das Teilen von Dateien wird auf diesem Gerät nicht unterstützt",
+    "sharedSuccessfully": "Dokument erfolgreich geteilt",
+    "shareError": "Fehler beim Teilen des Dokuments",
     "downloadPDF": "PDF herunterladen",
     "status": {
       "draft": "Entwurf",

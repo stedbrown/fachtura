@@ -282,6 +282,12 @@
     "restore": "Restaurar",
     "permanentDelete": "Stizzar definitivamain",
     "changeStatus": "Midar il status",
+    "invoice": "Factura",
+    "shareText": "Car/Cara {clientName}, in agiunta chattais Vus la factura {invoiceNumber}.",
+    "shareNotSupported": "La cundivisiun n'è betg sustegnida sin quest apparat",
+    "shareFilesNotSupported": "La cundivisiun da datotecas n'è betg sustegnida sin quest apparat",
+    "sharedSuccessfully": "Document cundividì cun success",
+    "shareError": "Errur tar la cundivisiun dal document",
     "downloadPDF": "Telechargiar PDF",
     "status": {
       "draft": "Sboz",

@@ -282,6 +282,12 @@
     "restore": "Restaurer",
     "permanentDelete": "Supprimer définitivement",
     "changeStatus": "Changer le statut",
+    "invoice": "Facture",
+    "shareText": "Cher/Chère {clientName}, veuillez trouver ci-joint la facture {invoiceNumber}.",
+    "shareNotSupported": "Le partage n'est pas pris en charge sur cet appareil",
+    "shareFilesNotSupported": "Le partage de fichiers n'est pas pris en charge sur cet appareil",
+    "sharedSuccessfully": "Document partagé avec succès",
+    "shareError": "Erreur lors du partage du document",
     "downloadPDF": "Télécharger PDF",
     "status": {
       "draft": "Brouillon",

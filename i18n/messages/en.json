@@ -282,6 +282,12 @@
     "restore": "Restore",
     "permanentDelete": "Delete permanently",
     "changeStatus": "Change status",
+    "invoice": "Invoice",
+    "shareText": "Dear {clientName}, please find attached invoice {invoiceNumber}.",
+    "shareNotSupported": "Sharing is not supported on this device",
+    "shareFilesNotSupported": "File sharing is not supported on this device",
+    "sharedSuccessfully": "Document shared successfully",
+    "shareError": "Error sharing document",
     "downloadPDF": "Download PDF",
     "status": {
       "draft": "Draft",
