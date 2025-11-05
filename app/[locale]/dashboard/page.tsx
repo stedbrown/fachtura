@@ -177,7 +177,16 @@ export default async function DashboardPage({
     draft: invoicesData.data?.filter((inv: any) => inv.status === 'draft').length || 0,
   }
 
-  const stats = [
+  const stats: Array<{
+    title: string
+    value: string | number
+    icon: any
+    description: string
+    trend?: number
+    trendLabel?: string
+    variant?: 'default' | 'destructive'
+    link?: string
+  }> = [
     {
       title: t('totalRevenue'),
       value: `CHF ${totalRevenue.toFixed(2)}`,
