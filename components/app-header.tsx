@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic'
 import { ThemeToggle } from '@/components/theme-toggle'
+import { NotificationsDropdown } from '@/components/notifications-dropdown'
 import { SidebarTrigger } from '@/components/ui/sidebar'
 import { useParams, usePathname, useRouter } from 'next/navigation'
 import {
@@ -56,6 +57,7 @@ export function AppHeader({ user }: AppHeaderProps) {
               {user.email}
             </span>
           )}
+          <NotificationsDropdown />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="shrink-0 h-9 w-9">
