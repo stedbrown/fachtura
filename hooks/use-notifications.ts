@@ -32,6 +32,7 @@ export function useNotifications() {
         return
       }
 
+      // Load notifications (limit 50 for UI)
       const { data, error } = await supabase
         .from('notifications')
         .select('*')
@@ -41,9 +42,25 @@ export function useNotifications() {
 
       if (error) throw error
 
-      if (data) {
-        setNotifications(data)
-        setUnreadCount(data.filter((n) => !n.is_read).length)
+      // Get accurate unread count (all notifications, not just loaded ones)
+      const { count: unreadCountTotal, error: countError } = await supabase
+        .from('notifications')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id)
+        .eq('is_read', false)
+
+      if (countError) {
+        console.error('Error counting unread notifications:', countError)
+        // Fallback to counting loaded notifications
+        if (data) {
+          setNotifications(data)
+          setUnreadCount(data.filter((n) => !n.is_read).length)
+        }
+      } else {
+        if (data) {
+          setNotifications(data)
+          setUnreadCount(unreadCountTotal || 0)
+        }
       }
     } catch (error) {
       console.error('Error loading notifications:', error)
