@@ -43,7 +43,7 @@ export function AppHeader({ user }: AppHeaderProps) {
         <SidebarTrigger className="shrink-0" />
         
         {/* Search bar - expanded width */}
-        <div className="flex-1 flex items-center min-w-0 max-w-2xl">
+        <div className="flex-1 flex items-center min-w-0 max-w-3xl">
           <div className="w-full">
             <GlobalSearch />
           </div>
