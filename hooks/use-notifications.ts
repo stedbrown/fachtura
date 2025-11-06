@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
 export interface Notification {
@@ -18,32 +18,7 @@ export function useNotifications() {
   const [unreadCount, setUnreadCount] = useState(0)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    loadNotifications()
-    
-    // Subscribe to real-time changes
-    const supabase = createClient()
-    const channel = supabase
-      .channel('notifications_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'notifications',
-        },
-        () => {
-          loadNotifications()
-        }
-      )
-      .subscribe()
-
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [])
-
-  const loadNotifications = async () => {
+  const loadNotifications = useCallback(async () => {
     try {
       const supabase = createClient()
       const {
@@ -75,7 +50,49 @@ export function useNotifications() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    loadNotifications()
+    
+    // Subscribe to real-time changes
+    const supabase = createClient()
+    let channel: ReturnType<typeof supabase.channel> | null = null
+    
+    // Get user ID for filtering
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return
+
+      channel = supabase
+        .channel(`notifications:${user.id}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'notifications',
+            filter: `user_id=eq.${user.id}`, // Filter by user_id for real-time
+          },
+          (payload) => {
+            console.log('Real-time notification change:', payload)
+            loadNotifications()
+          }
+        )
+        .subscribe((status) => {
+          console.log('Subscription status:', status)
+          if (status === 'SUBSCRIBED') {
+            console.log('Successfully subscribed to notifications')
+          }
+        })
+    })
+
+    return () => {
+      if (channel) {
+        supabase.removeChannel(channel)
+      }
+    }
+  }, [loadNotifications])
+
 
   const markAsRead = async (notificationId: string) => {
     try {
