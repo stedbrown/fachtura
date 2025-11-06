@@ -78,8 +78,8 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader>
-        <div className="flex items-center gap-2 px-2 py-2">
+      <SidebarHeader className="p-0">
+        <div className="flex items-center gap-2 p-2 h-8 mx-2 my-2">
           <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 shrink-0">
             <Receipt className="h-4 w-4 text-primary" />
           </div>
