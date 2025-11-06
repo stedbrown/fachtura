@@ -81,8 +81,8 @@ export function AppSidebar() {
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              {/* Logo/Brand as first menu item */}
-              <SidebarMenuItem>
+              {/* Logo/Brand - hidden when collapsed */}
+              <SidebarMenuItem className="group-data-[collapsible=icon]:hidden">
                 <SidebarMenuButton size="lg" asChild>
                   <div className="flex items-center gap-2 cursor-default">
                     <div className="flex items-center justify-center rounded-lg bg-primary/10">
