@@ -79,9 +79,9 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
-        <div className="flex items-center gap-2 px-4 py-3">
-          <div className="rounded-lg bg-primary/10 p-1.5 group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:p-1">
-            <Receipt className="h-5 w-5 text-primary group-data-[collapsible=icon]:h-4 group-data-[collapsible=icon]:w-4" />
+        <div className="flex items-center gap-2 px-2 py-2">
+          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 shrink-0">
+            <Receipt className="h-4 w-4 text-primary" />
           </div>
           <span className="text-xl font-bold group-data-[collapsible=icon]:hidden">
             Fatturup
