@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { useTranslations } from 'next-intl'
-import { AlertCircle, Loader2, Mail } from 'lucide-react'
+import { AlertCircle, Loader2, Mail, Receipt } from 'lucide-react'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -69,11 +69,21 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
       <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">{t('login')}</CardTitle>
-          <CardDescription>
-            {t('loginTitle')}
-          </CardDescription>
+        <CardHeader className="space-y-4">
+          <div className="flex items-center justify-center gap-2">
+            <div className="rounded-lg bg-primary/10 p-2">
+              <Receipt className="h-8 w-8 text-primary" />
+            </div>
+            <span className="text-3xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+              Fatturup
+            </span>
+          </div>
+          <div className="space-y-1">
+            <CardTitle className="text-2xl font-bold text-center">{t('login')}</CardTitle>
+            <CardDescription className="text-center">
+              {t('loginTitle')}
+            </CardDescription>
+          </div>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
           <CardContent className="space-y-4">

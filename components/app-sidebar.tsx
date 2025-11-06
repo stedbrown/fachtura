@@ -18,10 +18,10 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarHeader,
   useSidebar,
 } from '@/components/ui/sidebar'
 import { Button } from '@/components/ui/button'
@@ -78,11 +78,18 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon">
+      <SidebarHeader>
+        <div className="flex items-center gap-2 px-4 py-3">
+          <div className="rounded-lg bg-primary/10 p-1.5">
+            <Receipt className="h-5 w-5 text-primary" />
+          </div>
+          <span className="text-xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent group-data-[collapsible=icon]:hidden">
+            Fatturup
+          </span>
+        </div>
+      </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="text-lg font-bold px-4 py-2">
-            Fattura
-          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {menuItems.map((item) => (

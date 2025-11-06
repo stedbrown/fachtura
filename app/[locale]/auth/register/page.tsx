@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { useTranslations } from 'next-intl'
-import { CheckCircle2, Mail, AlertCircle, Loader2 } from 'lucide-react'
+import { CheckCircle2, Mail, AlertCircle, Loader2, Receipt } from 'lucide-react'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -140,18 +140,28 @@ export default function RegisterPage() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
         <Card className="w-full max-w-md">
-          <CardHeader className="space-y-1 text-center">
-            <div className="flex justify-center mb-4">
+          <CardHeader className="space-y-4">
+            <div className="flex items-center justify-center gap-2">
+              <div className="rounded-lg bg-primary/10 p-2">
+                <Receipt className="h-8 w-8 text-primary" />
+              </div>
+              <span className="text-3xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+                Fatturup
+              </span>
+            </div>
+            <div className="flex justify-center">
               <div className="rounded-full bg-green-100 dark:bg-green-900/20 p-3">
                 <CheckCircle2 className="h-12 w-12 text-green-600 dark:text-green-400" />
               </div>
             </div>
-            <CardTitle className="text-2xl font-bold text-green-600 dark:text-green-400">
-              {t('registrationSuccess')}
-            </CardTitle>
-            <CardDescription className="text-base">
-              {t('checkYourEmail')}
-            </CardDescription>
+            <div className="space-y-1 text-center">
+              <CardTitle className="text-2xl font-bold text-green-600 dark:text-green-400">
+                {t('registrationSuccess')}
+              </CardTitle>
+              <CardDescription className="text-base">
+                {t('checkYourEmail')}
+              </CardDescription>
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
@@ -205,11 +215,21 @@ export default function RegisterPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
       <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">{t('register')}</CardTitle>
-          <CardDescription>
-            {t('registerTitle')}
-          </CardDescription>
+        <CardHeader className="space-y-4">
+          <div className="flex items-center justify-center gap-2">
+            <div className="rounded-lg bg-primary/10 p-2">
+              <Receipt className="h-8 w-8 text-primary" />
+            </div>
+            <span className="text-3xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+              Fatturup
+            </span>
+          </div>
+          <div className="space-y-1">
+            <CardTitle className="text-2xl font-bold text-center">{t('register')}</CardTitle>
+            <CardDescription className="text-center">
+              {t('registerTitle')}
+            </CardDescription>
+          </div>
         </CardHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
           <CardContent className="space-y-4">
