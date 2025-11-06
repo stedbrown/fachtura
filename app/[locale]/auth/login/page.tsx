@@ -74,7 +74,7 @@ export default function LoginPage() {
             <div className="rounded-lg bg-primary/10 p-2">
               <Receipt className="h-8 w-8 text-primary" />
             </div>
-            <span className="text-3xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
+            <span className="text-3xl font-bold">
               Fatturup
             </span>
           </div>

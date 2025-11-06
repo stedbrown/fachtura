@@ -80,10 +80,10 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader>
         <div className="flex items-center gap-2 px-4 py-3">
-          <div className="rounded-lg bg-primary/10 p-1.5">
-            <Receipt className="h-5 w-5 text-primary" />
+          <div className="rounded-lg bg-primary/10 p-1.5 group-data-[collapsible=icon]:mx-auto group-data-[collapsible=icon]:p-1">
+            <Receipt className="h-5 w-5 text-primary group-data-[collapsible=icon]:h-4 group-data-[collapsible=icon]:w-4" />
           </div>
-          <span className="text-xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent group-data-[collapsible=icon]:hidden">
+          <span className="text-xl font-bold group-data-[collapsible=icon]:hidden">
             Fatturup
           </span>
         </div>
