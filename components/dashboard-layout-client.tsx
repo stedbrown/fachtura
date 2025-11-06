@@ -24,7 +24,7 @@ export function DashboardLayoutClient({ children, user, defaultOpen }: Dashboard
       <AppSidebar />
       <SidebarInset>
         <AppHeader user={user} />
-        <main className="flex-1 container py-4 md:py-6 px-4 md:px-6">
+        <main className="flex-1 py-4 md:py-6 px-4 md:px-6">
           {children}
         </main>
       </SidebarInset>
