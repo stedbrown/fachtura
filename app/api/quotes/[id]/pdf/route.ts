@@ -234,7 +234,7 @@ export async function GET(
     
     const details = [
       `${t.quoteNumber}: ${quote.quote_number}`,
-      quote.issue_date ? `${t.date}: ${format(new Date(quote.issue_date), 'dd MMMM yyyy', { locale: dateLocale })}` : null,
+      quote.date ? `${t.date}: ${format(new Date(quote.date), 'dd MMMM yyyy', { locale: dateLocale })}` : null,
       quote.valid_until ? `${t.validUntil}: ${format(new Date(quote.valid_until), 'dd MMMM yyyy', { locale: dateLocale })}` : null,
     ].filter(Boolean)
 
