@@ -21,7 +21,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarHeader,
   useSidebar,
 } from '@/components/ui/sidebar'
 import { Button } from '@/components/ui/button'
@@ -78,20 +77,23 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarHeader className="p-0">
-        <div className="flex items-center gap-2 p-2 h-8 mx-2 my-2">
-          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 shrink-0">
-            <Receipt className="h-4 w-4 text-primary" />
-          </div>
-          <span className="text-xl font-bold group-data-[collapsible=icon]:hidden">
-            Fatturup
-          </span>
-        </div>
-      </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
+              {/* Logo/Brand as first menu item */}
+              <SidebarMenuItem>
+                <SidebarMenuButton size="lg" asChild>
+                  <div className="flex items-center gap-2 cursor-default">
+                    <div className="flex items-center justify-center rounded-lg bg-primary/10">
+                      <Receipt className="h-4 w-4 text-primary" />
+                    </div>
+                    <span className="text-xl font-bold">Fatturup</span>
+                  </div>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              
+              {/* Menu Items */}
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild isActive={pathname === item.url} onClick={handleNavigation}>
