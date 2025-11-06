@@ -39,26 +39,26 @@ export function AppHeader({ user }: AppHeaderProps) {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="flex h-14 items-center px-4 md:px-6 gap-2 md:gap-4">
+      <div className="flex h-14 items-center px-4 md:px-6 gap-3 md:gap-6">
         <SidebarTrigger className="shrink-0" />
         
         {/* Search bar - expanded width */}
-        <div className="flex-1 flex items-center max-w-3xl">
+        <div className="flex-1 flex items-center min-w-0 max-w-2xl">
           <div className="w-full">
             <GlobalSearch />
           </div>
         </div>
 
         {/* Right side controls */}
-        <div className="flex items-center gap-1 md:gap-2 shrink-0">
+        <div className="flex items-center gap-2 md:gap-3 shrink-0 ml-auto">
           {user?.email && (
-            <span className="hidden lg:block text-sm text-muted-foreground truncate max-w-[200px]">
+            <span className="hidden xl:block text-sm text-muted-foreground truncate max-w-[180px]">
               {user.email}
             </span>
           )}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="shrink-0">
+              <Button variant="ghost" size="icon" className="shrink-0 h-9 w-9">
                 <Globe className="h-4 w-4" />
               </Button>
             </DropdownMenuTrigger>
