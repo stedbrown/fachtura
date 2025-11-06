@@ -42,9 +42,9 @@ export function AppHeader({ user }: AppHeaderProps) {
       <div className="flex h-14 items-center px-4 md:px-6 gap-2 md:gap-4">
         <SidebarTrigger className="shrink-0" />
         
-        {/* Search bar - centered on desktop */}
-        <div className="flex-1 flex items-center justify-center max-w-2xl mx-auto">
-          <div className="w-full max-w-md">
+        {/* Search bar - expanded width */}
+        <div className="flex-1 flex items-center max-w-3xl">
+          <div className="w-full">
             <GlobalSearch />
           </div>
         </div>
