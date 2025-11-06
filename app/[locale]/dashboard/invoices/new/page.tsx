@@ -20,6 +20,8 @@ import { Plus, Trash2 } from 'lucide-react'
 import type { Client } from '@/lib/types/database'
 import type { InvoiceItemInput } from '@/lib/validations/invoice'
 import { calculateInvoiceTotals, generateInvoiceNumber } from '@/lib/utils/invoice-utils'
+import { SetupAlert } from '@/components/setup-alert'
+import { useCompanySettings } from '@/hooks/use-company-settings'
 
 export default function NewInvoicePage() {
   const router = useRouter()
@@ -28,6 +30,7 @@ export default function NewInvoicePage() {
   const t = useTranslations('invoices')
   const tCommon = useTranslations('common')
   const tStatus = useTranslations('invoices.status')
+  const { hasRequiredFields } = useCompanySettings()
   const [clients, setClients] = useState<Client[]>([])
   const [loading, setLoading] = useState(false)
   const [clientId, setClientId] = useState('')
@@ -186,6 +189,9 @@ export default function NewInvoicePage() {
           {t('form.subtitle')}
         </p>
       </div>
+
+      {/* Alert for missing company settings */}
+      <SetupAlert />
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <Card>
@@ -371,7 +377,11 @@ export default function NewInvoicePage() {
           >
             {tCommon('cancel')}
           </Button>
-          <Button type="submit" disabled={loading}>
+          <Button 
+            type="submit" 
+            disabled={loading || !hasRequiredFields}
+            title={!hasRequiredFields ? 'Configura prima i dati aziendali nelle impostazioni' : ''}
+          >
             {loading ? t('form.saving') : t('form.createButton')}
           </Button>
         </div>
