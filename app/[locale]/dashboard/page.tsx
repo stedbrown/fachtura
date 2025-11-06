@@ -4,12 +4,7 @@ import { startOfMonth, endOfMonth, subMonths, format } from 'date-fns'
 import { DashboardChartsWrapper } from '@/components/dashboard-charts-wrapper'
 import { DashboardStats, OverdueAlert } from '@/components/dashboard-stats'
 import { updateOverdueInvoices } from '@/lib/utils/update-overdue-invoices'
-import dynamic from 'next/dynamic'
-
-// Dynamic import for client component
-const SetupAlert = dynamic(() => import('@/components/setup-alert').then(mod => ({ default: mod.SetupAlert })), {
-  ssr: false,
-})
+import { SetupAlert } from '@/components/setup-alert'
 
 export default async function DashboardPage({
   params,
