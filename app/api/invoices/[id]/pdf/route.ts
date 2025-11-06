@@ -459,12 +459,14 @@ export async function GET(
         }
 
         // Add language option based on locale
+        // Note: Swiss QR Bill standard only supports DE, EN, IT, FR (official banking languages)
+        // Romansh (rm) uses Italian as it's not supported by the banking standard
         const qrLanguageMap: Record<string, 'DE' | 'EN' | 'IT' | 'FR'> = {
           de: 'DE',
           en: 'EN',
           it: 'IT',
           fr: 'FR',
-          rm: 'IT', // Romansh defaults to Italian
+          rm: 'IT', // Romansh uses Italian (not supported by Swiss banking standard)
         }
 
         console.log('Creating SwissQRBill with data:', JSON.stringify(qrBillData, null, 2))
