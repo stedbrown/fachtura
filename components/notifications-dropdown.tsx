@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { useNotifications } from '@/hooks/use-notifications'
 import { formatDistanceToNow } from 'date-fns'
-import { it, de, fr, enUS } from 'date-fns/locale'
+import { it, de, fr, enUS, type Locale } from 'date-fns/locale'
 import { useParams, useRouter } from 'next/navigation'
 import { ScrollArea } from '@/components/ui/scroll-area'
 
