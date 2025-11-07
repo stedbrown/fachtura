@@ -103,6 +103,28 @@
       "rights": "All rights reserved."
     }
   },
+  "chat": {
+    "title": "AI Assistant",
+    "subtitle": "Your intelligent assistant for managing invoices, quotes and clients",
+    "chatTitle": "Chat with Assistant",
+    "chatDescription": "Ask for help creating documents, viewing statistics or managing your clients",
+    "welcomeMessage": "👋 Hello! I'm your AI assistant for Fattura.\n\nI can help you:\n• Create invoices and quotes for your clients\n• View your client list\n• Check your plan limits\n• Show you invoice statistics\n\nHow can I help you today?",
+    "placeholder": "E.g., Create an invoice for John Doe for 500 CHF",
+    "thinking": "Thinking...",
+    "executing": "Executing",
+    "executed": "Completed",
+    "error": "Error",
+    "examples": "Examples",
+    "example1": "Show me my clients",
+    "example2": "What's my subscription status?",
+    "example3": "Create an invoice for the first client",
+    "capability1Title": "Create Documents",
+    "capability1Description": "Invoices and quotes with a simple command",
+    "capability2Title": "Manage Clients",
+    "capability2Description": "Search and view your clients",
+    "capability3Title": "Statistics",
+    "capability3Description": "Analyze your data in real time"
+  },
   "common": {
     "loading": "Loading...",
     "save": "Save",
@@ -179,6 +201,7 @@
     "clients": "Clients",
     "quotes": "Quotes",
     "invoices": "Invoices",
+    "assistant": "AI Assistant",
     "subscription": "Subscription",
     "profile": "Profile",
     "settings": "Settings"

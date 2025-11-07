@@ -17,6 +17,7 @@ Un'applicazione SaaS moderna per la gestione di clienti, preventivi e fatture co
 - **Export Data**: xlsx (Excel) + papaparse (CSV)
 - **State Persistence**: js-cookie
 - **Icons**: Lucide React
+- **AI**: Vercel AI SDK + OpenRouter (Gemini 2.0 Flash - 100% Gratuito)
 
 ## 📋 Funzionalità
 
@@ -24,6 +25,18 @@ Un'applicazione SaaS moderna per la gestione di clienti, preventivi e fatture co
 - Registrazione e login con Supabase Auth
 - Multi-tenant con isolamento dati per utente
 - Logout sicuro
+
+### 🤖 AI Chatbot (NUOVO!)
+- **Assistente AI intelligente** integrato nella piattaforma
+- **Crea fatture e preventivi conversazionalmente**: "Crea una fattura per Mario Rossi di 500 CHF"
+- **Cerca e visualizza clienti**: "Mostrami i clienti di Zurigo"
+- **Verifica limiti e statistiche**: "Quante fatture posso ancora creare?"
+- **Multi-lingua**: Risponde automaticamente nella lingua dell'utente (IT, EN, DE, FR, RM)
+- **100% Gratuito**: Usa Google Gemini 2.0 Flash (free tier su OpenRouter)
+- **Sicuro**: Rispetta RLS Supabase e limiti abbonamento
+- **6 tools AI**: get_subscription_status, list_clients, search_client, create_invoice, create_quote, get_invoice_stats
+- Pagina dedicata `/dashboard/chat`
+- 📚 Documentazione completa: [docs/AI_CHATBOT.md](./docs/AI_CHATBOT.md)
 
 ### 💳 Sistema Abbonamenti (Stripe)
 - **3 piani**: Free, Pro (CHF 29/mese), Business (CHF 79/mese)
@@ -269,6 +282,10 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_xxx
 STRIPE_SECRET_KEY=sk_test_xxx
 STRIPE_WEBHOOK_SECRET=whsec_xxx
+
+# OpenRouter (per AI Chatbot, GRATUITO)
+OPENROUTER_API_KEY=sk-or-v1-xxx
+
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
@@ -311,9 +328,11 @@ npm start
 
 ## 📚 Documentazione Aggiuntiva
 
+- **[AI_CHATBOT.md](./docs/AI_CHATBOT.md)** - 🤖 **NUOVO!** Guida completa AI Chatbot (setup, tools, esempi)
 - **[STRIPE_GUIDE.md](./STRIPE_GUIDE.md)** - Guida completa sistema abbonamenti con Stripe
 - **[NEW_FEATURES.md](./NEW_FEATURES.md)** - Changelog dettagliato delle funzionalità implementate
 - **[NOTIFICATIONS.md](./NOTIFICATIONS.md)** - Sistema notifiche
+- **[ANTI_ABUSE_MIGRATION.md](./ANTI_ABUSE_MIGRATION.md)** - Sistema anti-abuso eliminazione account
 - **Supabase Migrations**: Tutti i file SQL in `supabase/` per setup database
 - **Storage Setup**: `supabase/setup-storage.md` per configurazione upload logo
 

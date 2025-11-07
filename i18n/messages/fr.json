@@ -103,6 +103,28 @@
       "rights": "Tous droits réservés."
     }
   },
+  "chat": {
+    "title": "Assistant IA",
+    "subtitle": "Votre assistant intelligent pour gérer factures, devis et clients",
+    "chatTitle": "Chat avec l'Assistant",
+    "chatDescription": "Demandez de l'aide pour créer des documents, consulter des statistiques ou gérer vos clients",
+    "welcomeMessage": "👋 Bonjour! Je suis votre assistant IA pour Fattura.\n\nJe peux vous aider à:\n• Créer des factures et devis pour vos clients\n• Afficher votre liste de clients\n• Vérifier les limites de votre plan\n• Vous montrer des statistiques de factures\n\nComment puis-je vous aider aujourd'hui?",
+    "placeholder": "Ex: Créer une facture pour Jean Dupont de 500 CHF",
+    "thinking": "Réflexion...",
+    "executing": "Exécution",
+    "executed": "Terminé",
+    "error": "Erreur",
+    "examples": "Exemples",
+    "example1": "Montrez-moi mes clients",
+    "example2": "Quel est l'état de mon abonnement?",
+    "example3": "Créer une facture pour le premier client",
+    "capability1Title": "Créer des Documents",
+    "capability1Description": "Factures et devis avec une simple commande",
+    "capability2Title": "Gérer les Clients",
+    "capability2Description": "Rechercher et afficher vos clients",
+    "capability3Title": "Statistiques",
+    "capability3Description": "Analysez vos données en temps réel"
+  },
   "common": {
     "loading": "Chargement...",
     "save": "Enregistrer",
@@ -179,6 +201,7 @@
     "clients": "Clients",
     "quotes": "Devis",
     "invoices": "Factures",
+    "assistant": "Assistant IA",
     "subscription": "Abonnement",
     "profile": "Profil",
     "settings": "Paramètres"

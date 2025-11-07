@@ -1,0 +1,258 @@
+'use client'
+
+import { useChat } from 'ai/react'
+import { useLocale, useTranslations } from 'next-intl'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { Send, Bot, User, Sparkles, AlertCircle, CheckCircle } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+
+export default function ChatPage() {
+  const locale = useLocale()
+  const t = useTranslations('chat')
+
+  const { messages, input, handleInputChange, handleSubmit, isLoading, error } = useChat({
+    api: '/api/chat',
+    body: { locale },
+    initialMessages: [
+      {
+        id: 'welcome',
+        role: 'assistant',
+        content: t('welcomeMessage')
+      }
+    ],
+    onError: (error) => {
+      console.error('Chat error:', error)
+    }
+  })
+
+  return (
+    <div className="container mx-auto p-6 max-w-5xl">
+      <div className="mb-6">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="p-2 bg-primary/10 rounded-lg">
+            <Sparkles className="h-6 w-6 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-3xl font-bold">{t('title')}</h1>
+            <p className="text-muted-foreground">{t('subtitle')}</p>
+          </div>
+        </div>
+      </div>
+
+      <Card className="h-[calc(100vh-250px)] flex flex-col">
+        <CardHeader className="border-b">
+          <CardTitle className="flex items-center gap-2 text-lg">
+            <Bot className="h-5 w-5" />
+            {t('chatTitle')}
+          </CardTitle>
+          <CardDescription>{t('chatDescription')}</CardDescription>
+        </CardHeader>
+
+        <CardContent className="flex-1 flex flex-col p-0">
+          {/* Messages Area */}
+          <ScrollArea className="flex-1 p-4">
+            <div className="space-y-4">
+              {messages.map((message) => (
+                <div
+                  key={message.id}
+                  className={cn(
+                    'flex gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300',
+                    message.role === 'user' ? 'justify-end' : 'justify-start'
+                  )}
+                >
+                  <div
+                    className={cn(
+                      'flex gap-3 max-w-[85%]',
+                      message.role === 'user' ? 'flex-row-reverse' : 'flex-row'
+                    )}
+                  >
+                    {/* Avatar */}
+                    <div
+                      className={cn(
+                        'h-8 w-8 rounded-full flex items-center justify-center shrink-0 mt-1',
+                        message.role === 'user'
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted'
+                      )}
+                    >
+                      {message.role === 'user' ? (
+                        <User className="h-4 w-4" />
+                      ) : (
+                        <Bot className="h-4 w-4" />
+                      )}
+                    </div>
+
+                    {/* Message Content */}
+                    <div
+                      className={cn(
+                        'rounded-lg px-4 py-3 break-words',
+                        message.role === 'user'
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted'
+                      )}
+                    >
+                      {/* Tool Invocations */}
+                      {message.toolInvocations && message.toolInvocations.length > 0 && (
+                        <div className="space-y-2 mb-2">
+                          {message.toolInvocations.map((tool, index) => (
+                            <div
+                              key={index}
+                              className={cn(
+                                'text-xs rounded p-2 border',
+                                message.role === 'user'
+                                  ? 'bg-primary-foreground/10 border-primary-foreground/20'
+                                  : 'bg-background/50 border-border/50'
+                              )}
+                            >
+                              {tool.state === 'call' && (
+                                <div className="flex items-center gap-2 text-muted-foreground">
+                                  <div className="h-3 w-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                                  <span>{t('executing')}: {tool.toolName}</span>
+                                </div>
+                              )}
+                              {tool.state === 'result' && (
+                                <div className="flex items-center gap-2">
+                                  <CheckCircle className="h-3 w-3 text-green-600" />
+                                  <span className="text-muted-foreground">{t('executed')}: {tool.toolName}</span>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Message Text */}
+                      <div className="whitespace-pre-wrap text-sm leading-relaxed">
+                        {message.content}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {/* Loading indicator */}
+              {isLoading && (
+                <div className="flex gap-3 animate-in fade-in">
+                  <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center shrink-0">
+                    <Bot className="h-4 w-4" />
+                  </div>
+                  <div className="bg-muted rounded-lg px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <div className="flex gap-1">
+                        <div className="h-2 w-2 bg-foreground/40 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                        <div className="h-2 w-2 bg-foreground/40 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                        <div className="h-2 w-2 bg-foreground/40 rounded-full animate-bounce" />
+                      </div>
+                      <span className="text-xs text-muted-foreground">{t('thinking')}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </ScrollArea>
+
+          {/* Error Alert */}
+          {error && (
+            <div className="px-4 py-2 border-t">
+              <Alert variant="destructive" className="py-2">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription className="text-sm">
+                  {t('error')}: {error.message}
+                </AlertDescription>
+              </Alert>
+            </div>
+          )}
+
+          {/* Input Area */}
+          <div className="p-4 border-t bg-background">
+            <form onSubmit={handleSubmit} className="flex gap-2">
+              <Input
+                value={input}
+                onChange={handleInputChange}
+                placeholder={t('placeholder')}
+                disabled={isLoading}
+                className="flex-1"
+                autoFocus
+              />
+              <Button type="submit" disabled={isLoading || !input.trim()} size="icon">
+                <Send className="h-4 w-4" />
+              </Button>
+            </form>
+
+            {/* Examples */}
+            <div className="mt-3 flex flex-wrap gap-2">
+              <span className="text-xs text-muted-foreground">{t('examples')}:</span>
+              {[
+                t('example1'),
+                t('example2'),
+                t('example3')
+              ].map((example, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={() => {
+                    handleInputChange({ target: { value: example } } as any)
+                  }}
+                  disabled={isLoading}
+                  className="text-xs bg-muted hover:bg-muted/80 px-2 py-1 rounded transition-colors disabled:opacity-50"
+                >
+                  {example}
+                </button>
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Info Cards */}
+      <div className="mt-6 grid gap-4 md:grid-cols-3">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-blue-500/10 rounded-lg">
+                <Bot className="h-4 w-4 text-blue-500" />
+              </div>
+              <div>
+                <p className="text-sm font-medium">{t('capability1Title')}</p>
+                <p className="text-xs text-muted-foreground">{t('capability1Description')}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-green-500/10 rounded-lg">
+                <CheckCircle className="h-4 w-4 text-green-500" />
+              </div>
+              <div>
+                <p className="text-sm font-medium">{t('capability2Title')}</p>
+                <p className="text-xs text-muted-foreground">{t('capability2Description')}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-purple-500/10 rounded-lg">
+                <Sparkles className="h-4 w-4 text-purple-500" />
+              </div>
+              <div>
+                <p className="text-sm font-medium">{t('capability3Title')}</p>
+                <p className="text-xs text-muted-foreground">{t('capability3Description')}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
+}
+

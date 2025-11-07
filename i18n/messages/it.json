@@ -103,6 +103,28 @@
       "rights": "Tutti i diritti riservati."
     }
   },
+  "chat": {
+    "title": "Assistente AI",
+    "subtitle": "Il tuo assistente intelligente per gestire fatture, preventivi e clienti",
+    "chatTitle": "Chat con l'Assistente",
+    "chatDescription": "Chiedi aiuto per creare documenti, visualizzare statistiche o gestire i tuoi clienti",
+    "welcomeMessage": "👋 Ciao! Sono il tuo assistente AI per Fattura.\n\nPosso aiutarti a:\n• Creare fatture e preventivi per i tuoi clienti\n• Visualizzare la lista dei clienti\n• Verificare i limiti del tuo piano\n• Mostrarti statistiche sulle fatture\n\nCome posso aiutarti oggi?",
+    "placeholder": "Es: Crea una fattura per Mario Rossi di 500 CHF",
+    "thinking": "Sto pensando...",
+    "executing": "Esecuzione",
+    "executed": "Completato",
+    "error": "Errore",
+    "examples": "Esempi",
+    "example1": "Mostrami i miei clienti",
+    "example2": "Qual è lo stato del mio abbonamento?",
+    "example3": "Crea una fattura per il primo cliente",
+    "capability1Title": "Crea Documenti",
+    "capability1Description": "Fatture e preventivi con un semplice comando",
+    "capability2Title": "Gestisci Clienti",
+    "capability2Description": "Cerca e visualizza i tuoi clienti",
+    "capability3Title": "Statistiche",
+    "capability3Description": "Analizza i tuoi dati in tempo reale"
+  },
   "common": {
     "loading": "Caricamento...",
     "save": "Salva",
@@ -179,6 +201,7 @@
     "clients": "Clienti",
     "quotes": "Preventivi",
     "invoices": "Fatture",
+    "assistant": "Assistente AI",
     "subscription": "Abbonamenti",
     "profile": "Profilo",
     "settings": "Impostazioni"

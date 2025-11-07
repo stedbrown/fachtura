@@ -11,6 +11,7 @@ import {
   LogOut,
   CreditCard,
   User as UserIcon,
+  Sparkles,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -59,6 +60,11 @@ export function AppSidebar() {
       title: t('invoices'),
       url: `/${locale}/dashboard/invoices`,
       icon: Receipt,
+    },
+    {
+      title: t('assistant'),
+      url: `/${locale}/dashboard/chat`,
+      icon: Sparkles,
     },
   ]
 

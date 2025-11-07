@@ -103,6 +103,28 @@
       "rights": "Tuts dretgs reservads."
     }
   },
+  "chat": {
+    "title": "Assistent da KI",
+    "subtitle": "Tes assistent intelligent per administrar facturas, preventivs e clients",
+    "chatTitle": "Chat cun l'Assistent",
+    "chatDescription": "Dumonda agid per crear documents, visualisar statisticas u administrar tes clients",
+    "welcomeMessage": "👋 Allegra! Jau sun tes assistent da KI per Fattura.\n\nJau pos ta gidar:\n• Crear facturas e preventivs per tes clients\n• Mussar tia glista da clients\n• Verificar ils limits da tes plan\n• Mussar tai statisticas da facturas\n\nCo pos jau ta gidar oz?",
+    "placeholder": "P.ex. Crear ina factura per Jon Müller da 500 CHF",
+    "thinking": "Pensesch...",
+    "executing": "Exequir",
+    "executed": "Cumpletà",
+    "error": "Errur",
+    "examples": "Exempels",
+    "example1": "Mussa ma mes clients",
+    "example2": "Tge status ha mes abunament?",
+    "example3": "Crear ina factura pel emprim client",
+    "capability1Title": "Crear Documents",
+    "capability1Description": "Facturas e preventivs cun in comand simpel",
+    "capability2Title": "Administrar Clients",
+    "capability2Description": "Tschertgar e mussar tes clients",
+    "capability3Title": "Statisticas",
+    "capability3Description": "Analisar tias datas en temp real"
+  },
   "common": {
     "loading": "Chargiond...",
     "save": "Memorisar",
@@ -179,6 +201,7 @@
     "clients": "Clients",
     "quotes": "Preventivs",
     "invoices": "Facturas",
+    "assistant": "Assistent da KI",
     "subscription": "Abonaments",
     "profile": "Profil",
     "settings": "Parameters"

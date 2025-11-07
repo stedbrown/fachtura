@@ -103,6 +103,28 @@
       "rights": "Alle Rechte vorbehalten."
     }
   },
+  "chat": {
+    "title": "KI-Assistent",
+    "subtitle": "Ihr intelligenter Assistent für die Verwaltung von Rechnungen, Angeboten und Kunden",
+    "chatTitle": "Chat mit Assistent",
+    "chatDescription": "Bitten Sie um Hilfe beim Erstellen von Dokumenten, Anzeigen von Statistiken oder Verwalten Ihrer Kunden",
+    "welcomeMessage": "👋 Hallo! Ich bin Ihr KI-Assistent für Fattura.\n\nIch kann Ihnen helfen:\n• Rechnungen und Angebote für Ihre Kunden zu erstellen\n• Ihre Kundenliste anzuzeigen\n• Ihre Plangrenzen zu überprüfen\n• Ihnen Rechnungsstatistiken zu zeigen\n\nWie kann ich Ihnen heute helfen?",
+    "placeholder": "Z.B. Erstelle eine Rechnung für Max Mustermann über 500 CHF",
+    "thinking": "Denke nach...",
+    "executing": "Ausführen",
+    "executed": "Abgeschlossen",
+    "error": "Fehler",
+    "examples": "Beispiele",
+    "example1": "Zeige mir meine Kunden",
+    "example2": "Wie ist mein Abonnementstatus?",
+    "example3": "Erstelle eine Rechnung für den ersten Kunden",
+    "capability1Title": "Dokumente erstellen",
+    "capability1Description": "Rechnungen und Angebote mit einem einfachen Befehl",
+    "capability2Title": "Kunden verwalten",
+    "capability2Description": "Suchen und anzeigen Sie Ihre Kunden",
+    "capability3Title": "Statistiken",
+    "capability3Description": "Analysieren Sie Ihre Daten in Echtzeit"
+  },
   "common": {
     "loading": "Laden...",
     "save": "Speichern",
@@ -179,6 +201,7 @@
     "clients": "Kunden",
     "quotes": "Offerten",
     "invoices": "Rechnungen",
+    "assistant": "KI-Assistent",
     "subscription": "Abonnement",
     "profile": "Profil",
     "settings": "Einstellungen"
