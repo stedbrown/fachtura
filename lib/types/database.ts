@@ -479,3 +479,44 @@ export interface Database {
     }
   }
 }
+
+// Helper types for easier usage
+export type Client = Database['public']['Tables']['clients']['Row']
+export type ClientInsert = Database['public']['Tables']['clients']['Insert']
+export type ClientUpdate = Database['public']['Tables']['clients']['Update']
+
+export type Invoice = Database['public']['Tables']['invoices']['Row']
+export type InvoiceInsert = Database['public']['Tables']['invoices']['Insert']
+export type InvoiceUpdate = Database['public']['Tables']['invoices']['Update']
+
+export type InvoiceItem = Database['public']['Tables']['invoice_items']['Row']
+export type InvoiceItemInsert = Database['public']['Tables']['invoice_items']['Insert']
+export type InvoiceItemUpdate = Database['public']['Tables']['invoice_items']['Update']
+
+export type Quote = Database['public']['Tables']['quotes']['Row']
+export type QuoteInsert = Database['public']['Tables']['quotes']['Insert']
+export type QuoteUpdate = Database['public']['Tables']['quotes']['Update']
+
+export type QuoteItem = Database['public']['Tables']['quote_items']['Row']
+export type QuoteItemInsert = Database['public']['Tables']['quote_items']['Insert']
+export type QuoteItemUpdate = Database['public']['Tables']['quote_items']['Update']
+
+export type CompanySettings = Database['public']['Tables']['company_settings']['Row']
+export type CompanySettingsInsert = Database['public']['Tables']['company_settings']['Insert']
+export type CompanySettingsUpdate = Database['public']['Tables']['company_settings']['Update']
+
+export type Notification = Database['public']['Tables']['notifications']['Row']
+export type NotificationInsert = Database['public']['Tables']['notifications']['Insert']
+export type NotificationUpdate = Database['public']['Tables']['notifications']['Update']
+
+export type SubscriptionPlan = Database['public']['Tables']['subscription_plans']['Row']
+export type SubscriptionPlanInsert = Database['public']['Tables']['subscription_plans']['Insert']
+export type SubscriptionPlanUpdate = Database['public']['Tables']['subscription_plans']['Update']
+
+export type UserSubscription = Database['public']['Tables']['user_subscriptions']['Row']
+export type UserSubscriptionInsert = Database['public']['Tables']['user_subscriptions']['Insert']
+export type UserSubscriptionUpdate = Database['public']['Tables']['user_subscriptions']['Update']
+
+export type UsageTracking = Database['public']['Tables']['usage_tracking']['Row']
+export type UsageTrackingInsert = Database['public']['Tables']['usage_tracking']['Insert']
+export type UsageTrackingUpdate = Database['public']['Tables']['usage_tracking']['Update']
