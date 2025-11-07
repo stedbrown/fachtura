@@ -1,6 +1,6 @@
 'use client'
 
-import { useChat } from 'ai'
+import { useChat } from '@ai-sdk/react'
 import { useLocale, useTranslations } from 'next-intl'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
