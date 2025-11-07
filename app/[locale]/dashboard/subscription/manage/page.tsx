@@ -137,7 +137,7 @@ export default function ManageSubscriptionPage() {
           <AlertTitle>{t('statusCanceled')}</AlertTitle>
           <AlertDescription>
             {t('statusCanceledDescription', { 
-              date: subscription.period_end ? formatDate(subscription.period_end, locale) : '' 
+              date: subscription.current_period_end ? formatDate(subscription.current_period_end, locale) : '' 
             })}
           </AlertDescription>
         </Alert>
@@ -197,22 +197,22 @@ export default function ManageSubscriptionPage() {
                 </Badge>
               </div>
 
-              {subscription.period_start && (
+              {subscription.current_period_start && (
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">{t('startDate')}</span>
                   <span className="font-medium">
-                    {formatDate(subscription.period_start, locale)}
+                    {formatDate(subscription.current_period_start, locale)}
                   </span>
                 </div>
               )}
 
-              {subscription.period_end && (
+              {subscription.current_period_end && (
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">
                     {isCanceled ? t('endsOn') : t('renewsOn')}
                   </span>
                   <span className="font-medium">
-                    {formatDate(subscription.period_end, locale)}
+                    {formatDate(subscription.current_period_end, locale)}
                   </span>
                 </div>
               )}
