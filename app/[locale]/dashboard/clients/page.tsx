@@ -189,6 +189,15 @@ export default function ClientsPage() {
           })
           .eq('id', selectedClient.id)
       } else {
+        // Verifica limiti prima di creare
+        const canCreate = await checkLimits('client')
+        if (!canCreate) {
+          setShowLimitAlert(true)
+          setDialogOpen(false)
+          setTimeout(() => setShowLimitAlert(false), 5000)
+          return
+        }
+        
         // Create new client
         await supabase.from('clients').insert({
           ...data,
