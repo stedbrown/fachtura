@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { NotificationsDropdown } from '@/components/notifications-dropdown'
+import { SubscriptionBadge } from '@/components/subscription-badge'
 import { SidebarTrigger } from '@/components/ui/sidebar'
 import { useParams, usePathname, useRouter } from 'next/navigation'
 import {
@@ -57,6 +58,7 @@ export function AppHeader({ user }: AppHeaderProps) {
               {user.email}
             </span>
           )}
+          <SubscriptionBadge />
           <NotificationsDropdown />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

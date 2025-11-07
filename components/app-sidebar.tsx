@@ -9,6 +9,7 @@ import {
   Receipt,
   Settings,
   LogOut,
+  CreditCard,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -55,6 +56,11 @@ export function AppSidebar() {
       title: t('invoices'),
       url: `/${locale}/dashboard/invoices`,
       icon: Receipt,
+    },
+    {
+      title: 'Abbonamenti',
+      url: `/${locale}/dashboard/subscription`,
+      icon: CreditCard,
     },
     {
       title: t('settings'),

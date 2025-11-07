@@ -8,6 +8,7 @@ Un'applicazione SaaS moderna per la gestione di clienti, preventivi e fatture co
 - **Linguaggio**: TypeScript
 - **Styling**: TailwindCSS + shadcn/ui
 - **Database & Auth**: Supabase (PostgreSQL + Row Level Security)
+- **Pagamenti**: Stripe (Abbonamenti ricorrenti)
 - **Validazione**: Zod + React Hook Form
 - **PDF Generation**: pdf-lib + swissqrbill
 - **Charts**: Recharts (via shadcn/ui Charts)
@@ -23,6 +24,16 @@ Un'applicazione SaaS moderna per la gestione di clienti, preventivi e fatture co
 - Registrazione e login con Supabase Auth
 - Multi-tenant con isolamento dati per utente
 - Logout sicuro
+
+### 💳 Sistema Abbonamenti (Stripe)
+- **3 piani**: Free, Pro (CHF 29/mese), Business (CHF 79/mese)
+- **Limiti automatici** per piano (clienti, fatture, preventivi)
+- **Checkout sicuro** con Stripe
+- **Gestione abbonamento** self-service (upgrade/downgrade/cancella)
+- **Webhook** per sincronizzazione pagamenti
+- **Badge piano corrente** visibile nell'header
+- **Alert automatici** quando si raggiungono i limiti
+- Pagina dedicata `/dashboard/subscription`
 
 ### 👥 Gestione Clienti
 - Lista completa dei clienti
@@ -123,8 +134,15 @@ npm install
 Crea un file `.env.local` nella root del progetto:
 
 \`\`\`env
+# Supabase
 NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+
+# Stripe (opzionale, vedi STRIPE_GUIDE.md)
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_xxx
+STRIPE_SECRET_KEY=sk_test_xxx
+STRIPE_WEBHOOK_SECRET=whsec_xxx
+NEXT_PUBLIC_APP_URL=http://localhost:3000
 \`\`\`
 
 ### 5. Avvia il server di sviluppo
@@ -141,7 +159,12 @@ Apri [http://localhost:3000](http://localhost:3000) nel browser.
 factura/
 ├── app/
 │   ├── api/
-│   │   └── invoices/[id]/pdf/    # API per generazione PDF
+│   │   ├── invoices/[id]/pdf/    # API per generazione PDF
+│   │   ├── stripe/               # API Stripe
+│   │   │   ├── checkout/         # Crea sessione checkout
+│   │   │   ├── webhook/          # Gestisce eventi Stripe
+│   │   │   └── portal/           # Customer portal
+│   │   └── subscription/         # API verifica limiti
 │   ├── auth/
 │   │   ├── login/                # Pagina login
 │   │   └── register/             # Pagina registrazione
@@ -149,34 +172,48 @@ factura/
 │   │   ├── clients/              # Gestione clienti
 │   │   ├── quotes/               # Gestione preventivi
 │   │   ├── invoices/             # Gestione fatture
+│   │   ├── subscription/         # Pagina abbonamenti
 │   │   ├── settings/             # Impostazioni
 │   │   └── page.tsx              # Dashboard principale
 │   └── layout.tsx
 ├── components/
 │   ├── ui/                       # Componenti shadcn/ui
 │   ├── app-sidebar.tsx           # Sidebar navigazione
-│   ├── app-header.tsx            # Header con user info
+│   ├── app-header.tsx            # Header con badge piano
+│   ├── subscription-badge.tsx    # Badge piano corrente
+│   ├── subscription-limit-alert.tsx # Alert limiti
 │   ├── theme-provider.tsx        # Provider tema
 │   └── theme-toggle.tsx          # Toggle tema
+├── hooks/
+│   └── use-subscription.ts       # Hook gestione abbonamenti
 ├── lib/
+│   ├── stripe/                   # Client/Server Stripe
 │   ├── supabase/                 # Client Supabase
 │   ├── types/                    # TypeScript types
 │   ├── validations/              # Schemi Zod
 │   └── utils/                    # Utility functions
 └── supabase/
-    └── schema.sql                # Schema database
+    ├── schema.sql                # Schema database base
+    └── create_subscription_system.sql # Schema abbonamenti
 \`\`\`
 
 ## 🗄️ Database Schema
 
 Il database è organizzato con le seguenti tabelle:
 
+**Base:**
 - **company_settings**: Impostazioni azienda (una per utente)
 - **clients**: Clienti
 - **quotes**: Preventivi
 - **quote_items**: Righe preventivo
 - **invoices**: Fatture
 - **invoice_items**: Righe fattura
+- **notifications**: Sistema notifiche
+
+**Abbonamenti (Opzionale):**
+- **subscription_plans**: Piani disponibili (Free, Pro, Business)
+- **user_subscriptions**: Abbonamenti utenti con dati Stripe
+- **usage_tracking**: Conteggio uso risorse mensili
 
 Tutte le tabelle hanno Row Level Security (RLS) abilitato per garantire l'isolamento dei dati tra utenti.
 
@@ -218,13 +255,21 @@ Le fatture vengono generate con il Swiss QR Bill integrato, contenente:
    - `supabase/add-soft-delete.sql`
    - `supabase/add-document-customization.sql`
    - `supabase/trigger-create-company-settings.sql`
-4. (Opzionale) Setup Storage per logo: vedi `supabase/setup-storage.md`
+4. (Opzionale) Sistema abbonamenti: `supabase/create_subscription_system.sql`
+5. (Opzionale) Setup Storage per logo: vedi `supabase/setup-storage.md`
 
 ### 2. Configura `.env.local`
 
 ```env
+# Supabase
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+
+# Stripe (opzionale, vedi STRIPE_GUIDE.md)
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_xxx
+STRIPE_SECRET_KEY=sk_test_xxx
+STRIPE_WEBHOOK_SECRET=whsec_xxx
+NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```
 
 ### 3. Installa e Avvia
@@ -254,6 +299,7 @@ Apri [http://localhost:3000](http://localhost:3000)
 3. Configura le variabili d'ambiente:
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - (Opzionale) Variabili Stripe per abbonamenti
 4. Deploy automatico! ✅
 
 ### Build Produzione
@@ -265,7 +311,9 @@ npm start
 
 ## 📚 Documentazione Aggiuntiva
 
+- **[STRIPE_GUIDE.md](./STRIPE_GUIDE.md)** - Guida completa sistema abbonamenti con Stripe
 - **[NEW_FEATURES.md](./NEW_FEATURES.md)** - Changelog dettagliato delle funzionalità implementate
+- **[NOTIFICATIONS.md](./NOTIFICATIONS.md)** - Sistema notifiche
 - **Supabase Migrations**: Tutti i file SQL in `supabase/` per setup database
 - **Storage Setup**: `supabase/setup-storage.md` per configurazione upload logo
 
@@ -273,12 +321,12 @@ npm start
 
 - [ ] Multi-currency support (attualmente solo CHF)
 - [ ] API pubblica per integrazioni
-- [ ] Integrazione pagamenti online (Stripe, PayPal)
 - [ ] Invio email automatico (Resend, SendGrid)
 - [ ] Promemoria scadenze automatici
 - [ ] Template PDF personalizzabili
 - [ ] Mobile app (React Native)
 - [ ] Backup automatici programmati
+- [ ] Integrazione altri payment providers (PayPal, Twint)
 
 ## 📄 Licenza
 
