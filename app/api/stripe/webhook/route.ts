@@ -57,19 +57,20 @@ export async function POST(req: NextRequest) {
         const subscription = event.data.object;
         
         if (subscription.object === 'subscription') {
+          const sub = subscription as any;
           await supabase
             .from('user_subscriptions')
             .update({
-              status: subscription.status,
+              status: sub.status,
               current_period_start: new Date(
-                subscription.current_period_start * 1000
+                sub.current_period_start * 1000
               ).toISOString(),
               current_period_end: new Date(
-                subscription.current_period_end * 1000
+                sub.current_period_end * 1000
               ).toISOString(),
-              cancel_at_period_end: subscription.cancel_at_period_end,
+              cancel_at_period_end: sub.cancel_at_period_end,
             })
-            .eq('stripe_subscription_id', subscription.id);
+            .eq('stripe_subscription_id', sub.id);
         }
         break;
       }
@@ -78,6 +79,7 @@ export async function POST(req: NextRequest) {
         const subscription = event.data.object;
         
         if (subscription.object === 'subscription') {
+          const sub = subscription as any;
           // Ottieni il piano Free
           const { data: freePlan } = await supabase
             .from('subscription_plans')
@@ -93,13 +95,13 @@ export async function POST(req: NextRequest) {
               stripe_subscription_id: null,
               current_period_end: new Date().toISOString(),
             })
-            .eq('stripe_subscription_id', subscription.id);
+            .eq('stripe_subscription_id', sub.id);
         }
         break;
       }
 
       case 'invoice.payment_succeeded': {
-        const invoice = event.data.object as Stripe.Invoice;
+        const invoice = event.data.object as any;
         
         if (invoice.subscription) {
           const subscription = await stripe.subscriptions.retrieve(
@@ -123,7 +125,7 @@ export async function POST(req: NextRequest) {
       }
 
       case 'invoice.payment_failed': {
-        const invoice = event.data.object as Stripe.Invoice;
+        const invoice = event.data.object as any;
         
         if (invoice.subscription) {
           await supabase
