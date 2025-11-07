@@ -503,6 +503,23 @@
       "client": "clients",
       "invoice": "invoices",
       "quote": "quotes"
+    },
+    "features": {
+      "3clients": "3 clients",
+      "50clients": "50 clients",
+      "unlimitedClients": "Unlimited clients",
+      "5invoices": "5 invoices/month",
+      "100invoices": "100 invoices/month",
+      "unlimitedInvoices": "Unlimited invoices",
+      "5quotes": "5 quotes/month",
+      "100quotes": "100 quotes/month",
+      "unlimitedQuotes": "Unlimited quotes",
+      "pdfExport": "PDF export",
+      "documentCustomization": "Document customization",
+      "prioritySupport": "Priority support",
+      "fullCustomization": "Full customization",
+      "support24": "24/7 Support",
+      "apiAccess": "API access"
     }
   }
 }

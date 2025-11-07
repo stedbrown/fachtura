@@ -503,6 +503,23 @@
       "client": "clienti",
       "invoice": "fatture",
       "quote": "preventivi"
+    },
+    "features": {
+      "3clients": "3 clienti",
+      "50clients": "50 clienti",
+      "unlimitedClients": "Clienti illimitati",
+      "5invoices": "5 fatture/mese",
+      "100invoices": "100 fatture/mese",
+      "unlimitedInvoices": "Fatture illimitate",
+      "5quotes": "5 preventivi/mese",
+      "100quotes": "100 preventivi/mese",
+      "unlimitedQuotes": "Preventivi illimitati",
+      "pdfExport": "PDF export",
+      "documentCustomization": "Personalizzazione documenti",
+      "prioritySupport": "Supporto prioritario",
+      "fullCustomization": "Personalizzazione completa",
+      "support24": "Supporto 24/7",
+      "apiAccess": "API access"
     }
   }
 }

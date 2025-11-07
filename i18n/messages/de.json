@@ -503,6 +503,23 @@
       "client": "Kunden",
       "invoice": "Rechnungen",
       "quote": "Angebote"
+    },
+    "features": {
+      "3clients": "3 Kunden",
+      "50clients": "50 Kunden",
+      "unlimitedClients": "Unbegrenzte Kunden",
+      "5invoices": "5 Rechnungen/Monat",
+      "100invoices": "100 Rechnungen/Monat",
+      "unlimitedInvoices": "Unbegrenzte Rechnungen",
+      "5quotes": "5 Angebote/Monat",
+      "100quotes": "100 Angebote/Monat",
+      "unlimitedQuotes": "Unbegrenzte Angebote",
+      "pdfExport": "PDF-Export",
+      "documentCustomization": "Dokument-Anpassung",
+      "prioritySupport": "Prioritäts-Support",
+      "fullCustomization": "Vollständige Anpassung",
+      "support24": "24/7 Support",
+      "apiAccess": "API-Zugang"
     }
   }
 }

@@ -503,6 +503,23 @@
       "client": "clients",
       "invoice": "factures",
       "quote": "devis"
+    },
+    "features": {
+      "3clients": "3 clients",
+      "50clients": "50 clients",
+      "unlimitedClients": "Clients illimités",
+      "5invoices": "5 factures/mois",
+      "100invoices": "100 factures/mois",
+      "unlimitedInvoices": "Factures illimitées",
+      "5quotes": "5 devis/mois",
+      "100quotes": "100 devis/mois",
+      "unlimitedQuotes": "Devis illimités",
+      "pdfExport": "Export PDF",
+      "documentCustomization": "Personnalisation des documents",
+      "prioritySupport": "Support prioritaire",
+      "fullCustomization": "Personnalisation complète",
+      "support24": "Support 24/7",
+      "apiAccess": "Accès API"
     }
   }
 }

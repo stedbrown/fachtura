@@ -503,6 +503,23 @@
       "client": "clients",
       "invoice": "facturas",
       "quote": "preventivs"
+    },
+    "features": {
+      "3clients": "3 clients",
+      "50clients": "50 clients",
+      "unlimitedClients": "Clients illimitads",
+      "5invoices": "5 facturas/mais",
+      "100invoices": "100 facturas/mais",
+      "unlimitedInvoices": "Facturas illimitadas",
+      "5quotes": "5 preventivs/mais",
+      "100quotes": "100 preventivs/mais",
+      "unlimitedQuotes": "Preventivs illimitads",
+      "pdfExport": "Export PDF",
+      "documentCustomization": "Personalisaziun documents",
+      "prioritySupport": "Support prioritar",
+      "fullCustomization": "Personalisaziun cumpleta",
+      "support24": "Support 24/7",
+      "apiAccess": "Access API"
     }
   }
 }

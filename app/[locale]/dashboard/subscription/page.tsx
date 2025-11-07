@@ -9,11 +9,13 @@ import { Check, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
+import { getFeatureTranslationKey } from '@/lib/utils/feature-translator';
 
 export default function SubscriptionPage() {
   const { subscription, plans, loading, createCheckoutSession, openCustomerPortal } = useSubscription();
   const [processingPlanId, setProcessingPlanId] = useState<string | null>(null);
   const t = useTranslations('subscription.page');
+  const tFeatures = useTranslations('subscription.features');
   const params = useParams();
   const locale = params.locale as string;
 
@@ -158,12 +160,17 @@ export default function SubscriptionPage() {
                       </span>
                     </li>
                   )}
-                  {features.map((feature, index) => (
-                    <li key={index} className="flex items-start gap-2">
-                      <Check className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
-                      <span className="text-sm">{feature}</span>
-                    </li>
-                  ))}
+                  {features.map((feature, index) => {
+                    const translationKey = getFeatureTranslationKey(feature);
+                    const translatedFeature = translationKey ? tFeatures(translationKey) : feature;
+                    
+                    return (
+                      <li key={index} className="flex items-start gap-2">
+                        <Check className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
+                        <span className="text-sm">{translatedFeature}</span>
+                      </li>
+                    );
+                  })}
                 </ul>
               </CardContent>
 

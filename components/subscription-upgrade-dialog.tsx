@@ -15,6 +15,7 @@ import { Check, Sparkles, TrendingUp, Zap } from 'lucide-react'
 import { useRouter, useParams } from 'next/navigation'
 import { useSubscription } from '@/hooks/use-subscription'
 import { useTranslations } from 'next-intl'
+import { getFeatureTranslationKey } from '@/lib/utils/feature-translator'
 
 interface SubscriptionUpgradeDialogProps {
   open: boolean
@@ -39,6 +40,7 @@ export function SubscriptionUpgradeDialog({
   const { plans, loading } = useSubscription()
   const [upgrading, setUpgrading] = useState(false)
   const t = useTranslations('subscription')
+  const tFeatures = useTranslations('subscription.features')
 
   const resourceLabel = t(`resources.${limitType}`)
 
@@ -120,12 +122,17 @@ export function SubscriptionUpgradeDialog({
 
                   {plan.features && plan.features.length > 0 && (
                     <div className="border-t pt-3 space-y-2">
-                      {plan.features.map((feature, idx) => (
-                        <div key={idx} className="flex items-center gap-2">
-                          <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
-                          <span className="text-sm">{feature}</span>
-                        </div>
-                      ))}
+                      {plan.features.map((feature, idx) => {
+                        const translationKey = getFeatureTranslationKey(feature);
+                        const translatedFeature = translationKey ? tFeatures(translationKey) : feature;
+                        
+                        return (
+                          <div key={idx} className="flex items-center gap-2">
+                            <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
+                            <span className="text-sm">{translatedFeature}</span>
+                          </div>
+                        );
+                      })}
                     </div>
                   )}
                 </CardContent>
