@@ -418,7 +418,10 @@
     "invalidEmail": "Email invalide",
     "passwordMismatch": "Les mots de passe ne correspondent pas",
     "minLength": "Longueur minimale: {min} caractères",
-    "maxLength": "Longueur maximale: {max} caractères"
+    "maxLength": "Longueur maximale: {max} caractères",
+    "clientSaveError": "Une erreur s'est produite lors de l'enregistrement du client.",
+    "quoteSaveError": "Une erreur s'est produite lors de la création du devis.",
+    "invoiceSaveError": "Une erreur s'est produite lors de la création de la facture."
   },
   "success": {
     "saved": "Enregistré avec succès",
@@ -482,7 +485,11 @@
       "warning": "Attention",
       "warningDescription": "Vous avez utilisé {current} sur {max} {resource} disponibles. Envisagez une mise à niveau!",
       "clientCreated": "Client créé",
-      "clientCreatedDescription": "{name} a été ajouté avec succès."
+      "clientCreatedDescription": "{name} a été ajouté avec succès.",
+      "quoteCreated": "Devis créé",
+      "quoteCreatedDescription": "Le devis a été créé avec succès.",
+      "invoiceCreated": "Facture créée",
+      "invoiceCreatedDescription": "La facture a été créée avec succès."
     },
     "alert": {
       "limitReached": "Limite atteinte",

@@ -36,6 +36,7 @@ export default function ClientsPage() {
   const tCommon = useTranslations('common')
   const tTabs = useTranslations('tabs')
   const tSubscription = useTranslations('subscription')
+  const tErrors = useTranslations('errors')
   
   const [clients, setClients] = useState<Client[]>([])
   const [loading, setLoading] = useState(true)
@@ -284,7 +285,7 @@ export default function ClientsPage() {
     } catch (error) {
       console.error('Errore durante il salvataggio del cliente:', error)
       toast.error(tCommon('error'), {
-        description: 'Si è verificato un errore durante il salvataggio del cliente.',
+        description: tErrors('clientSaveError'),
       })
     } finally {
       setSubmitting(false)

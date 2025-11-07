@@ -34,6 +34,7 @@ export default function NewInvoicePage() {
   const tCommon = useTranslations('common')
   const tStatus = useTranslations('invoices.status')
   const tSubscription = useTranslations('subscription')
+  const tErrors = useTranslations('errors')
   const { hasRequiredFields } = useCompanySettings()
   const { subscription, checkLimits } = useSubscription()
   const [clients, setClients] = useState<Client[]>([])
@@ -268,7 +269,7 @@ export default function NewInvoicePage() {
     } catch (error) {
       console.error('Errore durante la creazione della fattura:', error)
       toast.error(tCommon('error'), {
-        description: 'Si è verificato un errore durante la creazione della fattura.',
+        description: tErrors('invoiceSaveError'),
       })
     } finally {
       setLoading(false)

@@ -418,7 +418,10 @@
     "invalidEmail": "Invalid email",
     "passwordMismatch": "Passwords do not match",
     "minLength": "Minimum length: {min} characters",
-    "maxLength": "Maximum length: {max} characters"
+    "maxLength": "Maximum length: {max} characters",
+    "clientSaveError": "An error occurred while saving the client.",
+    "quoteSaveError": "An error occurred while creating the quote.",
+    "invoiceSaveError": "An error occurred while creating the invoice."
   },
   "success": {
     "saved": "Saved successfully",
@@ -482,7 +485,11 @@
       "warning": "Warning",
       "warningDescription": "You've used {current} out of {max} available {resource}. Consider upgrading!",
       "clientCreated": "Client created",
-      "clientCreatedDescription": "{name} has been added successfully."
+      "clientCreatedDescription": "{name} has been added successfully.",
+      "quoteCreated": "Quote created",
+      "quoteCreatedDescription": "The quote has been created successfully.",
+      "invoiceCreated": "Invoice created",
+      "invoiceCreatedDescription": "The invoice has been created successfully."
     },
     "alert": {
       "limitReached": "Limit reached",

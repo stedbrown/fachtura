@@ -418,7 +418,10 @@
     "invalidEmail": "E-mail nunvalida",
     "passwordMismatch": "Ils pleds-clav na correspundan betg",
     "minLength": "Lunghezza minimala: {min} caracters",
-    "maxLength": "Lunghezza maximala: {max} caracters"
+    "maxLength": "Lunghezza maximala: {max} caracters",
+    "clientSaveError": "In errur è capità durant il registrar dal client.",
+    "quoteSaveError": "In errur è capità durant la creaziun dal preventiv.",
+    "invoiceSaveError": "In errur è capità durant la creaziun da la factura."
   },
   "success": {
     "saved": "Memorisà cun success",
@@ -482,7 +485,11 @@
       "warning": "Attenziun",
       "warningDescription": "Ti has duvra {current} da {max} {resource} disponibels. Considrescha in'actualisaziun!",
       "clientCreated": "Client creà",
-      "clientCreatedDescription": "{name} è vegnì agiuntà cun success."
+      "clientCreatedDescription": "{name} è vegnì agiuntà cun success.",
+      "quoteCreated": "Preventiv creà",
+      "quoteCreatedDescription": "Il preventiv è vegnì creà cun success.",
+      "invoiceCreated": "Factura creada",
+      "invoiceCreatedDescription": "La factura è vegnida creada cun success."
     },
     "alert": {
       "limitReached": "Limit cuntanschì",

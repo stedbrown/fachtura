@@ -418,7 +418,10 @@
     "invalidEmail": "Ungültige E-Mail",
     "passwordMismatch": "Passwörter stimmen nicht überein",
     "minLength": "Mindestlänge: {min} Zeichen",
-    "maxLength": "Maximale Länge: {max} Zeichen"
+    "maxLength": "Maximale Länge: {max} Zeichen",
+    "clientSaveError": "Beim Speichern des Kunden ist ein Fehler aufgetreten.",
+    "quoteSaveError": "Beim Erstellen des Angebots ist ein Fehler aufgetreten.",
+    "invoiceSaveError": "Beim Erstellen der Rechnung ist ein Fehler aufgetreten."
   },
   "success": {
     "saved": "Erfolgreich gespeichert",
@@ -482,7 +485,11 @@
       "warning": "Warnung",
       "warningDescription": "Sie haben {current} von {max} verfügbaren {resource} verwendet. Erwägen Sie ein Upgrade!",
       "clientCreated": "Kunde erstellt",
-      "clientCreatedDescription": "{name} wurde erfolgreich hinzugefügt."
+      "clientCreatedDescription": "{name} wurde erfolgreich hinzugefügt.",
+      "quoteCreated": "Angebot erstellt",
+      "quoteCreatedDescription": "Das Angebot wurde erfolgreich erstellt.",
+      "invoiceCreated": "Rechnung erstellt",
+      "invoiceCreatedDescription": "Die Rechnung wurde erfolgreich erstellt."
     },
     "alert": {
       "limitReached": "Limit erreicht",

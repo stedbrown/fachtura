@@ -32,6 +32,7 @@ export default function NewQuotePage() {
   const tCommon = useTranslations('common')
   const tStatus = useTranslations('quotes.status')
   const tSubscription = useTranslations('subscription')
+  const tErrors = useTranslations('errors')
   const { subscription, checkLimits } = useSubscription()
   const [clients, setClients] = useState<Client[]>([])
   const [loading, setLoading] = useState(false)
@@ -265,7 +266,7 @@ export default function NewQuotePage() {
     } catch (error) {
       console.error('Errore durante la creazione del preventivo:', error)
       toast.error(tCommon('error'), {
-        description: 'Si è verificato un errore durante la creazione del preventivo.',
+        description: tErrors('quoteSaveError'),
       })
     } finally {
       setLoading(false)

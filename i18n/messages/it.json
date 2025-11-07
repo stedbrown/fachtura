@@ -418,7 +418,10 @@
     "invalidEmail": "Email non valida",
     "passwordMismatch": "Le password non corrispondono",
     "minLength": "Lunghezza minima: {min} caratteri",
-    "maxLength": "Lunghezza massima: {max} caratteri"
+    "maxLength": "Lunghezza massima: {max} caratteri",
+    "clientSaveError": "Si è verificato un errore durante il salvataggio del cliente.",
+    "quoteSaveError": "Si è verificato un errore durante la creazione del preventivo.",
+    "invoiceSaveError": "Si è verificato un errore durante la creazione della fattura."
   },
   "success": {
     "saved": "Salvato con successo",
