@@ -33,6 +33,7 @@ export default function NewInvoicePage() {
   const t = useTranslations('invoices')
   const tCommon = useTranslations('common')
   const tStatus = useTranslations('invoices.status')
+  const tSubscription = useTranslations('subscription')
   const { hasRequiredFields } = useCompanySettings()
   const { subscription, checkLimits } = useSubscription()
   const [clients, setClients] = useState<Client[]>([])
@@ -152,8 +153,13 @@ export default function NewInvoicePage() {
     const canCreate = await checkLimits('invoice')
     if (!canCreate) {
       setShowUpgradeDialog(true)
-      toast.error('Limite raggiunto', {
-        description: `Hai raggiunto il limite di ${subscription?.plan?.max_invoices || 0} fatture del piano ${subscription?.plan?.name}.`,
+      const resourceLabel = tSubscription('resources.invoice')
+      toast.error(tSubscription('toast.limitReached'), {
+        description: tSubscription('toast.limitReachedDescription', { 
+          max: subscription?.plan?.max_invoices || 0,
+          resource: resourceLabel,
+          plan: subscription?.plan?.name
+        }),
         duration: 5000,
       })
       window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -163,8 +169,13 @@ export default function NewInvoicePage() {
     // Avviso se si sta avvicinando al limite (80%)
     const maxCount = subscription?.plan?.max_invoices || 0
     if (maxCount > 0 && invoiceCount >= maxCount * 0.8 && invoiceCount < maxCount) {
-      toast.warning('Attenzione', {
-        description: `Hai usato ${invoiceCount} su ${maxCount} fatture disponibili. Considera un upgrade!`,
+      const resourceLabel = tSubscription('resources.invoice')
+      toast.warning(tSubscription('toast.warning'), {
+        description: tSubscription('toast.warningDescription', {
+          current: invoiceCount,
+          max: maxCount,
+          resource: resourceLabel
+        }),
         duration: 4000,
       })
     }

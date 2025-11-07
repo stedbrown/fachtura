@@ -31,6 +31,7 @@ export default function NewQuotePage() {
   const t = useTranslations('quotes')
   const tCommon = useTranslations('common')
   const tStatus = useTranslations('quotes.status')
+  const tSubscription = useTranslations('subscription')
   const { subscription, checkLimits } = useSubscription()
   const [clients, setClients] = useState<Client[]>([])
   const [loading, setLoading] = useState(false)
@@ -149,8 +150,13 @@ export default function NewQuotePage() {
     const canCreate = await checkLimits('quote')
     if (!canCreate) {
       setShowUpgradeDialog(true)
-      toast.error('Limite raggiunto', {
-        description: `Hai raggiunto il limite di ${subscription?.plan?.max_quotes || 0} preventivi del piano ${subscription?.plan?.name}.`,
+      const resourceLabel = tSubscription('resources.quote')
+      toast.error(tSubscription('toast.limitReached'), {
+        description: tSubscription('toast.limitReachedDescription', { 
+          max: subscription?.plan?.max_quotes || 0,
+          resource: resourceLabel,
+          plan: subscription?.plan?.name
+        }),
         duration: 5000,
       })
       window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -160,8 +166,13 @@ export default function NewQuotePage() {
     // Avviso se si sta avvicinando al limite (80%)
     const maxCount = subscription?.plan?.max_quotes || 0
     if (maxCount > 0 && quoteCount >= maxCount * 0.8 && quoteCount < maxCount) {
-      toast.warning('Attenzione', {
-        description: `Hai usato ${quoteCount} su ${maxCount} preventivi disponibili. Considera un upgrade!`,
+      const resourceLabel = tSubscription('resources.quote')
+      toast.warning(tSubscription('toast.warning'), {
+        description: tSubscription('toast.warningDescription', {
+          current: quoteCount,
+          max: maxCount,
+          resource: resourceLabel
+        }),
         duration: 4000,
       })
     }

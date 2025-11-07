@@ -35,6 +35,7 @@ export default function ClientsPage() {
   const t = useTranslations('clients')
   const tCommon = useTranslations('common')
   const tTabs = useTranslations('tabs')
+  const tSubscription = useTranslations('subscription')
   
   const [clients, setClients] = useState<Client[]>([])
   const [loading, setLoading] = useState(true)
@@ -90,8 +91,13 @@ export default function ClientsPage() {
     if (!canCreate) {
       setShowUpgradeDialog(true)
       // Mostra anche notifica
-      toast.error('Limite raggiunto', {
-        description: `Hai raggiunto il limite di ${subscription?.plan?.max_clients || 0} clienti del piano ${subscription?.plan?.name}.`,
+      const resourceLabel = tCommon('client')
+      toast.error(tSubscription('toast.limitReached'), {
+        description: tSubscription('toast.limitReachedDescription', { 
+          max: subscription?.plan?.max_clients || 0,
+          resource: resourceLabel,
+          plan: subscription?.plan?.name
+        }),
         duration: 5000,
       })
       return
@@ -101,8 +107,13 @@ export default function ClientsPage() {
     const currentCount = clients.filter(c => !c.deleted_at).length
     const maxCount = subscription?.plan?.max_clients || 0
     if (maxCount > 0 && currentCount >= maxCount * 0.8 && currentCount < maxCount) {
-      toast.warning('Attenzione', {
-        description: `Hai usato ${currentCount} su ${maxCount} clienti disponibili. Considera un upgrade!`,
+      const resourceLabel = tSubscription('resources.client')
+      toast.warning(tSubscription('toast.warning'), {
+        description: tSubscription('toast.warningDescription', {
+          current: currentCount,
+          max: maxCount,
+          resource: resourceLabel
+        }),
         duration: 4000,
       })
     }
@@ -205,8 +216,13 @@ export default function ClientsPage() {
         if (!canCreate) {
           setShowUpgradeDialog(true)
           setDialogOpen(false)
-          toast.error('Limite raggiunto', {
-            description: `Hai raggiunto il limite di ${subscription?.plan?.max_clients || 0} clienti del piano ${subscription?.plan?.name}.`,
+          const resourceLabel = tCommon('client')
+          toast.error(tSubscription('toast.limitReached'), {
+            description: tSubscription('toast.limitReachedDescription', { 
+              max: subscription?.plan?.max_clients || 0,
+              resource: resourceLabel,
+              plan: subscription?.plan?.name
+            }),
             duration: 5000,
           })
           return
@@ -219,8 +235,8 @@ export default function ClientsPage() {
         })
         
         // Notifica di successo
-        toast.success('Cliente creato', {
-          description: `${data.name} è stato aggiunto con successo.`,
+        toast.success(tSubscription('toast.clientCreated'), {
+          description: tSubscription('toast.clientCreatedDescription', { name: data.name }),
         })
       }
 

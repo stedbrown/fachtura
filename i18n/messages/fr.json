@@ -420,6 +420,36 @@
     "updated": "Mis à jour avec succès",
     "deleted": "Supprimé avec succès",
     "restored": "Restauré avec succès"
+  },
+  "subscription": {
+    "upgradeDialog": {
+      "title": "Boostez Votre Entreprise",
+      "description": "Vous avez atteint la limite de {max} {resource} du plan {plan}.",
+      "subtitle": "Débloquez tout le potentiel de Factura avec un plan supérieur!",
+      "chooseplan": "Choisir {plan}",
+      "notNow": "Pas maintenant",
+      "changeAnytime": "Changez ou annulez à tout moment",
+      "popular": "POPULAIRE",
+      "perMonth": "/mois",
+      "perYear": "/an",
+      "unlimited": "Illimité",
+      "clients": "clients/mois",
+      "invoices": "factures/mois",
+      "quotes": "devis/mois"
+    },
+    "toast": {
+      "limitReached": "Limite atteinte",
+      "limitReachedDescription": "Vous avez atteint la limite de {max} {resource} du plan {plan}.",
+      "warning": "Attention",
+      "warningDescription": "Vous avez utilisé {current} sur {max} {resource} disponibles. Envisagez une mise à niveau!",
+      "clientCreated": "Client créé",
+      "clientCreatedDescription": "{name} a été ajouté avec succès."
+    },
+    "resources": {
+      "client": "clients",
+      "invoice": "factures",
+      "quote": "devis"
+    }
   }
 }
 

@@ -420,6 +420,36 @@
     "updated": "Actualisà cun success",
     "deleted": "Stizzà cun success",
     "restored": "Restituì cun success"
+  },
+  "subscription": {
+    "upgradeDialog": {
+      "title": "Rinforzescha Tia Interpresa",
+      "description": "Ti has cuntanschì il limit da {max} {resource} dal plan {plan}.",
+      "subtitle": "Sblocca il potenzial cumplain da Factura cun in plan pli aut!",
+      "chooseplan": "Tscherner {plan}",
+      "notNow": "Betg ussa",
+      "changeAnytime": "Midar u annullar da tut temp",
+      "popular": "POPULAR",
+      "perMonth": "/mais",
+      "perYear": "/onn",
+      "unlimited": "Illimità",
+      "clients": "clients/mais",
+      "invoices": "facturas/mais",
+      "quotes": "preventivs/mais"
+    },
+    "toast": {
+      "limitReached": "Limit cuntanschì",
+      "limitReachedDescription": "Ti has cuntanschì il limit da {max} {resource} dal plan {plan}.",
+      "warning": "Attenziun",
+      "warningDescription": "Ti has duvra {current} da {max} {resource} disponibels. Considrescha in'actualisaziun!",
+      "clientCreated": "Client creà",
+      "clientCreatedDescription": "{name} è vegnì agiuntà cun success."
+    },
+    "resources": {
+      "client": "clients",
+      "invoice": "facturas",
+      "quote": "preventivs"
+    }
   }
 }
 

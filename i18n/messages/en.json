@@ -420,6 +420,36 @@
     "updated": "Updated successfully",
     "deleted": "Deleted successfully",
     "restored": "Restored successfully"
+  },
+  "subscription": {
+    "upgradeDialog": {
+      "title": "Power Up Your Business",
+      "description": "You've reached the limit of {max} {resource} on the {plan} plan.",
+      "subtitle": "Unlock Factura's full potential with a higher plan!",
+      "chooseplan": "Choose {plan}",
+      "notNow": "Not now",
+      "changeAnytime": "Change or cancel anytime",
+      "popular": "POPULAR",
+      "perMonth": "/month",
+      "perYear": "/year",
+      "unlimited": "Unlimited",
+      "clients": "clients/month",
+      "invoices": "invoices/month",
+      "quotes": "quotes/month"
+    },
+    "toast": {
+      "limitReached": "Limit reached",
+      "limitReachedDescription": "You've reached the limit of {max} {resource} on the {plan} plan.",
+      "warning": "Warning",
+      "warningDescription": "You've used {current} out of {max} available {resource}. Consider upgrading!",
+      "clientCreated": "Client created",
+      "clientCreatedDescription": "{name} has been added successfully."
+    },
+    "resources": {
+      "client": "clients",
+      "invoice": "invoices",
+      "quote": "quotes"
+    }
   }
 }
 

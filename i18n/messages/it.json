@@ -420,6 +420,36 @@
     "updated": "Aggiornato con successo",
     "deleted": "Eliminato con successo",
     "restored": "Ripristinato con successo"
+  },
+  "subscription": {
+    "upgradeDialog": {
+      "title": "Potenzia il tuo Business",
+      "description": "Hai raggiunto il limite di {max} {resource} del piano {plan}.",
+      "subtitle": "Sblocca tutto il potenziale di Factura con un piano superiore!",
+      "chooseplan": "Scegli {plan}",
+      "notNow": "Non ora",
+      "changeAnytime": "Cambia o annulla in qualsiasi momento",
+      "popular": "POPOLARE",
+      "perMonth": "/mese",
+      "perYear": "/anno",
+      "unlimited": "Illimitati",
+      "clients": "clienti/mese",
+      "invoices": "fatture/mese",
+      "quotes": "preventivi/mese"
+    },
+    "toast": {
+      "limitReached": "Limite raggiunto",
+      "limitReachedDescription": "Hai raggiunto il limite di {max} {resource} del piano {plan}.",
+      "warning": "Attenzione",
+      "warningDescription": "Hai usato {current} su {max} {resource} disponibili. Considera un upgrade!",
+      "clientCreated": "Cliente creato",
+      "clientCreatedDescription": "{name} è stato aggiunto con successo."
+    },
+    "resources": {
+      "client": "clienti",
+      "invoice": "fatture",
+      "quote": "preventivi"
+    }
   }
 }
 

@@ -12,8 +12,9 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Check, Sparkles, TrendingUp, Zap } from 'lucide-react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useParams } from 'next/navigation'
 import { useSubscription } from '@/hooks/use-subscription'
+import { useTranslations } from 'next-intl'
 
 interface SubscriptionUpgradeDialogProps {
   open: boolean
@@ -33,17 +34,16 @@ export function SubscriptionUpgradeDialog({
   planName,
 }: SubscriptionUpgradeDialogProps) {
   const router = useRouter()
+  const params = useParams()
+  const locale = params.locale as string
   const { plans, loading } = useSubscription()
   const [upgrading, setUpgrading] = useState(false)
+  const t = useTranslations('subscription')
 
-  const limitLabels = {
-    client: 'clienti',
-    invoice: 'fatture',
-    quote: 'preventivi',
-  }
+  const resourceLabel = t(`resources.${limitType}`)
 
   const handleUpgrade = () => {
-    router.push('/dashboard/subscription')
+    router.push(`/${locale}/dashboard/subscription`)
     onOpenChange(false)
   }
 
@@ -56,12 +56,12 @@ export function SubscriptionUpgradeDialog({
         <DialogHeader>
           <div className="flex items-center gap-2">
             <Sparkles className="h-6 w-6 text-yellow-500" />
-            <DialogTitle className="text-2xl">Potenzia il tuo Business</DialogTitle>
+            <DialogTitle className="text-2xl">{t('upgradeDialog.title')}</DialogTitle>
           </div>
           <DialogDescription className="text-base pt-2">
-            Hai raggiunto il limite di <strong>{maxCount} {limitLabels[limitType]}</strong> del piano {planName}.
+            {t('upgradeDialog.description', { max: maxCount, resource: resourceLabel, plan: planName })}
             <br />
-            Sblocca tutto il potenziale di Factura con un piano superiore! 🚀
+            {t('upgradeDialog.subtitle')} 🚀
           </DialogDescription>
         </DialogHeader>
 
@@ -79,7 +79,7 @@ export function SubscriptionUpgradeDialog({
               >
                 {isBusiness && (
                   <div className="absolute top-0 right-0 bg-gradient-to-l from-purple-600 to-pink-600 text-white px-4 py-1 text-xs font-bold rounded-bl-lg">
-                    POPOLARE
+                    {t('upgradeDialog.popular')}
                   </div>
                 )}
                 
@@ -92,7 +92,7 @@ export function SubscriptionUpgradeDialog({
                   </div>
                   <CardDescription className="text-lg font-semibold mt-2">
                     <span className="text-3xl text-foreground">€{plan.price}</span>
-                    <span className="text-muted-foreground">/{plan.interval === 'month' ? 'mese' : 'anno'}</span>
+                    <span className="text-muted-foreground">{plan.interval === 'month' ? t('upgradeDialog.perMonth') : t('upgradeDialog.perYear')}</span>
                   </CardDescription>
                 </CardHeader>
 
@@ -101,19 +101,19 @@ export function SubscriptionUpgradeDialog({
                     <div className="flex items-center gap-2">
                       <Check className="h-4 w-4 text-green-500" />
                       <span className="text-sm">
-                        <strong>{plan.max_clients === null ? 'Illimitati' : plan.max_clients}</strong> clienti/mese
+                        <strong>{plan.max_clients === null ? t('upgradeDialog.unlimited') : plan.max_clients}</strong> {t('upgradeDialog.clients')}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Check className="h-4 w-4 text-green-500" />
                       <span className="text-sm">
-                        <strong>{plan.max_invoices === null ? 'Illimitate' : plan.max_invoices}</strong> fatture/mese
+                        <strong>{plan.max_invoices === null ? t('upgradeDialog.unlimited') : plan.max_invoices}</strong> {t('upgradeDialog.invoices')}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Check className="h-4 w-4 text-green-500" />
                       <span className="text-sm">
-                        <strong>{plan.max_quotes === null ? 'Illimitati' : plan.max_quotes}</strong> preventivi/mese
+                        <strong>{plan.max_quotes === null ? t('upgradeDialog.unlimited') : plan.max_quotes}</strong> {t('upgradeDialog.quotes')}
                       </span>
                     </div>
                   </div>
@@ -137,7 +137,7 @@ export function SubscriptionUpgradeDialog({
                     size="lg"
                     onClick={handleUpgrade}
                   >
-                    Scegli {plan.name}
+                    {t('upgradeDialog.chooseplan', { plan: plan.name })}
                   </Button>
                 </CardFooter>
               </Card>
@@ -147,10 +147,10 @@ export function SubscriptionUpgradeDialog({
 
         <div className="flex items-center justify-between pt-4 border-t">
           <p className="text-sm text-muted-foreground">
-            Cambia o annulla in qualsiasi momento
+            {t('upgradeDialog.changeAnytime')}
           </p>
           <Button variant="ghost" onClick={() => onOpenChange(false)}>
-            Non ora
+            {t('upgradeDialog.notNow')}
           </Button>
         </div>
       </DialogContent>
