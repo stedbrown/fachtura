@@ -9,12 +9,14 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Send, Bot, User, Sparkles, AlertCircle, CheckCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { useState, FormEvent } from 'react'
 
 export default function ChatPage() {
   const locale = useLocale()
   const t = useTranslations('chat')
+  const [inputValue, setInputValue] = useState('')
 
-  const { messages, input, handleInputChange, handleSubmit, isLoading, error } = useChat({
+  const { messages, sendMessage, status, error } = useChat({
     api: '/api/chat',
     body: { locale },
     initialMessages: [
@@ -23,11 +25,24 @@ export default function ChatPage() {
         role: 'assistant',
         content: t('welcomeMessage')
       }
-    ],
-    onError: (error) => {
-      console.error('Chat error:', error)
-    }
+    ]
   })
+
+  const isLoading = status === 'streaming' || status === 'awaiting-response'
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault()
+    if (!inputValue.trim() || isLoading) return
+    
+    const message = inputValue.trim()
+    setInputValue('')
+    
+    try {
+      await sendMessage({ content: message })
+    } catch (error) {
+      console.error('Error sending message:', error)
+    }
+  }
 
   return (
     <div className="container mx-auto p-6 max-w-5xl">
@@ -171,14 +186,14 @@ export default function ChatPage() {
           <div className="p-4 border-t bg-background">
             <form onSubmit={handleSubmit} className="flex gap-2">
               <Input
-                value={input}
-                onChange={handleInputChange}
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
                 placeholder={t('placeholder')}
                 disabled={isLoading}
                 className="flex-1"
                 autoFocus
               />
-              <Button type="submit" disabled={isLoading || !input.trim()} size="icon">
+              <Button type="submit" disabled={isLoading || !inputValue.trim()} size="icon">
                 <Send className="h-4 w-4" />
               </Button>
             </form>
@@ -194,9 +209,7 @@ export default function ChatPage() {
                 <button
                   key={index}
                   type="button"
-                  onClick={() => {
-                    handleInputChange({ target: { value: example } } as any)
-                  }}
+                  onClick={() => setInputValue(example)}
                   disabled={isLoading}
                   className="text-xs bg-muted hover:bg-muted/80 px-2 py-1 rounded transition-colors disabled:opacity-50"
                 >
