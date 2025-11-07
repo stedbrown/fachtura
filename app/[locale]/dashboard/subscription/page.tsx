@@ -7,17 +7,22 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from '@/components/ui/badge';
 import { Check, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
+import { useParams } from 'next/navigation';
 
 export default function SubscriptionPage() {
   const { subscription, plans, loading, createCheckoutSession, openCustomerPortal } = useSubscription();
   const [processingPlanId, setProcessingPlanId] = useState<string | null>(null);
+  const t = useTranslations('subscription.page');
+  const params = useParams();
+  const locale = params.locale as string;
 
   const handleSubscribe = async (priceId: string, planId: string) => {
     try {
       setProcessingPlanId(planId);
       await createCheckoutSession(priceId, planId);
     } catch (error) {
-      toast.error('Errore durante la creazione della sessione di checkout');
+      toast.error(t('errorCheckout'));
       setProcessingPlanId(null);
     }
   };
@@ -26,7 +31,7 @@ export default function SubscriptionPage() {
     try {
       await openCustomerPortal();
     } catch (error) {
-      toast.error('Errore durante l\'apertura del portale clienti');
+      toast.error(t('errorPortal'));
     }
   };
 
@@ -44,21 +49,23 @@ export default function SubscriptionPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Abbonamenti</h1>
+        <h1 className="text-3xl font-bold mb-2">{t('title')}</h1>
         <p className="text-muted-foreground">
-          Scegli il piano perfetto per la tua attività
+          {t('subtitle')}
         </p>
       </div>
 
       {subscription?.cancel_at_period_end && (
         <Card className="mb-8 border-orange-500">
           <CardHeader>
-            <CardTitle className="text-orange-600">Il tuo abbonamento verrà cancellato</CardTitle>
+            <CardTitle className="text-orange-600">{t('cancelWarningTitle')}</CardTitle>
             <CardDescription>
-              Il tuo abbonamento {currentPlan} terminerà il{' '}
-              {subscription.current_period_end
-                ? new Date(subscription.current_period_end).toLocaleDateString('it-IT')
-                : ''}
+              {t('cancelWarningDescription', {
+                plan: currentPlan,
+                date: subscription.current_period_end
+                  ? new Date(subscription.current_period_end).toLocaleDateString(locale)
+                  : ''
+              })}
             </CardDescription>
           </CardHeader>
         </Card>
@@ -67,24 +74,23 @@ export default function SubscriptionPage() {
       {subscription && isActiveSubscription && (
         <Card className="mb-8">
           <CardHeader>
-            <CardTitle>Abbonamento Corrente</CardTitle>
+            <CardTitle>{t('currentSubscriptionTitle')}</CardTitle>
             <CardDescription>
-              Stai utilizzando il piano {currentPlan}
+              {t('currentSubscriptionDescription', { plan: currentPlan })}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
               {subscription.current_period_end && (
-                <>
-                  Il tuo abbonamento si rinnova il{' '}
-                  {new Date(subscription.current_period_end).toLocaleDateString('it-IT')}
-                </>
+                t('renewsOn', {
+                  date: new Date(subscription.current_period_end).toLocaleDateString(locale)
+                })
               )}
             </p>
           </CardContent>
           <CardFooter>
             <Button onClick={handleManageSubscription} variant="outline">
-              Gestisci Abbonamento
+              {t('manageSubscription')}
             </Button>
           </CardFooter>
         </Card>
@@ -102,7 +108,7 @@ export default function SubscriptionPage() {
             >
               {isCurrentPlan && (
                 <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                  <Badge>Piano Corrente</Badge>
+                  <Badge>{t('currentPlanBadge')}</Badge>
                 </div>
               )}
 
@@ -110,11 +116,11 @@ export default function SubscriptionPage() {
                 <CardTitle className="text-2xl">{plan.name}</CardTitle>
                 <CardDescription>
                   <span className="text-3xl font-bold">
-                    {plan.price === 0 ? 'Gratis' : `CHF ${plan.price}`}
+                    {plan.price === 0 ? t('free') : `CHF ${plan.price}`}
                   </span>
                   {plan.price > 0 && (
                     <span className="text-muted-foreground">
-                      /{plan.interval === 'month' ? 'mese' : 'anno'}
+                      /{plan.interval === 'month' ? t('perMonth') : t('perYear')}
                     </span>
                   )}
                 </CardDescription>
@@ -127,8 +133,8 @@ export default function SubscriptionPage() {
                       <Check className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
                       <span className="text-sm">
                         {plan.max_clients === null
-                          ? 'Clienti illimitati'
-                          : `Fino a ${plan.max_clients} clienti`}
+                          ? t('unlimitedClients')
+                          : t('upToClients', { count: plan.max_clients })}
                       </span>
                     </li>
                   )}
@@ -137,8 +143,8 @@ export default function SubscriptionPage() {
                       <Check className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
                       <span className="text-sm">
                         {plan.max_invoices === null
-                          ? 'Fatture illimitate'
-                          : `Fino a ${plan.max_invoices} fatture/mese`}
+                          ? t('unlimitedInvoices')
+                          : t('upToInvoices', { count: plan.max_invoices })}
                       </span>
                     </li>
                   )}
@@ -147,8 +153,8 @@ export default function SubscriptionPage() {
                       <Check className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
                       <span className="text-sm">
                         {plan.max_quotes === null
-                          ? 'Preventivi illimitati'
-                          : `Fino a ${plan.max_quotes} preventivi/mese`}
+                          ? t('unlimitedQuotes')
+                          : t('upToQuotes', { count: plan.max_quotes })}
                       </span>
                     </li>
                   )}
@@ -164,7 +170,7 @@ export default function SubscriptionPage() {
               <CardFooter>
                 {isCurrentPlan ? (
                   <Button disabled className="w-full">
-                    Piano Corrente
+                    {t('currentPlanBadge')}
                   </Button>
                 ) : plan.stripe_price_id ? (
                   <Button
@@ -175,15 +181,15 @@ export default function SubscriptionPage() {
                     {processingPlanId === plan.id ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Caricamento...
+                        {t('loading')}
                       </>
                     ) : (
-                      `Passa a ${plan.name}`
+                      t('upgradeTo', { plan: plan.name })
                     )}
                   </Button>
                 ) : (
                   <Button disabled className="w-full">
-                    Piano Gratuito
+                    {t('freePlan')}
                   </Button>
                 )}
               </CardFooter>
@@ -194,28 +200,25 @@ export default function SubscriptionPage() {
 
       <Card className="mt-8">
         <CardHeader>
-          <CardTitle>Domande Frequenti</CardTitle>
+          <CardTitle>{t('faqTitle')}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <h3 className="font-semibold mb-1">Posso cambiare piano in qualsiasi momento?</h3>
+            <h3 className="font-semibold mb-1">{t('faq1Question')}</h3>
             <p className="text-sm text-muted-foreground">
-              Sì, puoi aggiornare o declassare il tuo piano in qualsiasi momento. Le modifiche
-              avranno effetto immediato e verrà calcolato un credito proporzionale.
+              {t('faq1Answer')}
             </p>
           </div>
           <div>
-            <h3 className="font-semibold mb-1">Come vengono conteggiati i limiti?</h3>
+            <h3 className="font-semibold mb-1">{t('faq2Question')}</h3>
             <p className="text-sm text-muted-foreground">
-              I limiti di fatture e preventivi si rinnovano ogni mese. I clienti sono un limite
-              totale per il piano Free e Pro.
+              {t('faq2Answer')}
             </p>
           </div>
           <div>
-            <h3 className="font-semibold mb-1">Cosa succede se cancello il mio abbonamento?</h3>
+            <h3 className="font-semibold mb-1">{t('faq3Question')}</h3>
             <p className="text-sm text-muted-foreground">
-              Potrai continuare a utilizzare il piano a pagamento fino alla fine del periodo di
-              fatturazione. Dopo, tornerai automaticamente al piano gratuito.
+              {t('faq3Answer')}
             </p>
           </div>
         </CardContent>
