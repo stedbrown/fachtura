@@ -106,7 +106,7 @@ export async function POST(req: NextRequest) {
         if (invoice.subscription) {
           const subscription = await stripe.subscriptions.retrieve(
             invoice.subscription as string
-          );
+          ) as any;
 
           await supabase
             .from('user_subscriptions')
