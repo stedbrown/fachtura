@@ -140,6 +140,7 @@
     "clients": "Clients",
     "quotes": "Quotes",
     "invoices": "Invoices",
+    "subscription": "Subscription",
     "settings": "Settings"
   },
   "dashboard": {

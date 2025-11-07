@@ -58,7 +58,7 @@ export function AppSidebar() {
       icon: Receipt,
     },
     {
-      title: 'Abbonamenti',
+      title: t('subscription'),
       url: `/${locale}/dashboard/subscription`,
       icon: CreditCard,
     },

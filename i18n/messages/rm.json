@@ -140,6 +140,7 @@
     "clients": "Clients",
     "quotes": "Preventivs",
     "invoices": "Facturas",
+    "subscription": "Abonaments",
     "settings": "Parameters"
   },
   "dashboard": {
