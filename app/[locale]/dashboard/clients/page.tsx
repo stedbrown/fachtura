@@ -12,12 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from '@/components/ui/alert'
-import { Plus, Pencil, Trash2, Archive, ArchiveRestore, AlertCircle } from 'lucide-react'
+import { Plus, Pencil, Trash2, Archive, ArchiveRestore } from 'lucide-react'
 import { ClientDialog } from '@/components/clients/client-dialog'
 import { ImportClientsDialog } from '@/components/clients/import-clients-dialog'
 import { DeleteDialog } from '@/components/delete-dialog'
@@ -30,6 +25,8 @@ import { useTranslations } from 'next-intl'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useSubscription } from '@/hooks/use-subscription'
+import { SubscriptionUpgradeDialog } from '@/components/subscription-upgrade-dialog'
+import { toast } from 'sonner'
 
 export default function ClientsPage() {
   const params = useParams()
@@ -49,7 +46,7 @@ export default function ClientsPage() {
   const [clientToDelete, setClientToDelete] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const [filters, setFilters] = useState<ClientFilterState>({})
-  const [showLimitAlert, setShowLimitAlert] = useState(false)
+  const [showUpgradeDialog, setShowUpgradeDialog] = useState(false)
   
   const { subscription, checkLimits } = useSubscription()
 
@@ -91,9 +88,23 @@ export default function ClientsPage() {
     const canCreate = await checkLimits('client')
     
     if (!canCreate) {
-      setShowLimitAlert(true)
-      setTimeout(() => setShowLimitAlert(false), 5000) // Nascondi dopo 5 secondi
+      setShowUpgradeDialog(true)
+      // Mostra anche notifica
+      toast.error('Limite raggiunto', {
+        description: `Hai raggiunto il limite di ${subscription?.plan?.max_clients || 0} clienti del piano ${subscription?.plan?.name}.`,
+        duration: 5000,
+      })
       return
+    }
+    
+    // Avviso se si sta avvicinando al limite (80%)
+    const currentCount = clients.filter(c => !c.deleted_at).length
+    const maxCount = subscription?.plan?.max_clients || 0
+    if (maxCount > 0 && currentCount >= maxCount * 0.8 && currentCount < maxCount) {
+      toast.warning('Attenzione', {
+        description: `Hai usato ${currentCount} su ${maxCount} clienti disponibili. Considera un upgrade!`,
+        duration: 4000,
+      })
     }
     
     setSelectedClient(null)
@@ -192,9 +203,12 @@ export default function ClientsPage() {
         // Verifica limiti prima di creare
         const canCreate = await checkLimits('client')
         if (!canCreate) {
-          setShowLimitAlert(true)
+          setShowUpgradeDialog(true)
           setDialogOpen(false)
-          setTimeout(() => setShowLimitAlert(false), 5000)
+          toast.error('Limite raggiunto', {
+            description: `Hai raggiunto il limite di ${subscription?.plan?.max_clients || 0} clienti del piano ${subscription?.plan?.name}.`,
+            duration: 5000,
+          })
           return
         }
         
@@ -202,6 +216,11 @@ export default function ClientsPage() {
         await supabase.from('clients').insert({
           ...data,
           user_id: user.id,
+        })
+        
+        // Notifica di successo
+        toast.success('Cliente creato', {
+          description: `${data.name} è stato aggiunto con successo.`,
         })
       }
 
@@ -290,21 +309,6 @@ export default function ClientsPage() {
           </Button>
         </div>
       </div>
-
-      {showLimitAlert && (
-        <Alert variant="destructive" className="animate-in fade-in-50 slide-in-from-top-2">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Limite Raggiunto</AlertTitle>
-          <AlertDescription>
-            Hai raggiunto il limite di <strong>{subscription?.plan?.max_clients || 0} clienti</strong> del piano {subscription?.plan?.name || 'Free'}.
-            {' '}
-            <Link href={`/${locale}/dashboard/subscription`} className="underline font-semibold hover:text-white">
-              Aggiorna il tuo piano
-            </Link>
-            {' '}per aggiungere più clienti.
-          </AlertDescription>
-        </Alert>
-      )}
 
       <Tabs value={showArchived ? 'archived' : 'active'} onValueChange={(value) => setShowArchived(value === 'archived')}>
         <TabsList>
@@ -430,6 +434,15 @@ export default function ClientsPage() {
         title={t('deleteClient')}
         description={t('deleteDescription')}
         isDeleting={isDeleting}
+      />
+
+      <SubscriptionUpgradeDialog
+        open={showUpgradeDialog}
+        onOpenChange={setShowUpgradeDialog}
+        limitType="client"
+        currentCount={clients.filter(c => !c.deleted_at).length}
+        maxCount={subscription?.plan?.max_clients || 0}
+        planName={subscription?.plan?.name || 'Free'}
       />
     </div>
   )

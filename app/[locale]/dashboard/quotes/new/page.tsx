@@ -16,17 +16,13 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from '@/components/ui/alert'
-import { Plus, Trash2, AlertCircle } from 'lucide-react'
+import { Plus, Trash2 } from 'lucide-react'
 import type { Client } from '@/lib/types/database'
 import type { QuoteItemInput } from '@/lib/validations/quote'
 import { calculateQuoteTotals, generateQuoteNumber } from '@/lib/utils/quote-utils'
 import { useSubscription } from '@/hooks/use-subscription'
-import Link from 'next/link'
+import { SubscriptionUpgradeDialog } from '@/components/subscription-upgrade-dialog'
+import { toast } from 'sonner'
 
 export default function NewQuotePage() {
   const router = useRouter()
@@ -43,7 +39,8 @@ export default function NewQuotePage() {
   const [validUntil, setValidUntil] = useState('')
   const [status, setStatus] = useState<'draft' | 'sent' | 'accepted' | 'rejected'>('draft')
   const [notes, setNotes] = useState('')
-  const [showLimitAlert, setShowLimitAlert] = useState(false)
+  const [showUpgradeDialog, setShowUpgradeDialog] = useState(false)
+  const [quoteCount, setQuoteCount] = useState(0)
   const [items, setItems] = useState<QuoteItemInput[]>([
     { description: '', quantity: 1, unit_price: 0, tax_rate: 8.1 },
   ])
@@ -51,6 +48,7 @@ export default function NewQuotePage() {
   useEffect(() => {
     loadClients()
     loadCompanyDefaults()
+    loadQuoteCount()
   }, [])
 
   const loadClients = async () => {
@@ -70,6 +68,22 @@ export default function NewQuotePage() {
     if (data) {
       setClients(data)
     }
+  }
+
+  const loadQuoteCount = async () => {
+    const supabase = createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) return
+
+    const { count } = await supabase
+      .from('quotes')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+
+    setQuoteCount(count || 0)
   }
 
   const loadCompanyDefaults = async () => {
@@ -134,9 +148,22 @@ export default function NewQuotePage() {
     // Verifica limiti prima di creare il preventivo
     const canCreate = await checkLimits('quote')
     if (!canCreate) {
-      setShowLimitAlert(true)
+      setShowUpgradeDialog(true)
+      toast.error('Limite raggiunto', {
+        description: `Hai raggiunto il limite di ${subscription?.plan?.max_quotes || 0} preventivi del piano ${subscription?.plan?.name}.`,
+        duration: 5000,
+      })
       window.scrollTo({ top: 0, behavior: 'smooth' })
       return
+    }
+
+    // Avviso se si sta avvicinando al limite (80%)
+    const maxCount = subscription?.plan?.max_quotes || 0
+    if (maxCount > 0 && quoteCount >= maxCount * 0.8 && quoteCount < maxCount) {
+      toast.warning('Attenzione', {
+        description: `Hai usato ${quoteCount} su ${maxCount} preventivi disponibili. Considera un upgrade!`,
+        duration: 4000,
+      })
     }
 
     setLoading(true)
@@ -203,22 +230,6 @@ export default function NewQuotePage() {
           {t('form.subtitle')}
         </p>
       </div>
-
-      {/* Alert for subscription limits */}
-      {showLimitAlert && (
-        <Alert variant="destructive" className="animate-in fade-in-50 slide-in-from-top-2">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Limite Raggiunto</AlertTitle>
-          <AlertDescription>
-            Hai raggiunto il limite di <strong>{subscription?.plan?.max_quotes || 0} preventivi</strong> del piano {subscription?.plan?.name || 'Free'}.
-            {' '}
-            <Link href={`/${locale}/dashboard/subscription`} className="underline font-semibold hover:text-white">
-              Aggiorna il tuo piano
-            </Link>
-            {' '}per creare più preventivi.
-          </AlertDescription>
-        </Alert>
-      )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <Card>
@@ -409,6 +420,15 @@ export default function NewQuotePage() {
           </Button>
         </div>
       </form>
+
+      <SubscriptionUpgradeDialog
+        open={showUpgradeDialog}
+        onOpenChange={setShowUpgradeDialog}
+        limitType="quote"
+        currentCount={quoteCount}
+        maxCount={subscription?.plan?.max_quotes || 0}
+        planName={subscription?.plan?.name || 'Free'}
+      />
     </div>
   )
 }

@@ -16,19 +16,15 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from '@/components/ui/alert'
-import { Plus, Trash2, AlertCircle } from 'lucide-react'
+import { Plus, Trash2 } from 'lucide-react'
 import type { Client } from '@/lib/types/database'
 import type { InvoiceItemInput } from '@/lib/validations/invoice'
 import { calculateInvoiceTotals, generateInvoiceNumber } from '@/lib/utils/invoice-utils'
 import { SetupAlert } from '@/components/setup-alert'
 import { useCompanySettings } from '@/hooks/use-company-settings'
 import { useSubscription } from '@/hooks/use-subscription'
-import Link from 'next/link'
+import { SubscriptionUpgradeDialog } from '@/components/subscription-upgrade-dialog'
+import { toast } from 'sonner'
 
 export default function NewInvoicePage() {
   const router = useRouter()
@@ -46,7 +42,8 @@ export default function NewInvoicePage() {
   const [dueDate, setDueDate] = useState('')
   const [status, setStatus] = useState<'draft' | 'issued' | 'paid' | 'overdue'>('draft')
   const [notes, setNotes] = useState('')
-  const [showLimitAlert, setShowLimitAlert] = useState(false)
+  const [showUpgradeDialog, setShowUpgradeDialog] = useState(false)
+  const [invoiceCount, setInvoiceCount] = useState(0)
   const [items, setItems] = useState<InvoiceItemInput[]>([
     { description: '', quantity: 1, unit_price: 0, tax_rate: 8.1 },
   ])
@@ -54,6 +51,7 @@ export default function NewInvoicePage() {
   useEffect(() => {
     loadClients()
     loadCompanyDefaults()
+    loadInvoiceCount()
   }, [])
 
   const loadClients = async () => {
@@ -73,6 +71,22 @@ export default function NewInvoicePage() {
     if (data) {
       setClients(data)
     }
+  }
+
+  const loadInvoiceCount = async () => {
+    const supabase = createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) return
+
+    const { count } = await supabase
+      .from('invoices')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+
+    setInvoiceCount(count || 0)
   }
 
   const loadCompanyDefaults = async () => {
@@ -137,9 +151,22 @@ export default function NewInvoicePage() {
     // Verifica limiti prima di creare la fattura
     const canCreate = await checkLimits('invoice')
     if (!canCreate) {
-      setShowLimitAlert(true)
+      setShowUpgradeDialog(true)
+      toast.error('Limite raggiunto', {
+        description: `Hai raggiunto il limite di ${subscription?.plan?.max_invoices || 0} fatture del piano ${subscription?.plan?.name}.`,
+        duration: 5000,
+      })
       window.scrollTo({ top: 0, behavior: 'smooth' })
       return
+    }
+
+    // Avviso se si sta avvicinando al limite (80%)
+    const maxCount = subscription?.plan?.max_invoices || 0
+    if (maxCount > 0 && invoiceCount >= maxCount * 0.8 && invoiceCount < maxCount) {
+      toast.warning('Attenzione', {
+        description: `Hai usato ${invoiceCount} su ${maxCount} fatture disponibili. Considera un upgrade!`,
+        duration: 4000,
+      })
     }
 
     setLoading(true)
@@ -209,22 +236,6 @@ export default function NewInvoicePage() {
 
       {/* Alert for missing company settings */}
       <SetupAlert />
-
-      {/* Alert for subscription limits */}
-      {showLimitAlert && (
-        <Alert variant="destructive" className="animate-in fade-in-50 slide-in-from-top-2">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Limite Raggiunto</AlertTitle>
-          <AlertDescription>
-            Hai raggiunto il limite di <strong>{subscription?.plan?.max_invoices || 0} fatture</strong> del piano {subscription?.plan?.name || 'Free'}.
-            {' '}
-            <Link href={`/${locale}/dashboard/subscription`} className="underline font-semibold hover:text-white">
-              Aggiorna il tuo piano
-            </Link>
-            {' '}per creare più fatture.
-          </AlertDescription>
-        </Alert>
-      )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <Card>
@@ -419,6 +430,15 @@ export default function NewInvoicePage() {
           </Button>
         </div>
       </form>
+
+      <SubscriptionUpgradeDialog
+        open={showUpgradeDialog}
+        onOpenChange={setShowUpgradeDialog}
+        limitType="invoice"
+        currentCount={invoiceCount}
+        maxCount={subscription?.plan?.max_invoices || 0}
+        planName={subscription?.plan?.name || 'Free'}
+      />
     </div>
   )
 }
