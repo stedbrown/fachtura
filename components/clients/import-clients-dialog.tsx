@@ -114,6 +114,26 @@ export function ImportClientsDialog({ onSuccess }: { onSuccess?: () => void }) {
       // Import only valid clients
       const validClients = previewData.filter((c) => c.isValid)
       
+      // Verifica limiti per l'import multiplo
+      const response = await fetch('/api/subscription/check-limits', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ resourceType: 'client' }),
+      })
+      
+      const limitCheck = await response.json()
+      
+      if (!limitCheck.can_create) {
+        toast.error(`Limite raggiunto! Puoi creare solo ${limitCheck.remaining} clienti in più con il piano ${limitCheck.plan_name}.`)
+        return
+      }
+      
+      // Verifica se si sta tentando di importare più clienti del limite rimanente
+      if (validClients.length > limitCheck.remaining) {
+        toast.error(`Puoi importare al massimo ${limitCheck.remaining} clienti. Rimuovine ${validClients.length - limitCheck.remaining} dal file.`)
+        return
+      }
+      
       const clientsToInsert = validClients.map((client) => ({
         user_id: user.id,
         name: client.name,

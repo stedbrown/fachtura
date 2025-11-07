@@ -12,7 +12,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Plus, Pencil, Trash2, Archive, ArchiveRestore } from 'lucide-react'
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from '@/components/ui/alert'
+import { Plus, Pencil, Trash2, Archive, ArchiveRestore, AlertCircle } from 'lucide-react'
 import { ClientDialog } from '@/components/clients/client-dialog'
 import { ImportClientsDialog } from '@/components/clients/import-clients-dialog'
 import { DeleteDialog } from '@/components/delete-dialog'
@@ -24,6 +29,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useTranslations } from 'next-intl'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useSubscription } from '@/hooks/use-subscription'
 
 export default function ClientsPage() {
   const params = useParams()
@@ -43,6 +49,9 @@ export default function ClientsPage() {
   const [clientToDelete, setClientToDelete] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const [filters, setFilters] = useState<ClientFilterState>({})
+  const [showLimitAlert, setShowLimitAlert] = useState(false)
+  
+  const { subscription, checkLimits } = useSubscription()
 
   useEffect(() => {
     loadClients()
@@ -77,7 +86,16 @@ export default function ClientsPage() {
     setLoading(false)
   }
 
-  const handleCreate = () => {
+  const handleCreate = async () => {
+    // Verifica limiti prima di creare un nuovo cliente
+    const canCreate = await checkLimits('client')
+    
+    if (!canCreate) {
+      setShowLimitAlert(true)
+      setTimeout(() => setShowLimitAlert(false), 5000) // Nascondi dopo 5 secondi
+      return
+    }
+    
     setSelectedClient(null)
     setDialogOpen(true)
   }
@@ -263,6 +281,21 @@ export default function ClientsPage() {
           </Button>
         </div>
       </div>
+
+      {showLimitAlert && (
+        <Alert variant="destructive" className="animate-in fade-in-50 slide-in-from-top-2">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Limite Raggiunto</AlertTitle>
+          <AlertDescription>
+            Hai raggiunto il limite di <strong>{subscription?.max_clients || 0} clienti</strong> del piano {subscription?.plan_name}.
+            {' '}
+            <Link href={`/${locale}/dashboard/subscription`} className="underline font-semibold hover:text-white">
+              Aggiorna il tuo piano
+            </Link>
+            {' '}per aggiungere più clienti.
+          </AlertDescription>
+        </Alert>
+      )}
 
       <Tabs value={showArchived ? 'archived' : 'active'} onValueChange={(value) => setShowArchived(value === 'archived')}>
         <TabsList>

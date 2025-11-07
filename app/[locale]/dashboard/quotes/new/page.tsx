@@ -16,10 +16,17 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Plus, Trash2 } from 'lucide-react'
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from '@/components/ui/alert'
+import { Plus, Trash2, AlertCircle } from 'lucide-react'
 import type { Client } from '@/lib/types/database'
 import type { QuoteItemInput } from '@/lib/validations/quote'
 import { calculateQuoteTotals, generateQuoteNumber } from '@/lib/utils/quote-utils'
+import { useSubscription } from '@/hooks/use-subscription'
+import Link from 'next/link'
 
 export default function NewQuotePage() {
   const router = useRouter()
@@ -28,6 +35,7 @@ export default function NewQuotePage() {
   const t = useTranslations('quotes')
   const tCommon = useTranslations('common')
   const tStatus = useTranslations('quotes.status')
+  const { subscription, checkLimits } = useSubscription()
   const [clients, setClients] = useState<Client[]>([])
   const [loading, setLoading] = useState(false)
   const [clientId, setClientId] = useState('')
@@ -35,6 +43,7 @@ export default function NewQuotePage() {
   const [validUntil, setValidUntil] = useState('')
   const [status, setStatus] = useState<'draft' | 'sent' | 'accepted' | 'rejected'>('draft')
   const [notes, setNotes] = useState('')
+  const [showLimitAlert, setShowLimitAlert] = useState(false)
   const [items, setItems] = useState<QuoteItemInput[]>([
     { description: '', quantity: 1, unit_price: 0, tax_rate: 8.1 },
   ])
@@ -122,6 +131,14 @@ export default function NewQuotePage() {
       return
     }
 
+    // Verifica limiti prima di creare il preventivo
+    const canCreate = await checkLimits('quote')
+    if (!canCreate) {
+      setShowLimitAlert(true)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      return
+    }
+
     setLoading(true)
 
     try {
@@ -186,6 +203,22 @@ export default function NewQuotePage() {
           {t('form.subtitle')}
         </p>
       </div>
+
+      {/* Alert for subscription limits */}
+      {showLimitAlert && (
+        <Alert variant="destructive" className="animate-in fade-in-50 slide-in-from-top-2">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Limite Raggiunto</AlertTitle>
+          <AlertDescription>
+            Hai raggiunto il limite di <strong>{subscription?.max_quotes || 0} preventivi</strong> del piano {subscription?.plan_name}.
+            {' '}
+            <Link href={`/${locale}/dashboard/subscription`} className="underline font-semibold hover:text-white">
+              Aggiorna il tuo piano
+            </Link>
+            {' '}per creare più preventivi.
+          </AlertDescription>
+        </Alert>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <Card>

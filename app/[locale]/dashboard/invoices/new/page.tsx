@@ -16,12 +16,19 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Plus, Trash2 } from 'lucide-react'
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from '@/components/ui/alert'
+import { Plus, Trash2, AlertCircle } from 'lucide-react'
 import type { Client } from '@/lib/types/database'
 import type { InvoiceItemInput } from '@/lib/validations/invoice'
 import { calculateInvoiceTotals, generateInvoiceNumber } from '@/lib/utils/invoice-utils'
 import { SetupAlert } from '@/components/setup-alert'
 import { useCompanySettings } from '@/hooks/use-company-settings'
+import { useSubscription } from '@/hooks/use-subscription'
+import Link from 'next/link'
 
 export default function NewInvoicePage() {
   const router = useRouter()
@@ -31,6 +38,7 @@ export default function NewInvoicePage() {
   const tCommon = useTranslations('common')
   const tStatus = useTranslations('invoices.status')
   const { hasRequiredFields } = useCompanySettings()
+  const { subscription, checkLimits } = useSubscription()
   const [clients, setClients] = useState<Client[]>([])
   const [loading, setLoading] = useState(false)
   const [clientId, setClientId] = useState('')
@@ -38,6 +46,7 @@ export default function NewInvoicePage() {
   const [dueDate, setDueDate] = useState('')
   const [status, setStatus] = useState<'draft' | 'issued' | 'paid' | 'overdue'>('draft')
   const [notes, setNotes] = useState('')
+  const [showLimitAlert, setShowLimitAlert] = useState(false)
   const [items, setItems] = useState<InvoiceItemInput[]>([
     { description: '', quantity: 1, unit_price: 0, tax_rate: 8.1 },
   ])
@@ -125,6 +134,14 @@ export default function NewInvoicePage() {
       return
     }
 
+    // Verifica limiti prima di creare la fattura
+    const canCreate = await checkLimits('invoice')
+    if (!canCreate) {
+      setShowLimitAlert(true)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      return
+    }
+
     setLoading(true)
 
     try {
@@ -192,6 +209,22 @@ export default function NewInvoicePage() {
 
       {/* Alert for missing company settings */}
       <SetupAlert />
+
+      {/* Alert for subscription limits */}
+      {showLimitAlert && (
+        <Alert variant="destructive" className="animate-in fade-in-50 slide-in-from-top-2">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Limite Raggiunto</AlertTitle>
+          <AlertDescription>
+            Hai raggiunto il limite di <strong>{subscription?.max_invoices || 0} fatture</strong> del piano {subscription?.plan_name}.
+            {' '}
+            <Link href={`/${locale}/dashboard/subscription`} className="underline font-semibold hover:text-white">
+              Aggiorna il tuo piano
+            </Link>
+            {' '}per creare più fatture.
+          </AlertDescription>
+        </Alert>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <Card>
