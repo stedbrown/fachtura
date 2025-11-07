@@ -158,7 +158,7 @@ export default function NewInvoicePage() {
         description: tSubscription('toast.limitReachedDescription', { 
           max: subscription?.plan?.max_invoices || 0,
           resource: resourceLabel,
-          plan: subscription?.plan?.name
+          plan: subscription?.plan?.name || 'Free'
         }),
         duration: 5000,
       })

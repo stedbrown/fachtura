@@ -155,7 +155,7 @@ export default function NewQuotePage() {
         description: tSubscription('toast.limitReachedDescription', { 
           max: subscription?.plan?.max_quotes || 0,
           resource: resourceLabel,
-          plan: subscription?.plan?.name
+          plan: subscription?.plan?.name || 'Free'
         }),
         duration: 5000,
       })

@@ -96,7 +96,7 @@ export default function ClientsPage() {
         description: tSubscription('toast.limitReachedDescription', { 
           max: subscription?.plan?.max_clients || 0,
           resource: resourceLabel,
-          plan: subscription?.plan?.name
+          plan: subscription?.plan?.name || 'Free'
         }),
         duration: 5000,
       })
@@ -221,7 +221,7 @@ export default function ClientsPage() {
             description: tSubscription('toast.limitReachedDescription', { 
               max: subscription?.plan?.max_clients || 0,
               resource: resourceLabel,
-              plan: subscription?.plan?.name
+              plan: subscription?.plan?.name || 'Free'
             }),
             duration: 5000,
           })
