@@ -185,19 +185,30 @@ BEGIN
       );
     END IF;
   ELSIF p_resource_type = 'client' THEN
-    IF v_plan.max_clients IS NOT NULL AND COALESCE(v_usage.clients_count, 0) >= v_plan.max_clients THEN
-      v_result := v_result || jsonb_build_object(
-        'allowed', false,
-        'current_count', COALESCE(v_usage.clients_count, 0),
-        'max_count', v_plan.max_clients,
-        'message', 'Hai raggiunto il limite di clienti. Aggiorna il tuo piano per continuare.'
-      );
-    ELSE
-      v_result := v_result || jsonb_build_object(
-        'current_count', COALESCE(v_usage.clients_count, 0),
-        'max_count', v_plan.max_clients
-      );
-    END IF;
+    -- Per i clienti, conta il totale dalla tabella clients (non mensile)
+    DECLARE
+      v_total_clients INTEGER;
+    BEGIN
+      SELECT COUNT(*)
+      INTO v_total_clients
+      FROM clients
+      WHERE user_id = p_user_id
+        AND deleted_at IS NULL;
+      
+      IF v_plan.max_clients IS NOT NULL AND v_total_clients >= v_plan.max_clients THEN
+        v_result := v_result || jsonb_build_object(
+          'allowed', false,
+          'current_count', v_total_clients,
+          'max_count', v_plan.max_clients,
+          'message', 'Hai raggiunto il limite di clienti. Aggiorna il tuo piano per continuare.'
+        );
+      ELSE
+        v_result := v_result || jsonb_build_object(
+          'current_count', v_total_clients,
+          'max_count', v_plan.max_clients
+        );
+      END IF;
+    END;
   END IF;
   
   RETURN v_result;

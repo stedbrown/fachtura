@@ -57,14 +57,15 @@ BEGIN
     RETURN NEW;
   END IF;
 
-  -- Conta gli elementi esistenti per questo mese
+  -- Conta gli elementi esistenti
+  -- Per clienti: conta il totale (non mensile)
+  -- Per fatture e preventivi: conta solo quelli del mese corrente
   IF v_resource_type = 'client' THEN
     SELECT COUNT(*)
     INTO v_current_count
     FROM clients
     WHERE user_id = v_user_id
-      AND deleted_at IS NULL
-      AND DATE_TRUNC('month', created_at) = DATE_TRUNC('month', NOW());
+      AND deleted_at IS NULL;
   ELSIF v_resource_type = 'invoice' THEN
     SELECT COUNT(*)
     INTO v_current_count
