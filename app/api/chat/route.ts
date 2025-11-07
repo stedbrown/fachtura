@@ -456,8 +456,8 @@ export async function POST(req: NextRequest) {
       maxSteps: 5
     })
 
-    // Nella v5, usa .respond() invece di .toDataStreamResponse()
-    return result.respond({ messages })
+    // Nella v5, usa .toTextStreamResponse() per streaming
+    return result.toTextStreamResponse()
 
   } catch (error) {
     console.error('Chat API error:', error)
