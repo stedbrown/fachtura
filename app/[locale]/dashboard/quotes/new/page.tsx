@@ -210,7 +210,7 @@ export default function NewQuotePage() {
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Limite Raggiunto</AlertTitle>
           <AlertDescription>
-            Hai raggiunto il limite di <strong>{subscription?.max_quotes || 0} preventivi</strong> del piano {subscription?.plan_name}.
+            Hai raggiunto il limite di <strong>{subscription?.plan?.max_quotes || 0} preventivi</strong> del piano {subscription?.plan?.name || 'Free'}.
             {' '}
             <Link href={`/${locale}/dashboard/subscription`} className="underline font-semibold hover:text-white">
               Aggiorna il tuo piano

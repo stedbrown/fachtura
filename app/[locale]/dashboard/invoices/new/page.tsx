@@ -216,7 +216,7 @@ export default function NewInvoicePage() {
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Limite Raggiunto</AlertTitle>
           <AlertDescription>
-            Hai raggiunto il limite di <strong>{subscription?.max_invoices || 0} fatture</strong> del piano {subscription?.plan_name}.
+            Hai raggiunto il limite di <strong>{subscription?.plan?.max_invoices || 0} fatture</strong> del piano {subscription?.plan?.name || 'Free'}.
             {' '}
             <Link href={`/${locale}/dashboard/subscription`} className="underline font-semibold hover:text-white">
               Aggiorna il tuo piano
