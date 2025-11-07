@@ -523,9 +523,9 @@ export type UsageTrackingUpdate = Database['public']['Tables']['usage_tracking']
 
 // Types with relationships
 export type InvoiceWithClient = Invoice & {
-  clients: Client
+  client: Client
 }
 
 export type QuoteWithClient = Quote & {
-  clients: Client
+  client: Client
 }
