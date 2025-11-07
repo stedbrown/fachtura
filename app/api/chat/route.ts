@@ -71,7 +71,8 @@ Sche l'utilisader cuntanscha ils limits dal plan, propona gentilmain in upgrade.
 
 export async function POST(req: NextRequest) {
   try {
-    const { messages, locale = 'it' } = await req.json()
+    const body = await req.json()
+    const { messages = [], locale = 'it' } = body
 
     // Verifica autenticazione
     const supabase = await createClient()
@@ -455,7 +456,8 @@ export async function POST(req: NextRequest) {
       maxSteps: 5
     })
 
-    return result.toDataStreamResponse()
+    // Nella v5, usa .respond() invece di .toDataStreamResponse()
+    return result.respond({ messages })
 
   } catch (error) {
     console.error('Chat API error:', error)
