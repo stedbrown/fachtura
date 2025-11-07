@@ -20,9 +20,11 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarSeparator,
   useSidebar,
 } from '@/components/ui/sidebar'
 import { Button } from '@/components/ui/button'
@@ -37,7 +39,7 @@ export function AppSidebar() {
   const tAuth = useTranslations('auth')
   const { setOpenMobile } = useSidebar()
 
-  const menuItems = [
+  const mainMenuItems = [
     {
       title: t('dashboard'),
       url: `/${locale}/dashboard`,
@@ -58,6 +60,9 @@ export function AppSidebar() {
       url: `/${locale}/dashboard/invoices`,
       icon: Receipt,
     },
+  ]
+
+  const accountMenuItems = [
     {
       title: t('subscription'),
       url: `/${locale}/dashboard/subscription`,
@@ -90,10 +95,10 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon">
       <SidebarContent>
+        {/* Logo/Brand */}
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              {/* Logo/Brand - hidden when collapsed */}
               <SidebarMenuItem className="group-data-[collapsible=icon]:hidden">
                 <SidebarMenuButton size="lg" asChild>
                   <div className="flex items-center gap-2 cursor-default">
@@ -104,9 +109,35 @@ export function AppSidebar() {
                   </div>
                 </SidebarMenuButton>
               </SidebarMenuItem>
-              
-              {/* Menu Items */}
-              {menuItems.map((item) => (
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Main Menu Items */}
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {mainMenuItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton asChild isActive={pathname === item.url} onClick={handleNavigation}>
+                    <Link href={item.url}>
+                      <item.icon className="h-4 w-4" />
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        <SidebarSeparator />
+
+        {/* Account Menu Items */}
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {accountMenuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild isActive={pathname === item.url} onClick={handleNavigation}>
                     <Link href={item.url}>
