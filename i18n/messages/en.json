@@ -197,6 +197,13 @@
     "restore": "Restore",
     "permanentDelete": "Delete permanently",
     "permanentDeleteWarning": "WARNING: This action will permanently delete the client and cannot be undone. Continue?",
+    "import": {
+      "limitReached": "Limit reached! You can only create {remaining} more clients with the {plan} plan.",
+      "tooMany": "You can import a maximum of {remaining} clients. Remove {excess} from the file.",
+      "error": "Import error: {error}",
+      "success": "{count} clients imported successfully!",
+      "notAuthenticated": "Not authenticated"
+    },
     "fields": {
       "name": "Name",
       "email": "Email",
@@ -444,6 +451,14 @@
       "warningDescription": "You've used {current} out of {max} available {resource}. Consider upgrading!",
       "clientCreated": "Client created",
       "clientCreatedDescription": "{name} has been added successfully."
+    },
+    "alert": {
+      "limitReached": "Limit reached",
+      "upgradePlan": "Upgrade Plan",
+      "close": "Close",
+      "warningTitle": "Warning - Approaching limit",
+      "warningDescription": "You've used {current} of {max} available {resource}.",
+      "viewPlans": "View Plans"
     },
     "resources": {
       "client": "clients",

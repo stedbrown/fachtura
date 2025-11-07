@@ -107,7 +107,7 @@ export function ImportClientsDialog({ onSuccess }: { onSuccess?: () => void }) {
       } = await supabase.auth.getUser()
 
       if (!user) {
-        toast.error('Non autenticato')
+        toast.error(t('import.notAuthenticated'))
         return
       }
 
@@ -124,13 +124,19 @@ export function ImportClientsDialog({ onSuccess }: { onSuccess?: () => void }) {
       const limitCheck = await response.json()
       
       if (!limitCheck.can_create) {
-        toast.error(`Limite raggiunto! Puoi creare solo ${limitCheck.remaining} clienti in più con il piano ${limitCheck.plan_name}.`)
+        toast.error(t('import.limitReached', { 
+          remaining: limitCheck.remaining, 
+          plan: limitCheck.plan_name 
+        }))
         return
       }
       
       // Verifica se si sta tentando di importare più clienti del limite rimanente
       if (validClients.length > limitCheck.remaining) {
-        toast.error(`Puoi importare al massimo ${limitCheck.remaining} clienti. Rimuovine ${validClients.length - limitCheck.remaining} dal file.`)
+        toast.error(t('import.tooMany', { 
+          remaining: limitCheck.remaining, 
+          excess: validClients.length - limitCheck.remaining 
+        }))
         return
       }
       
@@ -150,16 +156,16 @@ export function ImportClientsDialog({ onSuccess }: { onSuccess?: () => void }) {
         .insert(clientsToInsert)
 
       if (error) {
-        toast.error(`Errore nell'import: ${error.message}`)
+        toast.error(t('import.error', { error: error.message }))
         return
       }
 
-      toast.success(`${validClients.length} clienti importati con successo!`)
+      toast.success(t('import.success', { count: validClients.length }))
       setOpen(false)
       resetDialog()
       onSuccess?.()
     } catch (err) {
-      toast.error('Errore durante l\'import')
+      toast.error(t('import.error', { error: String(err) }))
       console.error(err)
     } finally {
       setImporting(false)

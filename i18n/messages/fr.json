@@ -197,6 +197,13 @@
     "restore": "Restaurer",
     "permanentDelete": "Supprimer définitivement",
     "permanentDeleteWarning": "ATTENTION: Cette action supprimera définitivement le client et ne pourra pas être annulée. Continuer?",
+    "import": {
+      "limitReached": "Limite atteinte! Vous ne pouvez créer que {remaining} clients supplémentaires avec le plan {plan}.",
+      "tooMany": "Vous pouvez importer au maximum {remaining} clients. Supprimez {excess} du fichier.",
+      "error": "Erreur d'importation: {error}",
+      "success": "{count} clients importés avec succès!",
+      "notAuthenticated": "Non authentifié"
+    },
     "fields": {
       "name": "Nom",
       "email": "Email",
@@ -444,6 +451,14 @@
       "warningDescription": "Vous avez utilisé {current} sur {max} {resource} disponibles. Envisagez une mise à niveau!",
       "clientCreated": "Client créé",
       "clientCreatedDescription": "{name} a été ajouté avec succès."
+    },
+    "alert": {
+      "limitReached": "Limite atteinte",
+      "upgradePlan": "Mettre à niveau le plan",
+      "close": "Fermer",
+      "warningTitle": "Attention - Limite proche",
+      "warningDescription": "Vous avez utilisé {current} sur {max} {resource} disponibles.",
+      "viewPlans": "Voir les plans"
     },
     "resources": {
       "client": "clients",

@@ -197,6 +197,13 @@
     "restore": "Restituir",
     "permanentDelete": "Stizzar definitivamain",
     "permanentDeleteWarning": "ATTENZIUN: Questa acziun stizza definitivamain il client e na po betg vegnir revocada. Cuntinuar?",
+    "import": {
+      "limitReached": "Limit cuntanschì! Ti pos be crear anc {remaining} clients cun il plan {plan}.",
+      "tooMany": "Ti pos importar maximalmain {remaining} clients. Stizza {excess} dal file.",
+      "error": "Errur durant l'import: {error}",
+      "success": "{count} clients importads cun success!",
+      "notAuthenticated": "Betg autentifitgà"
+    },
     "fields": {
       "name": "Num",
       "email": "E-mail",
@@ -444,6 +451,14 @@
       "warningDescription": "Ti has duvra {current} da {max} {resource} disponibels. Considrescha in'actualisaziun!",
       "clientCreated": "Client creà",
       "clientCreatedDescription": "{name} è vegnì agiuntà cun success."
+    },
+    "alert": {
+      "limitReached": "Limit cuntanschì",
+      "upgradePlan": "Actualisar plan",
+      "close": "Serrar",
+      "warningTitle": "Attenziun - Limit proxim",
+      "warningDescription": "Ti has duvra {current} da {max} {resource} disponibels.",
+      "viewPlans": "Mussar plans"
     },
     "resources": {
       "client": "clients",

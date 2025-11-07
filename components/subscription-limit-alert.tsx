@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { AlertCircle } from 'lucide-react';
 import { UsageLimits } from '@/hooks/use-subscription';
 import { useRouter, useParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 
 interface SubscriptionLimitAlertProps {
   limits: UsageLimits;
@@ -19,13 +20,14 @@ export function SubscriptionLimitAlert({
   const router = useRouter();
   const params = useParams();
   const locale = params.locale as string;
+  const t = useTranslations('subscription.alert');
 
   if (limits.allowed) return null;
 
   return (
     <Alert variant="destructive" className="mb-4">
       <AlertCircle className="h-4 w-4" />
-      <AlertTitle>Limite raggiunto</AlertTitle>
+      <AlertTitle>{t('limitReached')}</AlertTitle>
       <AlertDescription className="flex flex-col gap-3">
         <p>{limits.message}</p>
         <div className="flex gap-2">
@@ -33,11 +35,11 @@ export function SubscriptionLimitAlert({
             size="sm"
             onClick={() => router.push(`/${locale}/dashboard/subscription`)}
           >
-            Aggiorna Piano
+            {t('upgradePlan')}
           </Button>
           {onClose && (
             <Button size="sm" variant="outline" onClick={onClose}>
-              Chiudi
+              {t('close')}
             </Button>
           )}
         </div>
@@ -60,6 +62,8 @@ export function SubscriptionWarning({
   const router = useRouter();
   const params = useParams();
   const locale = params.locale as string;
+  const t = useTranslations('subscription.alert');
+  const tResources = useTranslations('subscription.resources');
 
   if (maxCount === null) return null;
 
@@ -68,26 +72,22 @@ export function SubscriptionWarning({
   // Show warning at 80%
   if (percentage < 80) return null;
 
-  const resourceNames = {
-    invoice: 'fatture',
-    quote: 'preventivi',
-    client: 'clienti',
-  };
+  const resourceLabel = tResources(resourceType);
 
   return (
     <Alert className="mb-4">
       <AlertCircle className="h-4 w-4" />
-      <AlertTitle>Attenzione - Limite in avvicinamento</AlertTitle>
+      <AlertTitle>{t('warningTitle')}</AlertTitle>
       <AlertDescription className="flex flex-col gap-2">
         <p>
-          Hai utilizzato {currentCount} di {maxCount} {resourceNames[resourceType]} disponibili.
+          {t('warningDescription', { current: currentCount, max: maxCount, resource: resourceLabel })}
         </p>
         <Button
           size="sm"
           variant="outline"
           onClick={() => router.push(`/${locale}/dashboard/subscription`)}
         >
-          Visualizza Piani
+          {t('viewPlans')}
         </Button>
       </AlertDescription>
     </Alert>

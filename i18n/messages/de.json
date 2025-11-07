@@ -197,6 +197,13 @@
     "restore": "Wiederherstellen",
     "permanentDelete": "Endgültig löschen",
     "permanentDeleteWarning": "WARNUNG: Diese Aktion wird den Kunden endgültig löschen und kann nicht rückgängig gemacht werden. Fortfahren?",
+    "import": {
+      "limitReached": "Limit erreicht! Sie können nur noch {remaining} Kunden mit dem {plan}-Plan erstellen.",
+      "tooMany": "Sie können maximal {remaining} Kunden importieren. Entfernen Sie {excess} aus der Datei.",
+      "error": "Import-Fehler: {error}",
+      "success": "{count} Kunden erfolgreich importiert!",
+      "notAuthenticated": "Nicht authentifiziert"
+    },
     "fields": {
       "name": "Name",
       "email": "E-Mail",
@@ -444,6 +451,14 @@
       "warningDescription": "Sie haben {current} von {max} verfügbaren {resource} verwendet. Erwägen Sie ein Upgrade!",
       "clientCreated": "Kunde erstellt",
       "clientCreatedDescription": "{name} wurde erfolgreich hinzugefügt."
+    },
+    "alert": {
+      "limitReached": "Limit erreicht",
+      "upgradePlan": "Plan aktualisieren",
+      "close": "Schließen",
+      "warningTitle": "Warnung - Limit bald erreicht",
+      "warningDescription": "Sie haben {current} von {max} verfügbaren {resource} verwendet.",
+      "viewPlans": "Pläne anzeigen"
     },
     "resources": {
       "client": "Kunden",
