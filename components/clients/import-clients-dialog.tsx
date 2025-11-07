@@ -123,19 +123,24 @@ export function ImportClientsDialog({ onSuccess }: { onSuccess?: () => void }) {
       
       const limitCheck = await response.json()
       
-      if (!limitCheck.can_create) {
+      // Calcola i clienti rimanenti disponibili
+      const remaining = limitCheck.max_count !== null 
+        ? limitCheck.max_count - limitCheck.current_count 
+        : Infinity
+      
+      if (!limitCheck.allowed || remaining === 0) {
         toast.error(t('import.limitReached', { 
-          remaining: limitCheck.remaining, 
+          remaining: 0, 
           plan: limitCheck.plan_name 
         }))
         return
       }
       
       // Verifica se si sta tentando di importare più clienti del limite rimanente
-      if (validClients.length > limitCheck.remaining) {
+      if (remaining !== Infinity && validClients.length > remaining) {
         toast.error(t('import.tooMany', { 
-          remaining: limitCheck.remaining, 
-          excess: validClients.length - limitCheck.remaining 
+          remaining: remaining, 
+          excess: validClients.length - remaining 
         }))
         return
       }
@@ -156,7 +161,16 @@ export function ImportClientsDialog({ onSuccess }: { onSuccess?: () => void }) {
         .insert(clientsToInsert)
 
       if (error) {
-        toast.error(t('import.error', { error: error.message }))
+        console.error('Errore import clienti:', error)
+        // Se il trigger del database blocca l'inserimento per limite raggiunto
+        if (error.message.includes('Limite raggiunto')) {
+          toast.error(t('import.limitReached', { 
+            remaining: remaining, 
+            plan: limitCheck.plan_name 
+          }))
+        } else {
+          toast.error(t('import.error', { error: error.message }))
+        }
         return
       }
 

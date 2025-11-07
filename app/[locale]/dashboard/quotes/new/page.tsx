@@ -41,6 +41,11 @@ export default function NewQuotePage() {
   const [status, setStatus] = useState<'draft' | 'sent' | 'accepted' | 'rejected'>('draft')
   const [notes, setNotes] = useState('')
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false)
+  const [upgradeDialogParams, setUpgradeDialogParams] = useState({
+    currentCount: 0,
+    maxCount: 0,
+    planName: 'Free'
+  })
   const [quoteCount, setQuoteCount] = useState(0)
   const [items, setItems] = useState<QuoteItemInput[]>([
     { description: '', quantity: 1, unit_price: 0, tax_rate: 8.1 },
@@ -147,15 +152,21 @@ export default function NewQuotePage() {
     }
 
     // Verifica limiti prima di creare il preventivo
-    const canCreate = await checkLimits('quote')
-    if (!canCreate) {
+    const limitsResult = await checkLimits('quote')
+    if (!limitsResult.allowed) {
+      // Aggiorna i parametri per il dialog
+      setUpgradeDialogParams({
+        currentCount: limitsResult.current_count,
+        maxCount: limitsResult.max_count || 0,
+        planName: limitsResult.plan_name || 'Free'
+      })
       setShowUpgradeDialog(true)
       const resourceLabel = tSubscription('resources.quote')
       toast.error(tSubscription('toast.limitReached'), {
         description: tSubscription('toast.limitReachedDescription', { 
-          max: subscription?.plan?.max_quotes || 0,
+          max: limitsResult.max_count || 0,
           resource: resourceLabel,
-          plan: subscription?.plan?.name || 'Free'
+          plan: limitsResult.plan_name || 'Free'
         }),
         duration: 5000,
       })
@@ -164,12 +175,13 @@ export default function NewQuotePage() {
     }
 
     // Avviso se si sta avvicinando al limite (80%)
-    const maxCount = subscription?.plan?.max_quotes || 0
-    if (maxCount > 0 && quoteCount >= maxCount * 0.8 && quoteCount < maxCount) {
+    const currentCount = limitsResult.current_count
+    const maxCount = limitsResult.max_count || 0
+    if (maxCount > 0 && currentCount >= maxCount * 0.8 && currentCount < maxCount) {
       const resourceLabel = tSubscription('resources.quote')
       toast.warning(tSubscription('toast.warning'), {
         description: tSubscription('toast.warningDescription', {
-          current: quoteCount,
+          current: currentCount,
           max: maxCount,
           resource: resourceLabel
         }),
@@ -208,7 +220,28 @@ export default function NewQuotePage() {
         .select()
         .single()
 
-      if (quoteError || !quote) {
+      if (quoteError) {
+        console.error('Errore creazione preventivo:', quoteError)
+        // Se il database trigger blocca l'inserimento
+        setUpgradeDialogParams({
+          currentCount: limitsResult.current_count,
+          maxCount: limitsResult.max_count || 0,
+          planName: limitsResult.plan_name || 'Free'
+        })
+        setShowUpgradeDialog(true)
+        toast.error(tSubscription('toast.limitReached'), {
+          description: tSubscription('toast.limitReachedDescription', { 
+            max: limitsResult.max_count || 0,
+            resource: tSubscription('resources.quote'),
+            plan: limitsResult.plan_name || 'Free'
+          }),
+          duration: 5000,
+        })
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+        return
+      }
+      
+      if (!quote) {
         alert(t('form.errorCreating'))
         return
       }
@@ -225,7 +258,15 @@ export default function NewQuotePage() {
 
       await supabase.from('quote_items').insert(itemsToInsert)
 
+      toast.success(tSubscription('toast.quoteCreated'), {
+        description: tSubscription('toast.quoteCreatedDescription'),
+      })
       router.push(`/${locale}/dashboard/quotes`)
+    } catch (error) {
+      console.error('Errore durante la creazione del preventivo:', error)
+      toast.error(tCommon('error'), {
+        description: 'Si è verificato un errore durante la creazione del preventivo.',
+      })
     } finally {
       setLoading(false)
     }
@@ -436,9 +477,9 @@ export default function NewQuotePage() {
         open={showUpgradeDialog}
         onOpenChange={setShowUpgradeDialog}
         limitType="quote"
-        currentCount={quoteCount}
-        maxCount={subscription?.plan?.max_quotes || 0}
-        planName={subscription?.plan?.name || 'Free'}
+        currentCount={upgradeDialogParams.currentCount}
+        maxCount={upgradeDialogParams.maxCount}
+        planName={upgradeDialogParams.planName}
       />
     </div>
   )

@@ -44,6 +44,11 @@ export default function NewInvoicePage() {
   const [status, setStatus] = useState<'draft' | 'issued' | 'paid' | 'overdue'>('draft')
   const [notes, setNotes] = useState('')
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false)
+  const [upgradeDialogParams, setUpgradeDialogParams] = useState({
+    currentCount: 0,
+    maxCount: 0,
+    planName: 'Free'
+  })
   const [invoiceCount, setInvoiceCount] = useState(0)
   const [items, setItems] = useState<InvoiceItemInput[]>([
     { description: '', quantity: 1, unit_price: 0, tax_rate: 8.1 },
@@ -150,15 +155,21 @@ export default function NewInvoicePage() {
     }
 
     // Verifica limiti prima di creare la fattura
-    const canCreate = await checkLimits('invoice')
-    if (!canCreate) {
+    const limitsResult = await checkLimits('invoice')
+    if (!limitsResult.allowed) {
+      // Aggiorna i parametri per il dialog
+      setUpgradeDialogParams({
+        currentCount: limitsResult.current_count,
+        maxCount: limitsResult.max_count || 0,
+        planName: limitsResult.plan_name || 'Free'
+      })
       setShowUpgradeDialog(true)
       const resourceLabel = tSubscription('resources.invoice')
       toast.error(tSubscription('toast.limitReached'), {
         description: tSubscription('toast.limitReachedDescription', { 
-          max: subscription?.plan?.max_invoices || 0,
+          max: limitsResult.max_count || 0,
           resource: resourceLabel,
-          plan: subscription?.plan?.name || 'Free'
+          plan: limitsResult.plan_name || 'Free'
         }),
         duration: 5000,
       })
@@ -167,12 +178,13 @@ export default function NewInvoicePage() {
     }
 
     // Avviso se si sta avvicinando al limite (80%)
-    const maxCount = subscription?.plan?.max_invoices || 0
-    if (maxCount > 0 && invoiceCount >= maxCount * 0.8 && invoiceCount < maxCount) {
+    const currentCount = limitsResult.current_count
+    const maxCount = limitsResult.max_count || 0
+    if (maxCount > 0 && currentCount >= maxCount * 0.8 && currentCount < maxCount) {
       const resourceLabel = tSubscription('resources.invoice')
       toast.warning(tSubscription('toast.warning'), {
         description: tSubscription('toast.warningDescription', {
-          current: invoiceCount,
+          current: currentCount,
           max: maxCount,
           resource: resourceLabel
         }),
@@ -211,7 +223,28 @@ export default function NewInvoicePage() {
         .select()
         .single()
 
-      if (invoiceError || !invoice) {
+      if (invoiceError) {
+        console.error('Errore creazione fattura:', invoiceError)
+        // Se il database trigger blocca l'inserimento
+        setUpgradeDialogParams({
+          currentCount: limitsResult.current_count,
+          maxCount: limitsResult.max_count || 0,
+          planName: limitsResult.plan_name || 'Free'
+        })
+        setShowUpgradeDialog(true)
+        toast.error(tSubscription('toast.limitReached'), {
+          description: tSubscription('toast.limitReachedDescription', { 
+            max: limitsResult.max_count || 0,
+            resource: tSubscription('resources.invoice'),
+            plan: limitsResult.plan_name || 'Free'
+          }),
+          duration: 5000,
+        })
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+        return
+      }
+      
+      if (!invoice) {
         alert(t('form.errorCreating'))
         return
       }
@@ -228,7 +261,15 @@ export default function NewInvoicePage() {
 
       await supabase.from('invoice_items').insert(itemsToInsert)
 
+      toast.success(tSubscription('toast.invoiceCreated'), {
+        description: tSubscription('toast.invoiceCreatedDescription'),
+      })
       router.push(`/${locale}/dashboard/invoices`)
+    } catch (error) {
+      console.error('Errore durante la creazione della fattura:', error)
+      toast.error(tCommon('error'), {
+        description: 'Si è verificato un errore durante la creazione della fattura.',
+      })
     } finally {
       setLoading(false)
     }
@@ -446,9 +487,9 @@ export default function NewInvoicePage() {
         open={showUpgradeDialog}
         onOpenChange={setShowUpgradeDialog}
         limitType="invoice"
-        currentCount={invoiceCount}
-        maxCount={subscription?.plan?.max_invoices || 0}
-        planName={subscription?.plan?.name || 'Free'}
+        currentCount={upgradeDialogParams.currentCount}
+        maxCount={upgradeDialogParams.maxCount}
+        planName={upgradeDialogParams.planName}
       />
     </div>
   )

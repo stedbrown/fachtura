@@ -48,6 +48,11 @@ export default function ClientsPage() {
   const [isDeleting, setIsDeleting] = useState(false)
   const [filters, setFilters] = useState<ClientFilterState>({})
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false)
+  const [upgradeDialogParams, setUpgradeDialogParams] = useState({
+    currentCount: 0,
+    maxCount: 0,
+    planName: 'Free'
+  })
   
   const { subscription, checkLimits } = useSubscription()
 
@@ -86,17 +91,23 @@ export default function ClientsPage() {
 
   const handleCreate = async () => {
     // Verifica limiti prima di creare un nuovo cliente
-    const canCreate = await checkLimits('client')
+    const limitsResult = await checkLimits('client')
     
-    if (!canCreate) {
+    if (!limitsResult.allowed) {
+      // Aggiorna i parametri per il dialog
+      setUpgradeDialogParams({
+        currentCount: limitsResult.current_count,
+        maxCount: limitsResult.max_count || 0,
+        planName: limitsResult.plan_name || 'Free'
+      })
       setShowUpgradeDialog(true)
       // Mostra anche notifica
       const resourceLabel = tCommon('client')
       toast.error(tSubscription('toast.limitReached'), {
         description: tSubscription('toast.limitReachedDescription', { 
-          max: subscription?.plan?.max_clients || 0,
+          max: limitsResult.max_count || 0,
           resource: resourceLabel,
-          plan: subscription?.plan?.name || 'Free'
+          plan: limitsResult.plan_name || 'Free'
         }),
         duration: 5000,
       })
@@ -104,8 +115,8 @@ export default function ClientsPage() {
     }
     
     // Avviso se si sta avvicinando al limite (80%)
-    const currentCount = clients.filter(c => !c.deleted_at).length
-    const maxCount = subscription?.plan?.max_clients || 0
+    const currentCount = limitsResult.current_count
+    const maxCount = limitsResult.max_count || 0
     if (maxCount > 0 && currentCount >= maxCount * 0.8 && currentCount < maxCount) {
       const resourceLabel = tSubscription('resources.client')
       toast.warning(tSubscription('toast.warning'), {
@@ -212,16 +223,22 @@ export default function ClientsPage() {
           .eq('id', selectedClient.id)
       } else {
         // Verifica limiti prima di creare
-        const canCreate = await checkLimits('client')
-        if (!canCreate) {
+        const limitsResult = await checkLimits('client')
+        if (!limitsResult.allowed) {
+          // Aggiorna i parametri per il dialog
+          setUpgradeDialogParams({
+            currentCount: limitsResult.current_count,
+            maxCount: limitsResult.max_count || 0,
+            planName: limitsResult.plan_name || 'Free'
+          })
           setShowUpgradeDialog(true)
           setDialogOpen(false)
           const resourceLabel = tCommon('client')
           toast.error(tSubscription('toast.limitReached'), {
             description: tSubscription('toast.limitReachedDescription', { 
-              max: subscription?.plan?.max_clients || 0,
+              max: limitsResult.max_count || 0,
               resource: resourceLabel,
-              plan: subscription?.plan?.name || 'Free'
+              plan: limitsResult.plan_name || 'Free'
             }),
             duration: 5000,
           })
@@ -229,12 +246,34 @@ export default function ClientsPage() {
         }
         
         // Create new client
-        await supabase.from('clients').insert({
+        const { error: insertError } = await supabase.from('clients').insert({
           ...data,
           user_id: user.id,
         })
         
-        // Notifica di successo
+        if (insertError) {
+          // Se il database trigger blocca l'inserimento
+          console.error('Errore inserimento cliente:', insertError)
+          // Aggiorna i parametri per il dialog
+          setUpgradeDialogParams({
+            currentCount: limitsResult.current_count,
+            maxCount: limitsResult.max_count || 0,
+            planName: limitsResult.plan_name || 'Free'
+          })
+          setShowUpgradeDialog(true)
+          setDialogOpen(false)
+          toast.error(tSubscription('toast.limitReached'), {
+            description: tSubscription('toast.limitReachedDescription', { 
+              max: limitsResult.max_count || 0,
+              resource: tCommon('client'),
+              plan: limitsResult.plan_name || 'Free'
+            }),
+            duration: 5000,
+          })
+          return
+        }
+        
+        // Notifica di successo solo se inserimento ok
         toast.success(tSubscription('toast.clientCreated'), {
           description: tSubscription('toast.clientCreatedDescription', { name: data.name }),
         })
@@ -242,6 +281,11 @@ export default function ClientsPage() {
 
       setDialogOpen(false)
       loadClients()
+    } catch (error) {
+      console.error('Errore durante il salvataggio del cliente:', error)
+      toast.error(tCommon('error'), {
+        description: 'Si è verificato un errore durante il salvataggio del cliente.',
+      })
     } finally {
       setSubmitting(false)
     }
@@ -456,9 +500,9 @@ export default function ClientsPage() {
         open={showUpgradeDialog}
         onOpenChange={setShowUpgradeDialog}
         limitType="client"
-        currentCount={clients.filter(c => !c.deleted_at).length}
-        maxCount={subscription?.plan?.max_clients || 0}
-        planName={subscription?.plan?.name || 'Free'}
+        currentCount={upgradeDialogParams.currentCount}
+        maxCount={upgradeDialogParams.maxCount}
+        planName={upgradeDialogParams.planName}
       />
     </div>
   )

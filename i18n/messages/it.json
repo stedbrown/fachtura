@@ -482,7 +482,11 @@
       "warning": "Attenzione",
       "warningDescription": "Hai usato {current} su {max} {resource} disponibili. Considera un upgrade!",
       "clientCreated": "Cliente creato",
-      "clientCreatedDescription": "{name} è stato aggiunto con successo."
+      "clientCreatedDescription": "{name} è stato aggiunto con successo.",
+      "quoteCreated": "Preventivo creato",
+      "quoteCreatedDescription": "Il preventivo è stato creato con successo.",
+      "invoiceCreated": "Fattura creata",
+      "invoiceCreatedDescription": "La fattura è stata creata con successo."
     },
     "alert": {
       "limitReached": "Limite raggiunto",
