@@ -170,7 +170,7 @@ export default function ManageSubscriptionPage() {
             <CardTitle className="flex items-center justify-between">
               {t('currentPlan')}
               <Badge variant={isActive ? 'default' : 'secondary'}>
-                {subscription.plan_name}
+                {subscription.plan?.name || 'Free'}
               </Badge>
             </CardTitle>
             <CardDescription>{t('currentPlanDescription')}</CardDescription>
@@ -182,7 +182,7 @@ export default function ManageSubscriptionPage() {
                 <span className="text-sm font-medium">{t('price')}</span>
               </div>
               <span className="text-2xl font-bold">
-                CHF {subscription.plan_price}
+                CHF {subscription.plan?.price || 0}
                 <span className="text-sm font-normal text-muted-foreground">/mese</span>
               </span>
             </div>
@@ -277,12 +277,12 @@ export default function ManageSubscriptionPage() {
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">{t('clients')}</span>
                 <span className="text-sm text-muted-foreground">
-                  {subscription.plan_max_clients === null
+                  {subscription.plan?.max_clients === null
                     ? t('unlimited')
-                    : `0 / ${subscription.plan_max_clients}`}
+                    : `0 / ${subscription.plan?.max_clients || 0}`}
                 </span>
               </div>
-              {subscription.plan_max_clients !== null && (
+              {subscription.plan?.max_clients !== null && (
                 <div className="h-2 rounded-full bg-secondary">
                   <div
                     className="h-2 rounded-full bg-primary transition-all"
@@ -296,12 +296,12 @@ export default function ManageSubscriptionPage() {
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">{t('invoices')}</span>
                 <span className="text-sm text-muted-foreground">
-                  {subscription.plan_max_invoices === null
+                  {subscription.plan?.max_invoices === null
                     ? t('unlimited')
-                    : `0 / ${subscription.plan_max_invoices}`}
+                    : `0 / ${subscription.plan?.max_invoices || 0}`}
                 </span>
               </div>
-              {subscription.plan_max_invoices !== null && (
+              {subscription.plan?.max_invoices !== null && (
                 <div className="h-2 rounded-full bg-secondary">
                   <div
                     className="h-2 rounded-full bg-primary transition-all"
@@ -315,12 +315,12 @@ export default function ManageSubscriptionPage() {
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">{t('quotes')}</span>
                 <span className="text-sm text-muted-foreground">
-                  {subscription.plan_max_quotes === null
+                  {subscription.plan?.max_quotes === null
                     ? t('unlimited')
-                    : `0 / ${subscription.plan_max_quotes}`}
+                    : `0 / ${subscription.plan?.max_quotes || 0}`}
                 </span>
               </div>
-              {subscription.plan_max_quotes !== null && (
+              {subscription.plan?.max_quotes !== null && (
                 <div className="h-2 rounded-full bg-secondary">
                   <div
                     className="h-2 rounded-full bg-primary transition-all"
