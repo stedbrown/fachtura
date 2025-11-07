@@ -69,6 +69,27 @@ export default function RegisterPage() {
     setSuccess(false)
 
     try {
+      // 🔒 STEP 1: Verifica Anti-Abuso - Controlla se l'email è bloccata
+      const checkEmailResponse = await fetch('/api/auth/check-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: data.email })
+      })
+
+      if (!checkEmailResponse.ok) {
+        setError('Errore durante la verifica dell\'email')
+        return
+      }
+
+      const emailCheck = await checkEmailResponse.json()
+
+      if (!emailCheck.allowed) {
+        // Email bloccata - mostra messaggio con giorni rimanenti
+        setError(emailCheck.message)
+        return
+      }
+
+      // STEP 2: Procedi con la registrazione normale
       const supabase = createClient()
       
       // Register user

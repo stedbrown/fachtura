@@ -149,9 +149,26 @@ export default function ProfilePage() {
   const handleDeleteAccount = async () => {
     setDeleting(true)
     try {
-      // TODO: Implementare la cancellazione dell'account
+      // Chiama API per eliminare l'account
+      // Il sistema anti-abuso salverà automaticamente uno snapshot
+      const response = await fetch('/api/auth/delete-account', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Errore durante l\'eliminazione')
+      }
+
       toast.success(t('deleteSuccess'))
-      router.push(`/${locale}/auth/login`)
+      
+      // Effettua il logout
+      const supabase = createClient()
+      await supabase.auth.signOut()
+      
+      // Redirect alla home
+      router.push(`/${locale}`)
     } catch (error) {
       console.error('Error deleting account:', error)
       toast.error(t('deleteError'))
