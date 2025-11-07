@@ -24,6 +24,8 @@ import { useTranslations } from 'next-intl'
 import { AdvancedFilters, FilterState } from '@/components/advanced-filters'
 import { exportFormattedToCSV, exportFormattedToExcel, formatDateForExport, formatCurrencyForExport } from '@/lib/export-utils'
 import { toast } from 'sonner'
+import { useSubscription } from '@/hooks/use-subscription'
+import { SubscriptionUpgradeDialog } from '@/components/subscription-upgrade-dialog'
 
 const localeMap: Record<string, Locale> = {
   it: it,
@@ -54,7 +56,9 @@ export default function QuotesPage() {
   const t = useTranslations('quotes')
   const tCommon = useTranslations('common')
   const tTabs = useTranslations('tabs')
+  const tSubscription = useTranslations('subscription')
   
+  const { subscription, checkLimits } = useSubscription()
   const [quotes, setQuotes] = useState<QuoteWithClient[]>([])
   const [clients, setClients] = useState<{ id: string; name: string }[]>([])
   const [loading, setLoading] = useState(true)
@@ -63,6 +67,12 @@ export default function QuotesPage() {
   const [quoteToDelete, setQuoteToDelete] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const [filters, setFilters] = useState<FilterState>({})
+  const [showUpgradeDialog, setShowUpgradeDialog] = useState(false)
+  const [upgradeDialogParams, setUpgradeDialogParams] = useState({
+    currentCount: 0,
+    maxCount: 0,
+    planName: 'Free'
+  })
 
   useEffect(() => {
     loadQuotes()
@@ -118,6 +128,50 @@ export default function QuotesPage() {
     if (data) {
       setClients(data)
     }
+  }
+
+  const handleCreateQuote = async () => {
+    // Verifica limiti prima di permettere la creazione
+    const limitsResult = await checkLimits('quote')
+    
+    if (!limitsResult.allowed) {
+      // Aggiorna i parametri per il dialog
+      setUpgradeDialogParams({
+        currentCount: limitsResult.current_count,
+        maxCount: limitsResult.max_count || 0,
+        planName: limitsResult.plan_name || 'Free'
+      })
+      setShowUpgradeDialog(true)
+      // Mostra notifica
+      const resourceLabel = tSubscription('resources.quote')
+      toast.error(tSubscription('toast.limitReached'), {
+        description: tSubscription('toast.limitReachedDescription', { 
+          max: limitsResult.max_count || 0,
+          resource: resourceLabel,
+          plan: limitsResult.plan_name || 'Free'
+        }),
+        duration: 5000,
+      })
+      return
+    }
+    
+    // Avviso se si sta avvicinando al limite (80%)
+    const currentCount = limitsResult.current_count
+    const maxCount = limitsResult.max_count || 0
+    if (maxCount > 0 && currentCount >= maxCount * 0.8 && currentCount < maxCount) {
+      const resourceLabel = tSubscription('resources.quote')
+      toast.warning(tSubscription('toast.warning'), {
+        description: tSubscription('toast.warningDescription', {
+          current: currentCount,
+          max: maxCount,
+          resource: resourceLabel
+        }),
+        duration: 4000,
+      })
+    }
+    
+    // Naviga alla pagina di creazione
+    router.push(`/${locale}/dashboard/quotes/new`)
   }
 
   // Filter quotes based on active filters
@@ -319,7 +373,7 @@ export default function QuotesPage() {
             {t('subtitle')}
           </p>
         </div>
-        <Button onClick={() => router.push(`/${locale}/dashboard/quotes/new`)}>
+        <Button onClick={handleCreateQuote}>
           <Plus className="mr-2 h-4 w-4" />
           {t('newQuote')}
         </Button>
@@ -461,6 +515,15 @@ export default function QuotesPage() {
         title={t('deleteQuote')}
         description={t('deleteDescription')}
         isDeleting={isDeleting}
+      />
+
+      <SubscriptionUpgradeDialog
+        open={showUpgradeDialog}
+        onOpenChange={setShowUpgradeDialog}
+        limitType="quote"
+        currentCount={upgradeDialogParams.currentCount}
+        maxCount={upgradeDialogParams.maxCount}
+        planName={upgradeDialogParams.planName}
       />
     </div>
   )

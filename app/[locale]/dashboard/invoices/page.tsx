@@ -24,6 +24,8 @@ import { useTranslations } from 'next-intl'
 import { AdvancedFilters, FilterState } from '@/components/advanced-filters'
 import { exportFormattedToCSV, exportFormattedToExcel, formatDateForExport, formatCurrencyForExport } from '@/lib/export-utils'
 import { toast } from 'sonner'
+import { useSubscription } from '@/hooks/use-subscription'
+import { SubscriptionUpgradeDialog } from '@/components/subscription-upgrade-dialog'
 
 const localeMap: Record<string, Locale> = {
   it: it,
@@ -55,7 +57,9 @@ export default function InvoicesPage() {
   const t = useTranslations('invoices')
   const tCommon = useTranslations('common')
   const tTabs = useTranslations('tabs')
+  const tSubscription = useTranslations('subscription')
   
+  const { subscription, checkLimits } = useSubscription()
   const [invoices, setInvoices] = useState<InvoiceWithClient[]>([])
   const [clients, setClients] = useState<{ id: string; name: string }[]>([])
   const [loading, setLoading] = useState(true)
@@ -64,6 +68,12 @@ export default function InvoicesPage() {
   const [invoiceToDelete, setInvoiceToDelete] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const [filters, setFilters] = useState<FilterState>({})
+  const [showUpgradeDialog, setShowUpgradeDialog] = useState(false)
+  const [upgradeDialogParams, setUpgradeDialogParams] = useState({
+    currentCount: 0,
+    maxCount: 0,
+    planName: 'Free'
+  })
 
   // Initialize filters from URL params
   useEffect(() => {
@@ -140,6 +150,50 @@ export default function InvoicesPage() {
     if (data) {
       setClients(data)
     }
+  }
+
+  const handleCreateInvoice = async () => {
+    // Verifica limiti prima di permettere la creazione
+    const limitsResult = await checkLimits('invoice')
+    
+    if (!limitsResult.allowed) {
+      // Aggiorna i parametri per il dialog
+      setUpgradeDialogParams({
+        currentCount: limitsResult.current_count,
+        maxCount: limitsResult.max_count || 0,
+        planName: limitsResult.plan_name || 'Free'
+      })
+      setShowUpgradeDialog(true)
+      // Mostra notifica
+      const resourceLabel = tSubscription('resources.invoice')
+      toast.error(tSubscription('toast.limitReached'), {
+        description: tSubscription('toast.limitReachedDescription', { 
+          max: limitsResult.max_count || 0,
+          resource: resourceLabel,
+          plan: limitsResult.plan_name || 'Free'
+        }),
+        duration: 5000,
+      })
+      return
+    }
+    
+    // Avviso se si sta avvicinando al limite (80%)
+    const currentCount = limitsResult.current_count
+    const maxCount = limitsResult.max_count || 0
+    if (maxCount > 0 && currentCount >= maxCount * 0.8 && currentCount < maxCount) {
+      const resourceLabel = tSubscription('resources.invoice')
+      toast.warning(tSubscription('toast.warning'), {
+        description: tSubscription('toast.warningDescription', {
+          current: currentCount,
+          max: maxCount,
+          resource: resourceLabel
+        }),
+        duration: 4000,
+      })
+    }
+    
+    // Naviga alla pagina di creazione
+    router.push(`/${locale}/dashboard/invoices/new`)
   }
 
   // Filter invoices based on active filters
@@ -342,7 +396,7 @@ export default function InvoicesPage() {
             {t('subtitle')}
           </p>
         </div>
-        <Button onClick={() => router.push(`/${locale}/dashboard/invoices/new`)}>
+        <Button onClick={handleCreateInvoice}>
           <Plus className="mr-2 h-4 w-4" />
           {t('newInvoice')}
         </Button>
@@ -492,6 +546,15 @@ export default function InvoicesPage() {
         title={t('deleteInvoice')}
         description={t('deleteDescription')}
         isDeleting={isDeleting}
+      />
+
+      <SubscriptionUpgradeDialog
+        open={showUpgradeDialog}
+        onOpenChange={setShowUpgradeDialog}
+        limitType="invoice"
+        currentCount={upgradeDialogParams.currentCount}
+        maxCount={upgradeDialogParams.maxCount}
+        planName={upgradeDialogParams.planName}
       />
     </div>
   )
