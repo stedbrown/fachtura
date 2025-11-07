@@ -55,6 +55,45 @@
         "description": "Generieren Sie automatisch den Schweizer QR-Code für sofortige Zahlungen."
       }
     },
+    "pricing": {
+      "badge": "Pläne & Preise",
+      "title": "Wählen Sie den perfekten Plan für Sie",
+      "subtitle": "Starten Sie kostenlos und skalieren Sie mit Ihrem Unternehmen. Keine versteckten Kosten.",
+      "popular": "Am beliebtesten",
+      "free": {
+        "name": "Free",
+        "description": "Perfekt für den Einstieg",
+        "price": "Kostenlos",
+        "feature1": "3 Kunden",
+        "feature2": "5 Rechnungen/Monat",
+        "feature3": "5 Angebote/Monat",
+        "feature4": "PDF Export",
+        "cta": "Kostenlos starten"
+      },
+      "pro": {
+        "name": "Pro",
+        "description": "Für Profis",
+        "feature1": "50 Kunden",
+        "feature2": "100 Rechnungen/Monat",
+        "feature3": "100 Angebote/Monat",
+        "feature4": "PDF Export",
+        "feature5": "Dokumentanpassung",
+        "feature6": "Prioritäts-Support",
+        "cta": "Testversion starten"
+      },
+      "business": {
+        "name": "Business",
+        "description": "Für wachsende Unternehmen",
+        "feature1": "Unbegrenzte Kunden",
+        "feature2": "Unbegrenzte Rechnungen",
+        "feature3": "Unbegrenzte Angebote",
+        "feature4": "PDF Export",
+        "feature5": "Vollständige Anpassung",
+        "feature6": "24/7 Support",
+        "feature7": "API-Zugang",
+        "cta": "Kontaktieren Sie uns"
+      }
+    },
     "cta": {
       "title": "Bereit loszulegen?",
       "description": "Erstellen Sie Ihr kostenloses Konto in 30 Sekunden. Keine Kreditkarte erforderlich.",

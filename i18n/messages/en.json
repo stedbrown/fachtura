@@ -55,6 +55,45 @@
         "description": "Automatically generate the Swiss QR code for immediate payments."
       }
     },
+    "pricing": {
+      "badge": "Plans & Pricing",
+      "title": "Choose the perfect plan for you",
+      "subtitle": "Start free and scale as your business grows. No hidden costs.",
+      "popular": "Most Popular",
+      "free": {
+        "name": "Free",
+        "description": "Perfect to get started",
+        "price": "Free",
+        "feature1": "3 clients",
+        "feature2": "5 invoices/month",
+        "feature3": "5 quotes/month",
+        "feature4": "PDF export",
+        "cta": "Start Free"
+      },
+      "pro": {
+        "name": "Pro",
+        "description": "For professionals",
+        "feature1": "50 clients",
+        "feature2": "100 invoices/month",
+        "feature3": "100 quotes/month",
+        "feature4": "PDF export",
+        "feature5": "Document customization",
+        "feature6": "Priority support",
+        "cta": "Start Trial"
+      },
+      "business": {
+        "name": "Business",
+        "description": "For growing companies",
+        "feature1": "Unlimited clients",
+        "feature2": "Unlimited invoices",
+        "feature3": "Unlimited quotes",
+        "feature4": "PDF export",
+        "feature5": "Full customization",
+        "feature6": "24/7 support",
+        "feature7": "API access",
+        "cta": "Contact Us"
+      }
+    },
     "cta": {
       "title": "Ready to get started?",
       "description": "Create your free account in 30 seconds. No credit card required.",

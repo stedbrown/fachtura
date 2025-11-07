@@ -14,8 +14,10 @@ import {
   CheckCircle,
   Zap,
   ArrowRight,
-  Languages
+  Languages,
+  Check
 } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
 import {
   DropdownMenu,
@@ -180,6 +182,158 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
                   <CardTitle>{t('features.export.title')}</CardTitle>
                   <CardDescription>{t('features.export.description')}</CardDescription>
                 </CardHeader>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing Section */}
+      <section className="w-full py-24 bg-muted/50">
+        <div className="container px-4 md:px-6 mx-auto max-w-7xl">
+          <div className="flex flex-col items-center justify-center gap-12">
+            <div className="text-center">
+              <Badge variant="outline" className="mb-4">{t('pricing.badge')}</Badge>
+              <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
+                {t('pricing.title')}
+              </h2>
+              <p className="mt-4 text-muted-foreground text-lg max-w-[700px] mx-auto">
+                {t('pricing.subtitle')}
+              </p>
+            </div>
+            
+            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 w-full">
+              {/* Free Plan */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-2xl">{t('pricing.free.name')}</CardTitle>
+                  <CardDescription>{t('pricing.free.description')}</CardDescription>
+                  <div className="mt-4">
+                    <span className="text-4xl font-bold">{t('pricing.free.price')}</span>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <ul className="space-y-3">
+                    <li className="flex items-start gap-2">
+                      <Check className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
+                      <span className="text-sm">{t('pricing.free.feature1')}</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
+                      <span className="text-sm">{t('pricing.free.feature2')}</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
+                      <span className="text-sm">{t('pricing.free.feature3')}</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
+                      <span className="text-sm">{t('pricing.free.feature4')}</span>
+                    </li>
+                  </ul>
+                  <Link href={`/${locale}/auth/register`}>
+                    <Button className="w-full" variant="outline">
+                      {t('pricing.free.cta')}
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+
+              {/* Pro Plan */}
+              <Card className="border-primary shadow-lg scale-105 relative">
+                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                  <Badge className="px-4 py-1">{t('pricing.popular')}</Badge>
+                </div>
+                <CardHeader>
+                  <CardTitle className="text-2xl">{t('pricing.pro.name')}</CardTitle>
+                  <CardDescription>{t('pricing.pro.description')}</CardDescription>
+                  <div className="mt-4">
+                    <span className="text-4xl font-bold">CHF 29</span>
+                    <span className="text-muted-foreground">/mese</span>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <ul className="space-y-3">
+                    <li className="flex items-start gap-2">
+                      <Check className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
+                      <span className="text-sm">{t('pricing.pro.feature1')}</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
+                      <span className="text-sm">{t('pricing.pro.feature2')}</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
+                      <span className="text-sm">{t('pricing.pro.feature3')}</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
+                      <span className="text-sm">{t('pricing.pro.feature4')}</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
+                      <span className="text-sm">{t('pricing.pro.feature5')}</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
+                      <span className="text-sm">{t('pricing.pro.feature6')}</span>
+                    </li>
+                  </ul>
+                  <Link href={`/${locale}/auth/register`}>
+                    <Button className="w-full">
+                      {t('pricing.pro.cta')}
+                    </Button>
+                  </Link>
+                </CardContent>
+              </Card>
+
+              {/* Business Plan */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-2xl">{t('pricing.business.name')}</CardTitle>
+                  <CardDescription>{t('pricing.business.description')}</CardDescription>
+                  <div className="mt-4">
+                    <span className="text-4xl font-bold">CHF 79</span>
+                    <span className="text-muted-foreground">/mese</span>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <ul className="space-y-3">
+                    <li className="flex items-start gap-2">
+                      <Check className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
+                      <span className="text-sm">{t('pricing.business.feature1')}</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
+                      <span className="text-sm">{t('pricing.business.feature2')}</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
+                      <span className="text-sm">{t('pricing.business.feature3')}</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
+                      <span className="text-sm">{t('pricing.business.feature4')}</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
+                      <span className="text-sm">{t('pricing.business.feature5')}</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
+                      <span className="text-sm">{t('pricing.business.feature6')}</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
+                      <span className="text-sm">{t('pricing.business.feature7')}</span>
+                    </li>
+                  </ul>
+                  <Link href={`/${locale}/auth/register`}>
+                    <Button className="w-full" variant="outline">
+                      {t('pricing.business.cta')}
+                    </Button>
+                  </Link>
+                </CardContent>
               </Card>
             </div>
           </div>

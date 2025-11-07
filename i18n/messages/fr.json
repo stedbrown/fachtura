@@ -55,6 +55,45 @@
         "description": "Générez automatiquement le code QR suisse pour des paiements immédiats."
       }
     },
+    "pricing": {
+      "badge": "Plans et Tarifs",
+      "title": "Choisissez le plan parfait pour vous",
+      "subtitle": "Commencez gratuitement et évoluez avec votre entreprise. Aucun coût caché.",
+      "popular": "Le plus populaire",
+      "free": {
+        "name": "Free",
+        "description": "Parfait pour commencer",
+        "price": "Gratuit",
+        "feature1": "3 clients",
+        "feature2": "5 factures/mois",
+        "feature3": "5 devis/mois",
+        "feature4": "Export PDF",
+        "cta": "Commencer Gratuitement"
+      },
+      "pro": {
+        "name": "Pro",
+        "description": "Pour les professionnels",
+        "feature1": "50 clients",
+        "feature2": "100 factures/mois",
+        "feature3": "100 devis/mois",
+        "feature4": "Export PDF",
+        "feature5": "Personnalisation des documents",
+        "feature6": "Support prioritaire",
+        "cta": "Démarrer l'essai"
+      },
+      "business": {
+        "name": "Business",
+        "description": "Pour les entreprises en croissance",
+        "feature1": "Clients illimités",
+        "feature2": "Factures illimitées",
+        "feature3": "Devis illimités",
+        "feature4": "Export PDF",
+        "feature5": "Personnalisation complète",
+        "feature6": "Support 24/7",
+        "feature7": "Accès API",
+        "cta": "Contactez-nous"
+      }
+    },
     "cta": {
       "title": "Prêt à commencer?",
       "description": "Créez votre compte gratuit en 30 secondes. Aucune carte de crédit requise.",

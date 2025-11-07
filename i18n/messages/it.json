@@ -55,6 +55,45 @@
         "description": "Genera automaticamente il codice QR svizzero per pagamenti immediati."
       }
     },
+    "pricing": {
+      "badge": "Piani e Prezzi",
+      "title": "Scegli il piano perfetto per te",
+      "subtitle": "Inizia gratis e scala quando la tua attività cresce. Nessun costo nascosto.",
+      "popular": "Più Popolare",
+      "free": {
+        "name": "Free",
+        "description": "Perfetto per iniziare",
+        "price": "Gratis",
+        "feature1": "3 clienti",
+        "feature2": "5 fatture/mese",
+        "feature3": "5 preventivi/mese",
+        "feature4": "PDF export",
+        "cta": "Inizia Gratis"
+      },
+      "pro": {
+        "name": "Pro",
+        "description": "Per professionisti",
+        "feature1": "50 clienti",
+        "feature2": "100 fatture/mese",
+        "feature3": "100 preventivi/mese",
+        "feature4": "PDF export",
+        "feature5": "Personalizzazione documenti",
+        "feature6": "Supporto prioritario",
+        "cta": "Inizia Prova"
+      },
+      "business": {
+        "name": "Business",
+        "description": "Per aziende in crescita",
+        "feature1": "Clienti illimitati",
+        "feature2": "Fatture illimitate",
+        "feature3": "Preventivi illimitati",
+        "feature4": "PDF export",
+        "feature5": "Personalizzazione completa",
+        "feature6": "Supporto 24/7",
+        "feature7": "API access",
+        "cta": "Contattaci"
+      }
+    },
     "cta": {
       "title": "Pronto per iniziare?",
       "description": "Crea il tuo account gratuito in 30 secondi. Nessuna carta di credito richiesta.",

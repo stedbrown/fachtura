@@ -55,6 +55,45 @@
         "description": "Generar automaticamain il code QR svizzer per pajaments immediats."
       }
     },
+    "pricing": {
+      "badge": "Plans e Pretzs",
+      "title": "Tscherner il plan perfet per tai",
+      "subtitle": "Cumenzar gratuitamain e crescher cun tia interpresa. Nagins custs zuppads.",
+      "popular": "Il pli popular",
+      "free": {
+        "name": "Free",
+        "description": "Perfet per cumenzar",
+        "price": "Gratuit",
+        "feature1": "3 clients",
+        "feature2": "5 facturas/mais",
+        "feature3": "5 preventivs/mais",
+        "feature4": "Export PDF",
+        "cta": "Cumenzar gratuitamain"
+      },
+      "pro": {
+        "name": "Pro",
+        "description": "Per professiunals",
+        "feature1": "50 clients",
+        "feature2": "100 facturas/mais",
+        "feature3": "100 preventivs/mais",
+        "feature4": "Export PDF",
+        "feature5": "Persunalisaziun documents",
+        "feature6": "Support prioritar",
+        "cta": "Cumenzar il test"
+      },
+      "business": {
+        "name": "Business",
+        "description": "Per interprendas en creschida",
+        "feature1": "Clients senza limita",
+        "feature2": "Facturas senza limita",
+        "feature3": "Preventivs senza limita",
+        "feature4": "Export PDF",
+        "feature5": "Persunalisaziun cumpletta",
+        "feature6": "Support 24/7",
+        "feature7": "Access API",
+        "cta": "Contactar nus"
+      }
+    },
     "cta": {
       "title": "Pront per cumenzar?",
       "description": "Crear tes conto gratuit en 30 secundas. Nagina carta da credit necessaria.",
