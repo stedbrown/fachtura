@@ -10,6 +10,7 @@ import {
   Settings,
   LogOut,
   CreditCard,
+  User as UserIcon,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -61,6 +62,11 @@ export function AppSidebar() {
       title: t('subscription'),
       url: `/${locale}/dashboard/subscription`,
       icon: CreditCard,
+    },
+    {
+      title: t('profile'),
+      url: `/${locale}/dashboard/profile`,
+      icon: UserIcon,
     },
     {
       title: t('settings'),

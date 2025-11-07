@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Check, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useTranslations } from 'next-intl';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { getFeatureTranslationKey } from '@/lib/utils/feature-translator';
 
 export default function SubscriptionPage() {
@@ -17,6 +17,7 @@ export default function SubscriptionPage() {
   const t = useTranslations('subscription.page');
   const tFeatures = useTranslations('subscription.features');
   const params = useParams();
+  const router = useRouter();
   const locale = params.locale as string;
 
   const handleSubscribe = async (priceId: string, planId: string) => {
@@ -29,12 +30,8 @@ export default function SubscriptionPage() {
     }
   };
 
-  const handleManageSubscription = async () => {
-    try {
-      await openCustomerPortal();
-    } catch (error) {
-      toast.error(t('errorPortal'));
-    }
+  const handleManageSubscription = () => {
+    router.push(`/${locale}/dashboard/subscription/manage`);
   };
 
   if (loading) {
