@@ -520,3 +520,12 @@ export type UserSubscriptionUpdate = Database['public']['Tables']['user_subscrip
 export type UsageTracking = Database['public']['Tables']['usage_tracking']['Row']
 export type UsageTrackingInsert = Database['public']['Tables']['usage_tracking']['Insert']
 export type UsageTrackingUpdate = Database['public']['Tables']['usage_tracking']['Update']
+
+// Types with relationships
+export type InvoiceWithClient = Invoice & {
+  clients: Client
+}
+
+export type QuoteWithClient = Quote & {
+  clients: Client
+}
