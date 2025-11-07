@@ -93,8 +93,8 @@ export function AppSidebar() {
   }
 
   return (
-    <Sidebar collapsible="icon">
-      <SidebarContent>
+    <Sidebar collapsible="icon" className="[&_[data-sidebar=content]]:overflow-x-hidden">
+      <SidebarContent className="overflow-x-hidden">
         {/* Logo/Brand */}
         <SidebarGroup>
           <SidebarGroupContent>
