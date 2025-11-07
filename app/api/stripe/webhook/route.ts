@@ -54,43 +54,47 @@ export async function POST(req: NextRequest) {
       }
 
       case 'customer.subscription.updated': {
-        const subscription = event.data.object as Stripe.Subscription;
+        const subscription = event.data.object;
         
-        await supabase
-          .from('user_subscriptions')
-          .update({
-            status: subscription.status,
-            current_period_start: new Date(
-              subscription.current_period_start * 1000
-            ).toISOString(),
-            current_period_end: new Date(
-              subscription.current_period_end * 1000
-            ).toISOString(),
-            cancel_at_period_end: subscription.cancel_at_period_end,
-          })
-          .eq('stripe_subscription_id', subscription.id);
+        if (subscription.object === 'subscription') {
+          await supabase
+            .from('user_subscriptions')
+            .update({
+              status: subscription.status,
+              current_period_start: new Date(
+                subscription.current_period_start * 1000
+              ).toISOString(),
+              current_period_end: new Date(
+                subscription.current_period_end * 1000
+              ).toISOString(),
+              cancel_at_period_end: subscription.cancel_at_period_end,
+            })
+            .eq('stripe_subscription_id', subscription.id);
+        }
         break;
       }
 
       case 'customer.subscription.deleted': {
-        const subscription = event.data.object as Stripe.Subscription;
+        const subscription = event.data.object;
         
-        // Ottieni il piano Free
-        const { data: freePlan } = await supabase
-          .from('subscription_plans')
-          .select('id')
-          .eq('name', 'Free')
-          .single();
+        if (subscription.object === 'subscription') {
+          // Ottieni il piano Free
+          const { data: freePlan } = await supabase
+            .from('subscription_plans')
+            .select('id')
+            .eq('name', 'Free')
+            .single();
 
-        await supabase
-          .from('user_subscriptions')
-          .update({
-            status: 'canceled',
-            plan_id: freePlan?.id,
-            stripe_subscription_id: null,
-            current_period_end: new Date().toISOString(),
-          })
-          .eq('stripe_subscription_id', subscription.id);
+          await supabase
+            .from('user_subscriptions')
+            .update({
+              status: 'canceled',
+              plan_id: freePlan?.id,
+              stripe_subscription_id: null,
+              current_period_end: new Date().toISOString(),
+            })
+            .eq('stripe_subscription_id', subscription.id);
+        }
         break;
       }
 
