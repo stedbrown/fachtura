@@ -128,7 +128,8 @@ export async function POST(req: NextRequest) {
       messages: coreMessages,
       temperature: 0.7, // Più conversazionale
       toolChoice: 'auto', // AI decide quando usare i tool (can be 'none', 'auto', or specific tool)
-      // Note: AI SDK v5 handles multi-step reasoning and parallel tool calls automatically
+      maxSteps: 5, // Allow up to 5 steps: tool call(s) + text response
+      // Multi-step reasoning: AI can call tools and then generate text response
       tools: {
         // Tool 1: Lista clienti
         list_clients: tool({

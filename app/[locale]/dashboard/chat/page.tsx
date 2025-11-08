@@ -152,13 +152,18 @@ export default function ChatPage() {
               <Message key={message.id} from={message.role}>
                 <MessageContent>
                   {message.parts?.map((part, index) => {
-                    // Render text parts
-                    if (part.type === 'text' && 'text' in part) {
-                      return <Response key={index}>{part.text}</Response>
+                    console.log('📦 Rendering part:', { type: part.type, hasText: 'text' in part, hasResult: 'result' in part })
+                    
+                    // Render text parts - MOSTRA SEMPRE IL TESTO
+                    if (part.type === 'text') {
+                      const textContent = 'text' in part ? part.text : ''
+                      if (textContent) {
+                        return <Response key={index}>{textContent}</Response>
+                      }
                     }
                     
                     // Render tool calls - proper type narrowing for AI SDK v2
-                    if (part.type && part.type.startsWith('tool-')) {
+                    if (part.type?.startsWith('tool-')) {
                       const toolName = part.type.replace('tool-', '')
                       
                       // Type guard for tool parts with result
