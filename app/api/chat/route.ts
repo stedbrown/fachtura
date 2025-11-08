@@ -95,7 +95,7 @@ export async function POST(req: NextRequest) {
         // Tool 1: Lista clienti
         list_clients: tool({
           description: 'Get a list of all active clients for the user',
-          parameters: z.object({
+          inputSchema: z.object({
             limit: z.number().optional().default(10).describe('Maximum number of clients to return')
           }),
           execute: async (input, options) => {
@@ -115,7 +115,7 @@ export async function POST(req: NextRequest) {
         // Tool 2: Cerca cliente
         search_client: tool({
           description: 'Search for a client by name',
-          parameters: z.object({
+          inputSchema: z.object({
             name: z.string().describe('The name of the client to search for')
           }),
           execute: async (input, options) => {
@@ -135,7 +135,7 @@ export async function POST(req: NextRequest) {
         // Tool 3: Stato abbonamento
         get_subscription_status: tool({
           description: 'Get the current subscription plan details, limits and usage',
-          parameters: z.object({}),
+          inputSchema: z.object({}),
           execute: async (input, options) => {
             const { data: subscription } = await supabase
               .from('user_subscriptions')
@@ -184,7 +184,7 @@ export async function POST(req: NextRequest) {
         // Tool 4: Statistiche fatture
         get_invoice_stats: tool({
           description: 'Get statistics about invoices (total count, by status, by period)',
-          parameters: z.object({
+          inputSchema: z.object({
             period: z.enum(['month', 'year', 'all']).default('month').describe('Time period for statistics')
           }),
           execute: async (input, options) => {
