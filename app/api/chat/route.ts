@@ -1,4 +1,4 @@
-import { streamText, convertToCoreMessages, tool } from 'ai'
+import { streamText, generateText, convertToCoreMessages, tool } from 'ai'
 import { createOpenRouter } from '@openrouter/ai-sdk-provider'
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest } from 'next/server'
@@ -123,16 +123,19 @@ export async function POST(req: NextRequest) {
     // Converti i messaggi UI in formato modello (gestisce parts automaticamente)
     const coreMessages = convertToCoreMessages(messages)
 
-    // StreamText di AI SDK con tools (sintassi corretta con 2 parametri)
-    // OpenRouter best practices: https://openrouter.ai/docs/features/tool-calling
+    // USING CLAUDE 3.5 HAIKU - Better tool calling compliance
+    // Claude has demonstrated better adherence to system prompts
+    // and consistently generates text responses after tool execution
+    console.log('[Chat API] Using Claude 3.5 Haiku for reliable tool calling...')
+    
+    // StreamText with Claude 3.5 Haiku
     const result = await streamText({
-      model: openrouter('openai/gpt-4o-mini'),
+      model: openrouter('anthropic/claude-3.5-haiku'),
       system: systemPrompts[locale as keyof typeof systemPrompts] || systemPrompts.it,
       messages: coreMessages,
       temperature: 0.7, // Più conversazionale
-      toolChoice: 'auto', // AI decide quando usare i tool (can be 'none', 'auto', or specific tool)
-      // Note: AI SDK v5 streamText automatically handles tool calling and text generation
-      // The system prompt enforces text response after every tool call
+      toolChoice: 'auto', // AI decide quando usare i tool
+      // Claude 3.5 Haiku automatically handles tool execution and generates text responses
       tools: {
         // Tool 1: Lista clienti
         list_clients: tool({
