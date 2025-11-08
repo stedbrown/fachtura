@@ -103,7 +103,7 @@ export async function POST(req: NextRequest) {
     // StreamText di AI SDK con tools (sintassi corretta con 2 parametri)
     console.log('[CHAT] Calling streamText with 4 tools: list_clients, search_client, get_subscription_status, get_invoice_stats')
     const result = await streamText({
-      model: openrouter('google/gemini-flash-1.5'),
+      model: openrouter('deepseek/deepseek-chat-v3.1:free'),
       system: systemPrompts[locale as keyof typeof systemPrompts] || systemPrompts.it,
       messages: coreMessages,
       tools: {
