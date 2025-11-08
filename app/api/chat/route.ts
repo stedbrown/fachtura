@@ -121,12 +121,16 @@ export async function POST(req: NextRequest) {
     const coreMessages = convertToCoreMessages(messages)
 
     // StreamText di AI SDK con tools (sintassi corretta con 2 parametri)
+    // OpenRouter best practices: https://openrouter.ai/docs/features/tool-calling
     const result = await streamText({
       model: openrouter('openai/gpt-4o-mini'),
       system: systemPrompts[locale as keyof typeof systemPrompts] || systemPrompts.it,
       messages: coreMessages,
       temperature: 0.7, // Più conversazionale
-      toolChoice: 'auto', // AI decide quando usare i tool
+      toolChoice: 'auto', // AI decide quando usare i tool (can be 'none', 'auto', or specific tool)
+      // Parallel tool calls: allow AI to call multiple tools simultaneously
+      // This improves efficiency for complex queries
+      experimental_continueSteps: true, // Allow multi-step reasoning
       tools: {
         // Tool 1: Lista clienti
         list_clients: tool({
