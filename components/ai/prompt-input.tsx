@@ -4,7 +4,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Send, StopCircle } from 'lucide-react'
 
-interface PromptInputProps extends React.HTMLAttributes<HTMLDivElement> {
+interface PromptInputProps {
   value: string
   onChange: (value: string) => void
   onSubmit: () => void
@@ -13,6 +13,7 @@ interface PromptInputProps extends React.HTMLAttributes<HTMLDivElement> {
   disabled?: boolean
   placeholder?: string
   maxRows?: number
+  className?: string
 }
 
 export function PromptInput({
@@ -24,8 +25,7 @@ export function PromptInput({
   disabled = false,
   placeholder = 'Scrivi un messaggio...',
   maxRows = 5,
-  className,
-  ...props
+  className
 }: PromptInputProps) {
   const textareaRef = React.useRef<HTMLTextAreaElement>(null)
 
@@ -63,7 +63,6 @@ export function PromptInput({
         'border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60',
         className
       )}
-      {...props}
     >
       <form onSubmit={handleSubmit} className="max-w-4xl mx-auto p-4">
         <div className="relative flex items-end gap-2">
