@@ -9,7 +9,7 @@ import { useState, useEffect } from 'react'
 import { Message, MessageContent } from '@/components/ai/message'
 import { Response } from '@/components/ai/response'
 import { Tool } from '@/components/ai/tool'
-import { Conversation, ConversationContent, ConversationScrollButton } from '@/components/ai/conversation'
+import { Conversation, ConversationContent } from '@/components/ai/conversation'
 import { PromptInput } from '@/components/ai/prompt-input'
 
 export default function ChatPage() {
@@ -187,7 +187,6 @@ export default function ChatPage() {
             </>
           )}
         </ConversationContent>
-        <ConversationScrollButton />
       </Conversation>
 
       {/* Error Alert - Fixed above input */}
