@@ -128,7 +128,7 @@ export async function POST(req: NextRequest) {
 
     // StreamText di AI SDK con tools (sintassi corretta con 2 parametri)
     const result = await streamText({
-      model: openrouter('anthropic/claude-3.5-haiku'),
+      model: openrouter('openai/gpt-4o-mini'),
       system: systemPrompts[locale as keyof typeof systemPrompts] || systemPrompts.it,
       messages: coreMessages,
       toolChoice: 'auto', // AI decide quando usare i tool
