@@ -1,9 +1,8 @@
-import { streamText, convertToCoreMessages } from 'ai'
+import { streamText, convertToCoreMessages, tool } from 'ai'
 import { createOpenRouter } from '@openrouter/ai-sdk-provider'
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest } from 'next/server'
-// import { z } from 'zod' // Temporaneo - tool commentati
-// import { tool } from 'ai' // Temporaneo
+import { z } from 'zod'
 
 export const runtime = 'edge'
 
@@ -87,19 +86,20 @@ export async function POST(req: NextRequest) {
 
     console.log(`Messages: ${messages.length}, Core: ${coreMessages.length}, Locale: ${locale}`)
 
-    // StreamText di AI SDK senza tools (temporaneo per debug)
+    // StreamText di AI SDK con tools (sintassi corretta con 2 parametri)
     const result = await streamText({
       model: openrouter('mistralai/mistral-7b-instruct'),
       system: systemPrompts[locale as keyof typeof systemPrompts] || systemPrompts.it,
       messages: coreMessages,
-      /* tools: {
+      tools: {
         // Tool 1: Lista clienti
         list_clients: tool({
           description: 'Get a list of all active clients for the user',
           parameters: z.object({
             limit: z.number().optional().default(10).describe('Maximum number of clients to return')
           }),
-          execute: async ({ limit }) => {
+          execute: async (input, options) => {
+            const { limit } = input
             const { data: clients } = await supabase
               .from('clients')
               .select('id, name, email, phone, address, city, zip_code, country, created_at')
@@ -118,7 +118,8 @@ export async function POST(req: NextRequest) {
           parameters: z.object({
             name: z.string().describe('The name of the client to search for')
           }),
-          execute: async ({ name }) => {
+          execute: async (input, options) => {
+            const { name } = input
             const { data: client } = await supabase
               .from('clients')
               .select('id, name, email, phone, address, city, zip_code, country')
@@ -135,7 +136,7 @@ export async function POST(req: NextRequest) {
         get_subscription_status: tool({
           description: 'Get the current subscription plan details, limits and usage',
           parameters: z.object({}),
-          execute: async () => {
+          execute: async (input, options) => {
             const { data: subscription } = await supabase
               .from('user_subscriptions')
               .select(`
@@ -144,7 +145,7 @@ export async function POST(req: NextRequest) {
               `)
               .eq('user_id', user.id)
               .single()
-            
+
             if (!subscription) {
               return { error: 'No subscription found' }
             }
@@ -186,7 +187,8 @@ export async function POST(req: NextRequest) {
           parameters: z.object({
             period: z.enum(['month', 'year', 'all']).default('month').describe('Time period for statistics')
           }),
-          execute: async ({ period }) => {
+          execute: async (input, options) => {
+            const { period } = input
             let query = supabase
               .from('invoices')
               .select('id, total, status, date')
@@ -220,7 +222,7 @@ export async function POST(req: NextRequest) {
           }
         })
       },
-      maxSteps: 5 */
+      maxSteps: 5
     })
 
     // Metodo per useChat hook con headers espliciti
