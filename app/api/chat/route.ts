@@ -140,20 +140,13 @@ export async function POST(req: NextRequest) {
     // Converti i messaggi UI in formato modello (gestisce parts automaticamente)
     const coreMessages = convertToCoreMessages(messages)
 
-    // USING CLAUDE 3.5 HAIKU - Better tool calling compliance
-    // Claude has demonstrated better adherence to system prompts
-    // and consistently generates text responses after tool execution
-    console.log('[Chat API] Using Claude 3.5 Haiku for reliable tool calling...')
+    // DUAL-CALL PATTERN - GUARANTEED TEXT RESPONSE AFTER TOOL CALLS
+    // Problem: AI SDK v5 doesn't automatically do a second inference round after tool execution
+    // Solution: We manually check if tools were called, and if so, make a second call to generate text
+    console.log('[Chat API] Using dual-call pattern for guaranteed tool result display...')
     
-    // StreamText with Claude 3.5 Haiku
-    const result = await streamText({
-      model: openrouter('anthropic/claude-3.5-haiku'),
-      system: systemPrompts[locale as keyof typeof systemPrompts] || systemPrompts.it,
-      messages: coreMessages,
-      temperature: 0.7, // Più conversazionale
-      toolChoice: 'auto', // AI decide quando usare i tool
-      // Claude 3.5 Haiku automatically handles tool execution and generates text responses
-      tools: {
+    // Define tools configuration (reusable)
+    const toolsConfig = {
         // Tool 1: Lista clienti
         list_clients: tool({
           description: 'Get a list of all active clients for the user. IMPORTANT: After calling this tool, you MUST display ALL the client data (name, email, phone, city, etc.) in your response. Do NOT just say "Here are your X clients" without showing the actual data!',
@@ -625,9 +618,88 @@ export async function POST(req: NextRequest) {
           }
         })
       }
+    }; // End of toolsConfig
+
+    // STEP 1: First call - Execute tools (non-streaming to check results)
+    console.log('[Chat API] Step 1: Calling AI with tools...')
+    const firstCall = await generateText({
+      model: openrouter('anthropic/claude-3.5-haiku'),
+      system: systemPrompts[locale as keyof typeof systemPrompts] || systemPrompts.it,
+      messages: coreMessages,
+      temperature: 0.7,
+      toolChoice: 'auto',
+      tools: toolsConfig,
     })
 
-    // Metodo per useChat hook con headers espliciti
+    console.log('[Chat API] First call result:', {
+      hasText: !!firstCall.text,
+      textLength: firstCall.text?.length || 0,
+      hasToolCalls: firstCall.toolCalls && firstCall.toolCalls.length > 0,
+      toolCallsCount: firstCall.toolCalls?.length || 0,
+      finishReason: firstCall.finishReason,
+    })
+
+    // STEP 2: Check if we need a second call
+    // If the AI only made tool calls without generating text, do a second call
+    if (firstCall.toolCalls && firstCall.toolCalls.length > 0 && !firstCall.text) {
+      console.log('[Chat API] Step 2: Tool calls detected without text, making second call for text generation...')
+      
+      // Build messages with tool results for second call
+      const messagesWithToolResults = [
+        ...coreMessages,
+        {
+          role: 'assistant' as const,
+          content: firstCall.toolCalls.map(tc => ({
+            type: 'tool-call' as const,
+            toolCallId: tc.toolCallId,
+            toolName: tc.toolName,
+            args: tc.args,
+          })),
+        },
+        ...firstCall.toolResults.map(tr => ({
+          role: 'tool' as const,
+          content: [
+            {
+              type: 'tool-result' as const,
+              toolCallId: tr.toolCallId,
+              toolName: tr.toolName,
+              result: tr.result,
+            }
+          ],
+        })),
+      ]
+
+      // STEP 3: Second call - FORCE text generation only (no more tools)
+      console.log('[Chat API] Step 3: Generating final text response...')
+      const secondCall = await streamText({
+        model: openrouter('anthropic/claude-3.5-haiku'),
+        system: systemPrompts[locale as keyof typeof systemPrompts] || systemPrompts.it,
+        messages: messagesWithToolResults,
+        temperature: 0.7,
+        toolChoice: 'none', // ✅ CRITICAL: Force text-only response, no more tools!
+      })
+
+      console.log('[Chat API] Returning second call streaming response...')
+      return secondCall.toUIMessageStreamResponse({
+        headers: {
+          'Content-Type': 'text/plain; charset=utf-8',
+          'Cache-Control': 'no-cache, no-transform',
+          'X-Vercel-AI-Data-Stream': 'v1',
+        }
+      })
+    }
+
+    // If the first call already generated text, just stream it
+    console.log('[Chat API] First call already has text, streaming it...')
+    const result = await streamText({
+      model: openrouter('anthropic/claude-3.5-haiku'),
+      system: systemPrompts[locale as keyof typeof systemPrompts] || systemPrompts.it,
+      messages: coreMessages,
+      temperature: 0.7,
+      toolChoice: 'auto',
+      tools: toolsConfig,
+    })
+    
     return result.toUIMessageStreamResponse({
       headers: {
         'Content-Type': 'text/plain; charset=utf-8',
