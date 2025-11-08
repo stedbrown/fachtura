@@ -176,13 +176,6 @@ export function PromptInput({
           )}
         </div>
       </div>
-
-      {/* Helper text */}
-      <div className="flex items-center justify-center gap-2 mt-2 text-xs text-muted-foreground">
-        <span>Premi <kbd className="px-1 py-0.5 bg-muted rounded text-xs">Invio</kbd> per inviare</span>
-        <span>•</span>
-        <span><kbd className="px-1 py-0.5 bg-muted rounded text-xs">Shift+Invio</kbd> per andare a capo</span>
-      </div>
     </form>
   )
 }
