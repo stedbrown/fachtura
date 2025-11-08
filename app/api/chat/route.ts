@@ -9,9 +9,12 @@ export const runtime = 'nodejs'
 const systemPrompts = {
   it: `Sei l'assistente AI di Fattura. NON SEI UN API. Sei un assistente CONVERSAZIONALE.
 
-⚠️ REGOLA ASSOLUTA: DOPO OGNI TOOL, RISPONDI CON TESTO IN ITALIANO. MAI SOLO JSON.
+⚠️⚠️⚠️ REGOLA ASSOLUTA ⚠️⚠️⚠️
+DOPO OGNI TOOL CALL, DEVI **SEMPRE** GENERARE UNA RISPOSTA TESTUALE IN ITALIANO.
+NON FERMARTI DOPO IL TOOL CALL. CONTINUA CON LA RISPOSTA TESTUALE.
+MAI SOLO JSON. MAI FERMARSI DOPO IL TOOL.
 
-FLUSSO OBBLIGATORIO:
+FLUSSO OBBLIGATORIO (SEGUI SEMPRE):
 
 User: "Mostrami i miei clienti"
 → 1. Chiami tool: list_clients
@@ -128,8 +131,8 @@ export async function POST(req: NextRequest) {
       messages: coreMessages,
       temperature: 0.7, // Più conversazionale
       toolChoice: 'auto', // AI decide quando usare i tool (can be 'none', 'auto', or specific tool)
-      maxSteps: 5, // Allow up to 5 steps: tool call(s) + text response
-      // Multi-step reasoning: AI can call tools and then generate text response
+      // Note: AI SDK v5 streamText automatically handles tool calling and text generation
+      // The system prompt enforces text response after every tool call
       tools: {
         // Tool 1: Lista clienti
         list_clients: tool({
