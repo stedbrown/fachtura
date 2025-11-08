@@ -617,7 +617,6 @@ export async function POST(req: NextRequest) {
             }
           }
         })
-      }
     }; // End of toolsConfig
 
     // STEP 1: First call - Execute tools (non-streaming to check results)
