@@ -152,8 +152,6 @@ export default function ChatPage() {
               <Message key={message.id} from={message.role}>
                 <MessageContent>
                   {message.parts?.map((part, index) => {
-                    console.log('📦 Rendering part:', { type: part.type, hasText: 'text' in part, hasResult: 'result' in part })
-                    
                     // Render text parts - MOSTRA SEMPRE IL TESTO
                     if (part.type === 'text') {
                       const textContent = 'text' in part ? part.text : ''
