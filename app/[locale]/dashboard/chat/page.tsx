@@ -185,10 +185,25 @@ export default function ChatPage() {
                           // Render tool calls
                           if (part.type && part.type.startsWith('tool-') && part.state === 'output-available' && part.output) {
                             const toolName = part.type.replace('tool-', '')
+                            const output = part.output as any
+                            
+                            // If output has a "message" field, show it prominently
+                            if (output.message) {
+                              return (
+                                <div key={index} className="my-2 p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
+                                  <div className="text-sm font-semibold text-green-700 dark:text-green-400 mb-2">
+                                    ✅ {toolName}
+                                  </div>
+                                  <div className="text-sm whitespace-pre-wrap">{output.message}</div>
+                                </div>
+                              )
+                            }
+                            
+                            // Otherwise show JSON
                             return (
                               <div key={index} className="my-2 p-3 bg-accent/50 rounded-lg text-sm">
                                 <div className="font-semibold mb-1">🔧 {toolName}</div>
-                                <pre className="text-xs overflow-auto">{JSON.stringify(part.output, null, 2)}</pre>
+                                <pre className="text-xs overflow-auto">{JSON.stringify(output, null, 2)}</pre>
                               </div>
                             )
                           }

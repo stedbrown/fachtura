@@ -9,63 +9,37 @@ export const runtime = 'edge'
 const systemPrompts = {
   it: `Sei un assistente AI per Fattura. Hai 6 strumenti per interagire col database.
 
-REGOLE:
-1. CHIAMA i tool quando servono dati
-2. DOPO che il tool restituisce i dati, RISPONDI ALL'UTENTE mostrandoli
+REGOLA FONDAMENTALE:
+Quando un tool restituisce un campo "message", MOSTRALO SEMPRE ALL'UTENTE come testo della tua risposta.
 
-ESEMPI:
+FLUSSO:
 
 User: "Mostrami i miei clienti"
-→ Chiami list_clients
-→ Ricevi: {clients: [{name: "Mario", ...}], count: 3}
-→ RISPONDI: "Ecco i tuoi 3 clienti:
-   1. Mario Rossi - mario@email.com
-   2. Luigi Bianchi - luigi@email.com
-   3. ..."
+→ Tool: list_clients
+→ Output: {clients: [{name: "Mario", ...}], count: 3}
+→ TUA RISPOSTA: "Ecco i tuoi 3 clienti: 1. Mario Rossi..."
 
-User: "Crea fattura per primo cliente con gatto 100 CHF"
-→ Chiami list_clients
-→ Ricevi: {clients: [{id: "abc-123", name: "Mario"}]}
-→ Chiami create_invoice(client_id: "abc-123", items: [{description: "gatto", quantity: 1, unit_price: 100}])
-→ Ricevi: {success: true, invoice_number: "INV-0001", total: 108.10}
-→ RISPONDI: "✅ Fattura INV-0001 creata per Mario! Totale: CHF 108.10"
+User: "Crea fattura per X con Y"
+→ Tool: list_clients
+→ Tool: create_invoice
+→ Output: {message: "✅ Fattura INV-001 creata! Totale: CHF 108.10\nVedi: https://..."}
+→ TUA RISPOSTA: [COPIA ESATTAMENTE il campo "message" dall'output]
 
-IMPORTANTE: DOPO ogni tool call, GENERA UNA RISPOSTA TESTUALE per l'utente.
+IMPORTANTE: Se l'output ha "message", MOSTRA QUEL TESTO. Include i link!
 
-Rispondi in italiano, brevemente.`,
+Rispondi in italiano.`,
 
-  en: `You are an AI for Fattura. You have 6 tools to interact with the database.
+  en: `AI for Fattura. 6 tools.
 
-RULES:
-1. CALL tools when you need data
-2. AFTER the tool returns data, RESPOND TO USER showing the results
+KEY RULE: When tool output has "message" field, SHOW THAT TEXT to user (includes links!).
 
-EXAMPLES:
+Respond in English.`,
 
-User: "Show my clients"
-→ Call list_clients
-→ Receive: {clients: [{name: "John", ...}], count: 3}
-→ RESPOND: "Here are your 3 clients:
-   1. John Doe - john@email.com
-   2. Jane Smith - jane@email.com
-   3. ..."
+  de: `KI für Fattura. 6 Tools. Wenn Output "message" hat, ZEIGE ES (mit Links!).`,
 
-User: "Create invoice for first client with item 100 CHF"
-→ Call list_clients
-→ Receive: {clients: [{id: "abc-123", name: "John"}]}
-→ Call create_invoice(client_id: "abc-123", items: [{description: "item", quantity: 1, unit_price: 100}])
-→ Receive: {success: true, invoice_number: "INV-0001", total: 108.10}
-→ RESPOND: "✅ Invoice INV-0001 created for John! Total: CHF 108.10"
+  fr: `IA Fattura. 6 outils. Si output a "message", MONTRE-LE (avec liens!).`,
 
-IMPORTANT: AFTER each tool call, GENERATE A TEXT RESPONSE for the user.
-
-Respond in English, briefly.`,
-
-  de: `Du bist KI für Fattura. 6 Tools für Datenbank. NACH jedem Tool ANTWORTE mit Text.`,
-
-  fr: `Tu es IA pour Fattura. 6 outils pour base de données. APRÈS chaque outil RÉPONDS avec texte.`,
-
-  rm: `Ti eis AI per Fattura. 6 instruments. SUENTER mintga instrument RESPUNDA cun text.`
+  rm: `AI Fattura. 6 instruments. Sche output ha "message", MUSSA-L (cun links!).`
 }
 
 export async function POST(req: NextRequest) {
@@ -324,12 +298,15 @@ export async function POST(req: NextRequest) {
               return { error: `Errore aggiunta items: ${itemsError.message}` }
             }
 
+            const invoiceUrl = `https://factura-ten.vercel.app/${locale}/dashboard/invoices/${invoice.id}`
+            
             return {
               success: true,
               invoice_id: invoice.id,
               invoice_number: invoiceNumber,
               total: total,
-              message: `Fattura ${invoiceNumber} creata con successo! Totale: CHF ${total.toFixed(2)}`
+              invoice_url: invoiceUrl,
+              message: `✅ Fattura ${invoiceNumber} creata con successo!\n\nTotale: CHF ${total.toFixed(2)}\n\nVedi fattura: ${invoiceUrl}`
             }
           }
         }),
@@ -438,13 +415,16 @@ export async function POST(req: NextRequest) {
               return { error: `Errore aggiunta items: ${itemsError.message}` }
             }
 
+            const quoteUrl = `https://factura-ten.vercel.app/${locale}/dashboard/quotes/${quote.id}`
+            
             return {
               success: true,
               quote_id: quote.id,
               quote_number: quoteNumber,
               total: total,
               valid_until: validUntil.toISOString().split('T')[0],
-              message: `Preventivo ${quoteNumber} creato con successo! Totale: CHF ${total.toFixed(2)}`
+              quote_url: quoteUrl,
+              message: `✅ Preventivo ${quoteNumber} creato con successo!\n\nTotale: CHF ${total.toFixed(2)}\nValido fino: ${validUntil.toISOString().split('T')[0]}\n\nVedi preventivo: ${quoteUrl}`
             }
           }
         })
