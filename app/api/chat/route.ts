@@ -616,10 +616,10 @@ export async function POST(req: NextRequest) {
     }; // End of toolsConfig
 
     // STEP 1: First call - Execute tools (non-streaming to check results)
-    // Using GPT-4o for better tool calling and automatic multi-turn handling
-    console.log('[Chat API] Step 1: Calling OpenAI GPT-4o with tools...')
+    // Using GPT-4o-mini for cost-effective tool calling with excellent performance
+    console.log('[Chat API] Step 1: Calling OpenAI GPT-4o-mini with tools...')
     const firstCall = await generateText({
-      model: openai('gpt-4o'),
+      model: openai('gpt-4o-mini'),
       system: systemPrompts[locale as keyof typeof systemPrompts] || systemPrompts.it,
       messages: coreMessages,
       temperature: 0.7,
@@ -654,9 +654,9 @@ export async function POST(req: NextRequest) {
       ]
 
       // STEP 3: Second call - FORCE text generation only (no more tools)
-      console.log('[Chat API] Step 3: OpenAI GPT-4o generating final text response...')
+      console.log('[Chat API] Step 3: OpenAI GPT-4o-mini generating final text response...')
       const secondCall = await streamText({
-        model: openai('gpt-4o'),
+        model: openai('gpt-4o-mini'),
         system: systemPrompts[locale as keyof typeof systemPrompts] || systemPrompts.it,
         messages: messagesWithToolResults,
         temperature: 0.7,
@@ -678,7 +678,7 @@ export async function POST(req: NextRequest) {
     console.log('[Chat API] No tool calls detected or already complete response, streaming normally...')
     console.log('[Chat API] finishReason:', firstCall.finishReason, '- This path should rarely be taken!')
     const result = await streamText({
-      model: openai('gpt-4o'),
+      model: openai('gpt-4o-mini'),
       system: systemPrompts[locale as keyof typeof systemPrompts] || systemPrompts.it,
       messages: coreMessages,
       temperature: 0.7,
