@@ -194,7 +194,7 @@ export default function ChatPage() {
                                   <div className="flex items-center gap-2">
                                     <div className="animate-spin h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full"></div>
                                     <span className="font-semibold text-blue-700 dark:text-blue-400">
-                                      Esecuzione: {toolName}...
+                                      🔧 {toolName}...
                                     </span>
                                   </div>
                                 </div>
@@ -203,7 +203,7 @@ export default function ChatPage() {
                             
                             // Tool completato
                             if (part.state === 'output-available' && output) {
-                              // Se c'è un errore
+                              // Se c'è un errore, mostralo sempre
                               if (output.error) {
                                 return (
                                   <div key={index} className="my-2 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
@@ -215,25 +215,21 @@ export default function ChatPage() {
                                 )
                               }
                               
-                              // Se c'è un messaggio formattato
-                              if (output.message) {
+                              // Se c'è un messaggio formattato (solo per create_invoice/quote)
+                              if (output.message && (toolName === 'create_invoice' || toolName === 'create_quote')) {
                                 return (
                                   <div key={index} className="my-2 p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
                                     <div className="text-sm font-semibold text-green-700 dark:text-green-400 mb-2">
-                                      ✅ {toolName}
+                                      ✅ {toolName === 'create_invoice' ? 'Fattura' : 'Preventivo'} creato
                                     </div>
                                     <div className="text-sm whitespace-pre-wrap">{output.message}</div>
                                   </div>
                                 )
                               }
                               
-                              // Altrimenti mostra JSON compatto (solo per debug)
-                              return (
-                                <div key={index} className="my-2 p-3 bg-accent/50 rounded-lg text-sm">
-                                  <div className="font-semibold mb-1 text-muted-foreground">🔧 {toolName}</div>
-                                  <pre className="text-xs overflow-auto max-h-32">{JSON.stringify(output, null, 2)}</pre>
-                                </div>
-                              )
+                              // Per altri tool, NON mostrare JSON (l'AI risponderà con testo)
+                              // Nascondi completamente l'output per evitare confusione
+                              return null
                             }
                           }
                           
