@@ -65,7 +65,7 @@ Formatescha datas cler e legibel.`
 
 export async function POST(req: NextRequest) {
   try {
-    const { messages = [], locale = 'it' } = await req.json()
+    const { messages = [] } = await req.json()
 
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -81,7 +81,10 @@ export async function POST(req: NextRequest) {
     // Converti i messaggi UI in formato modello (gestisce parts automaticamente)
     const coreMessages = convertToCoreMessages(messages)
 
-    console.log(`Messages: ${messages.length}, Core: ${coreMessages.length}`)
+    // Estrai locale dai metadata del primo messaggio user, default 'it'
+    const locale = messages.find((m: any) => m.role === 'user' && m.metadata?.locale)?.metadata?.locale || 'it'
+
+    console.log(`Messages: ${messages.length}, Core: ${coreMessages.length}, Locale: ${locale}`)
 
     // StreamText di AI SDK con tools
     const result = await streamText({

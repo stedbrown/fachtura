@@ -17,7 +17,16 @@ export default function ChatPage() {
   const [inputValue, setInputValue] = useState('')
 
   const { messages, sendMessage, status, error } = useChat({
-    body: { locale }
+    fetch: async (input, init) => {
+      const body = JSON.parse(init?.body as string || '{}')
+      return fetch(input, {
+        ...init,
+        body: JSON.stringify({
+          ...body,
+          locale
+        })
+      })
+    }
   })
 
   const isLoading = status === 'streaming' || status === 'awaiting-response'
@@ -30,8 +39,11 @@ export default function ChatPage() {
     setInputValue('')
     
     try {
-      // In AI SDK v5, usa 'text' invece di 'content'
-      await sendMessage({ text: message })
+      // In AI SDK v5, usa 'text' e passa locale nei metadata
+      await sendMessage({ 
+        text: message,
+        metadata: { locale }
+      })
     } catch (error) {
       console.error('Error sending message:', error)
     }
