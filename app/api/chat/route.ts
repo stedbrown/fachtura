@@ -9,20 +9,32 @@ export const runtime = 'nodejs'
 const systemPrompts = {
   it: `Sei l'assistente AI di Fattura. NON SEI UN API. Sei un assistente CONVERSAZIONALE.
 
-⚠️⚠️⚠️ REGOLA ASSOLUTA ⚠️⚠️⚠️
-DOPO OGNI TOOL CALL, DEVI **SEMPRE** GENERARE UNA RISPOSTA TESTUALE IN ITALIANO.
-NON FERMARTI DOPO IL TOOL CALL. CONTINUA CON LA RISPOSTA TESTUALE.
-MAI SOLO JSON. MAI FERMARSI DOPO IL TOOL.
+⚠️⚠️⚠️ REGOLE ASSOLUTE ⚠️⚠️⚠️
+1. DOPO OGNI TOOL CALL, DEVI **SEMPRE** GENERARE UNA RISPOSTA TESTUALE IN ITALIANO.
+2. NON FERMARTI DOPO IL TOOL CALL. CONTINUA CON LA RISPOSTA TESTUALE.
+3. MAI SOLO JSON. MAI FERMARSI DOPO IL TOOL.
+4. **MOSTRA SEMPRE I DATI COMPLETI** ritornati dai tool - NON dire solo "Ecco i tuoi X elementi" senza mostrarli!
+5. Se un tool ritorna una lista, DEVI elencare TUTTI gli elementi con i loro dettagli!
 
 FLUSSO OBBLIGATORIO (SEGUI SEMPRE):
 
 User: "Mostrami i miei clienti"
 → 1. Chiami tool: list_clients
-→ 2. Tool ritorna: {clients: [...], count: 3}
-→ 3. TU SCRIVI: "Ecco i tuoi 3 clienti:
-   1. 📧 Mario Rossi (mario@email.com) - Milano
-   2. 📧 Luigi Verdi (luigi@email.com) - Roma
-   3. 📧 Anna Bianchi - Lugano"
+→ 2. Tool ritorna: {clients: [{name: "Mario Rossi", email: "mario@email.com", city: "Milano"}, ...], count: 3}
+→ 3. ⚠️ DEVI MOSTRARE **TUTTI I DATI** ritornati dal tool! Non dire solo "Ecco i tuoi 3 clienti" e basta!
+→ 4. TU SCRIVI esattamente i dati ricevuti:
+   "Ecco i tuoi 3 clienti:
+   
+   1. 📧 Mario Rossi
+      • Email: mario@email.com
+      • Città: Milano
+   
+   2. 📧 Luigi Verdi
+      • Email: luigi@email.com
+      • Città: Roma
+   
+   3. 📧 Anna Bianchi
+      • Città: Lugano"
 
 User: "Fammi vedere le fatture pagate"
 → 1. Chiami tool: list_invoices con status="paid" (valori: draft/issued/paid/overdue/all)
@@ -55,6 +67,11 @@ IMPORTANTE:
 • Formatta numeri: CHF 1,081.00
 • Se tool ha campo "message", COPIALO TESTUALMENTE nella tua risposta
 • Sii amichevole, conciso, utile
+
+⚠️⚠️⚠️ ERRORE COMUNE DA EVITARE ⚠️⚠️⚠️
+NON dire mai: "Ecco i tuoi 2 clienti registrati" e fermarti lì!
+DEVI continuare con: "1. Nome Cliente - email - città\n2. Nome Cliente 2 - email - città"
+MOSTRA SEMPRE I DATI COMPLETI!
 
 RICORDA: Sei un ASSISTENTE UMANO, non un'API!`,
 
@@ -139,7 +156,7 @@ export async function POST(req: NextRequest) {
       tools: {
         // Tool 1: Lista clienti
         list_clients: tool({
-          description: 'Get a list of all active clients for the user',
+          description: 'Get a list of all active clients for the user. IMPORTANT: After calling this tool, you MUST display ALL the client data (name, email, phone, city, etc.) in your response. Do NOT just say "Here are your X clients" without showing the actual data!',
           inputSchema: z.object({
             limit: z.coerce.number().optional().default(10).describe('Maximum number of clients to return')
           }),
@@ -278,7 +295,7 @@ export async function POST(req: NextRequest) {
 
         // Tool 5: Lista fatture
         list_invoices: tool({
-          description: 'Get list of invoices with optional filters by status or date range',
+          description: 'Get list of invoices with optional filters by status or date range. IMPORTANT: After calling this tool, you MUST display ALL the invoice data (invoice_number, date, total, client name, status) in your response. Do NOT just say "Here are your X invoices" without showing the actual data!',
           inputSchema: z.object({
             status: z.enum(['draft', 'issued', 'paid', 'overdue', 'all']).optional().default('all').describe('Filter by invoice status'),
             limit: z.coerce.number().optional().default(10).describe('Maximum number of invoices to return')
