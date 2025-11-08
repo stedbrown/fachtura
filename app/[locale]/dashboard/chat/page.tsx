@@ -152,14 +152,19 @@ export default function ChatPage() {
             </div>
           ) : (
             <div className="space-y-6">
-              {messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={cn(
-                    'flex gap-4',
-                    message.role === 'user' ? 'justify-end' : 'justify-start'
-                  )}
-                >
+              {messages.map((message) => {
+                // Debug: log message structure
+                if (message.role === 'assistant') {
+                  console.log('Assistant message:', message)
+                }
+                return (
+                  <div
+                    key={message.id}
+                    className={cn(
+                      'flex gap-4',
+                      message.role === 'user' ? 'justify-end' : 'justify-start'
+                    )}
+                  >
                   {message.role === 'assistant' && (
                     <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
                       <Sparkles className="h-4 w-4 text-primary" />
@@ -175,12 +180,16 @@ export default function ChatPage() {
                     )}
                   >
                     <div className="prose prose-sm dark:prose-invert max-w-none">
-                      {message.parts?.map((part, index) => {
-                        if (part.type === 'text') {
-                          return <p key={index} className="whitespace-pre-wrap m-0">{part.text}</p>
-                        }
-                        return null
-                      })}
+                      {message.parts && message.parts.length > 0 ? (
+                        message.parts.map((part, index) => {
+                          if (part.type === 'text' && part.text) {
+                            return <p key={index} className="whitespace-pre-wrap m-0">{part.text}</p>
+                          }
+                          return null
+                        })
+                      ) : (
+                        <p className="text-muted-foreground italic">Caricamento risposta...</p>
+                      )}
                     </div>
                   </div>
 
@@ -190,7 +199,8 @@ export default function ChatPage() {
                     </div>
                   )}
                 </div>
-              ))}
+                )
+              })}
 
               {/* Loading indicator */}
               {isLoading && (
