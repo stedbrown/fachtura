@@ -572,7 +572,9 @@
     "resources": {
       "client": "clients",
       "invoice": "invoices",
-      "quote": "quotes"
+      "quote": "quotes",
+      "product": "products",
+      "order": "orders"
     },
     "features": {
       "3clients": "3 clients",

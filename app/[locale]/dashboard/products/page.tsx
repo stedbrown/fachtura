@@ -410,7 +410,7 @@ export default function ProductsPage() {
       <SubscriptionUpgradeDialog
         open={showUpgradeDialog}
         onOpenChange={setShowUpgradeDialog}
-        resourceType="products"
+        limitType="product"
         currentCount={upgradeDialogParams.currentCount}
         maxCount={upgradeDialogParams.maxCount}
         planName={upgradeDialogParams.planName}

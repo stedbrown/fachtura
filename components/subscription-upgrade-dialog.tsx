@@ -20,7 +20,7 @@ import { getFeatureTranslationKey } from '@/lib/utils/feature-translator'
 interface SubscriptionUpgradeDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  limitType: 'client' | 'invoice' | 'quote'
+  limitType: 'client' | 'invoice' | 'quote' | 'product' | 'order'
   currentCount: number
   maxCount: number
   planName: string

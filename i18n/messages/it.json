@@ -575,7 +575,9 @@
     "resources": {
       "client": "clienti",
       "invoice": "fatture",
-      "quote": "preventivi"
+      "quote": "preventivi",
+      "product": "prodotti",
+      "order": "ordini"
     },
     "features": {
       "3clients": "3 clienti",

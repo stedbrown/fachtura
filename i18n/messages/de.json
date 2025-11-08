@@ -572,7 +572,9 @@
     "resources": {
       "client": "Kunden",
       "invoice": "Rechnungen",
-      "quote": "Angebote"
+      "quote": "Angebote",
+      "product": "Produkte",
+      "order": "Bestellungen"
     },
     "features": {
       "3clients": "3 Kunden",
