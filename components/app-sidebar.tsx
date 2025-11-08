@@ -12,6 +12,8 @@ import {
   CreditCard,
   User as UserIcon,
   Sparkles,
+  Package,
+  ShoppingCart,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -60,6 +62,16 @@ export function AppSidebar() {
       title: t('invoices'),
       url: `/${locale}/dashboard/invoices`,
       icon: Receipt,
+    },
+    {
+      title: t('products'),
+      url: `/${locale}/dashboard/products`,
+      icon: Package,
+    },
+    {
+      title: t('orders'),
+      url: `/${locale}/dashboard/orders`,
+      icon: ShoppingCart,
     },
     {
       title: t('assistant'),

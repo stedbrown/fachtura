@@ -1803,6 +1803,376 @@ export async function POST(req: NextRequest) {
               message: quotes?.length ? `🔍 Trovati ${quotes.length} preventivi corrispondenti a "${search_term}"` : `❌ Nessun preventivo trovato per "${search_term}"`
             }
           }
+        }),
+
+        // ========================================
+        // PRODUCTS MANAGEMENT TOOLS
+        // ========================================
+
+        // Tool 33: Lista prodotti
+        list_products: tool({
+          description: 'Get all active products from the catalog. IMPORTANT: After calling this tool, display ALL product data (name, SKU, price, category, stock) in your response!',
+          inputSchema: z.object({
+            limit: z.coerce.number().optional().default(20).describe('Maximum number of products to return'),
+            active_only: z.boolean().optional().default(true).describe('Only show active products')
+          }),
+          execute: async (input, options) => {
+            const { limit, active_only } = input
+
+            let query = supabase
+              .from('products')
+              .select('*')
+              .eq('user_id', user.id)
+              .is('deleted_at', null)
+              .order('name')
+              .limit(limit)
+
+            if (active_only) {
+              query = query.eq('is_active', true)
+            }
+
+            const { data: products } = await query
+
+            return {
+              products: products || [],
+              count: products?.length || 0,
+              message: products?.length ? `📦 ${products.length} prodotti nel catalogo` : '📦 Nessun prodotto nel catalogo'
+            }
+          }
+        }),
+
+        // Tool 34: Cerca prodotto
+        search_products: tool({
+          description: 'Search products by name, SKU, or category',
+          inputSchema: z.object({
+            search_term: z.string().describe('Search term (name, SKU, or category)'),
+            limit: z.coerce.number().optional().default(10).describe('Maximum results')
+          }),
+          execute: async (input, options) => {
+            const { search_term, limit } = input
+
+            const { data: products } = await supabase
+              .from('products')
+              .select('*')
+              .eq('user_id', user.id)
+              .is('deleted_at', null)
+              .or(`name.ilike.%${search_term}%,sku.ilike.%${search_term}%,category.ilike.%${search_term}%`)
+              .limit(limit)
+
+            return {
+              products: products || [],
+              count: products?.length || 0,
+              search_term,
+              message: products?.length ? `🔍 Trovati ${products.length} prodotti per "${search_term}"` : `❌ Nessun prodotto trovato per "${search_term}"`
+            }
+          }
+        }),
+
+        // Tool 35: Crea prodotto
+        create_product: tool({
+          description: 'Create a new product in the catalog',
+          inputSchema: z.object({
+            name: z.string().describe('Product name'),
+            description: z.string().optional().describe('Product description'),
+            sku: z.string().optional().describe('SKU/product code'),
+            category: z.string().optional().describe('Product category'),
+            unit_price: z.coerce.number().describe('Unit price (CHF)'),
+            tax_rate: z.coerce.number().optional().default(8.1).describe('Tax rate (%)'),
+            track_inventory: z.boolean().optional().default(false).describe('Track inventory'),
+            stock_quantity: z.coerce.number().optional().default(0).describe('Initial stock'),
+            is_active: z.boolean().optional().default(true).describe('Is active')
+          }),
+          execute: async (input, options) => {
+            const { data: product, error } = await supabase
+              .from('products')
+              .insert({
+                user_id: user.id,
+                ...input
+              })
+              .select()
+              .single()
+
+            if (error) {
+              return { error: `Errore creazione prodotto: ${error.message}` }
+            }
+
+            return {
+              success: true,
+              product,
+              message: `✅ Prodotto "${product.name}" creato con successo!`
+            }
+          }
+        }),
+
+        // Tool 36: Aggiorna prodotto
+        update_product: tool({
+          description: 'Update an existing product',
+          inputSchema: z.object({
+            product_id: z.string().describe('Product ID'),
+            name: z.string().optional(),
+            description: z.string().optional(),
+            unit_price: z.coerce.number().optional(),
+            tax_rate: z.coerce.number().optional(),
+            stock_quantity: z.coerce.number().optional(),
+            is_active: z.boolean().optional()
+          }),
+          execute: async (input, options) => {
+            const { product_id, ...updates } = input
+
+            const { data: product, error } = await supabase
+              .from('products')
+              .update(updates)
+              .eq('id', product_id)
+              .eq('user_id', user.id)
+              .select()
+              .single()
+
+            if (error) {
+              return { error: `Errore aggiornamento prodotto: ${error.message}` }
+            }
+
+            return {
+              success: true,
+              product,
+              message: `✅ Prodotto aggiornato con successo!`
+            }
+          }
+        }),
+
+        // Tool 37: Elimina prodotto
+        delete_product: tool({
+          description: 'Delete (archive) a product from the catalog',
+          inputSchema: z.object({
+            product_id: z.string().describe('Product ID to delete')
+          }),
+          execute: async (input, options) => {
+            const { product_id } = input
+
+            const { error } = await supabase
+              .from('products')
+              .update({ deleted_at: new Date().toISOString() })
+              .eq('id', product_id)
+              .eq('user_id', user.id)
+
+            if (error) {
+              return { error: `Errore eliminazione prodotto: ${error.message}` }
+            }
+
+            return {
+              success: true,
+              message: `✅ Prodotto eliminato (archiviato) con successo!`
+            }
+          }
+        }),
+
+        // ========================================
+        // ORDERS MANAGEMENT TOOLS
+        // ========================================
+
+        // Tool 38: Lista ordini
+        list_orders: tool({
+          description: 'Get all orders with client information. IMPORTANT: Display ALL order data including order number, client, date, status, and total!',
+          inputSchema: z.object({
+            limit: z.coerce.number().optional().default(10).describe('Maximum number of orders'),
+            status: z.enum(['draft', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled']).optional().describe('Filter by status')
+          }),
+          execute: async (input, options) => {
+            const { limit, status } = input
+
+            let query = supabase
+              .from('orders')
+              .select(`
+                *,
+                client:clients(name, email)
+              `)
+              .eq('user_id', user.id)
+              .is('deleted_at', null)
+              .order('date', { ascending: false })
+              .limit(limit)
+
+            if (status) {
+              query = query.eq('status', status)
+            }
+
+            const { data: orders } = await query
+
+            return {
+              orders: orders || [],
+              count: orders?.length || 0,
+              message: orders?.length ? `🛒 ${orders.length} ordini trovati` : '🛒 Nessun ordine trovato'
+            }
+          }
+        }),
+
+        // Tool 39: Dettagli ordine
+        get_order_details: tool({
+          description: 'Get detailed information about a specific order including items',
+          inputSchema: z.object({
+            order_id: z.string().describe('Order ID')
+          }),
+          execute: async (input, options) => {
+            const { order_id } = input
+
+            const { data: order } = await supabase
+              .from('orders')
+              .select(`
+                *,
+                client:clients(*),
+                items:order_items(*)
+              `)
+              .eq('id', order_id)
+              .eq('user_id', user.id)
+              .single()
+
+            if (!order) {
+              return { error: 'Ordine non trovato' }
+            }
+
+            return { order }
+          }
+        }),
+
+        // Tool 40: Crea ordine
+        create_order: tool({
+          description: 'Create a new customer order with items',
+          inputSchema: z.object({
+            client_id: z.string().describe('Client ID'),
+            order_date: z.string().optional().describe('Order date (YYYY-MM-DD)'),
+            delivery_date: z.string().optional().describe('Expected delivery date'),
+            status: z.enum(['draft', 'confirmed', 'processing', 'shipped', 'delivered']).optional().default('draft'),
+            items: z.array(z.object({
+              description: z.string(),
+              quantity: z.coerce.number(),
+              unit_price: z.coerce.number(),
+              tax_rate: z.coerce.number().optional().default(8.1)
+            })).describe('Order items'),
+            notes: z.string().optional(),
+            internal_notes: z.string().optional()
+          }),
+          execute: async (input, options) => {
+            const { client_id, order_date, delivery_date, status, items, notes, internal_notes } = input
+
+            // Calculate totals
+            let subtotal = 0
+            let tax_amount = 0
+            items.forEach(item => {
+              const lineSubtotal = item.quantity * item.unit_price
+              const lineTax = lineSubtotal * (item.tax_rate / 100)
+              subtotal += lineSubtotal
+              tax_amount += lineTax
+            })
+            const total = subtotal + tax_amount
+
+            // Generate order number
+            const date = new Date()
+            const year = date.getFullYear()
+            const month = String(date.getMonth() + 1).padStart(2, '0')
+            const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0')
+            const order_number = `ORD-${year}${month}-${random}`
+
+            // Insert order
+            const { data: order, error: orderError } = await supabase
+              .from('orders')
+              .insert({
+                user_id: user.id,
+                client_id,
+                order_number,
+                date: order_date || new Date().toISOString().split('T')[0],
+                expected_delivery_date: delivery_date || null,
+                status: status || 'draft',
+                subtotal: Number(subtotal.toFixed(2)),
+                tax_amount: Number(tax_amount.toFixed(2)),
+                total: Number(total.toFixed(2)),
+                notes,
+                internal_notes
+              })
+              .select()
+              .single()
+
+            if (orderError) {
+              return { error: `Errore creazione ordine: ${orderError.message}` }
+            }
+
+            // Insert order items
+            const orderItems = items.map(item => ({
+              order_id: order.id,
+              description: item.description,
+              quantity: item.quantity,
+              unit_price: item.unit_price,
+              tax_rate: item.tax_rate,
+              line_total: item.quantity * item.unit_price * (1 + item.tax_rate / 100)
+            }))
+
+            const { error: itemsError } = await supabase
+              .from('order_items')
+              .insert(orderItems)
+
+            if (itemsError) {
+              return { error: `Errore creazione articoli: ${itemsError.message}` }
+            }
+
+            return {
+              success: true,
+              order,
+              message: `✅ Ordine ${order_number} creato con successo! Totale: CHF ${total.toFixed(2)}`
+            }
+          }
+        }),
+
+        // Tool 41: Aggiorna stato ordine
+        update_order_status: tool({
+          description: 'Update the status of an order',
+          inputSchema: z.object({
+            order_id: z.string().describe('Order ID'),
+            status: z.enum(['draft', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled']).describe('New status')
+          }),
+          execute: async (input, options) => {
+            const { order_id, status } = input
+
+            const { data: order, error } = await supabase
+              .from('orders')
+              .update({ status })
+              .eq('id', order_id)
+              .eq('user_id', user.id)
+              .select()
+              .single()
+
+            if (error) {
+              return { error: `Errore aggiornamento stato: ${error.message}` }
+            }
+
+            return {
+              success: true,
+              order,
+              message: `✅ Stato ordine aggiornato a "${status}"!`
+            }
+          }
+        }),
+
+        // Tool 42: Elimina ordine
+        delete_order: tool({
+          description: 'Delete (archive) an order',
+          inputSchema: z.object({
+            order_id: z.string().describe('Order ID to delete')
+          }),
+          execute: async (input, options) => {
+            const { order_id } = input
+
+            const { error } = await supabase
+              .from('orders')
+              .update({ deleted_at: new Date().toISOString() })
+              .eq('id', order_id)
+              .eq('user_id', user.id)
+
+            if (error) {
+              return { error: `Errore eliminazione ordine: ${error.message}` }
+            }
+
+            return {
+              success: true,
+              message: `✅ Ordine eliminato (archiviato) con successo!`
+            }
+          }
         })
     }; // End of toolsConfig
 

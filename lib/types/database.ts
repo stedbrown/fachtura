@@ -193,6 +193,7 @@ export interface Database {
         Row: {
           id: string
           invoice_id: string
+          product_id: string | null
           description: string
           quantity: number
           unit_price: number
@@ -203,6 +204,7 @@ export interface Database {
         Insert: {
           id?: string
           invoice_id: string
+          product_id?: string | null
           description: string
           quantity?: number
           unit_price: number
@@ -213,6 +215,7 @@ export interface Database {
         Update: {
           id?: string
           invoice_id?: string
+          product_id?: string | null
           description?: string
           quantity?: number
           unit_price?: number
@@ -275,6 +278,7 @@ export interface Database {
         Row: {
           id: string
           quote_id: string
+          product_id: string | null
           description: string
           quantity: number
           unit_price: number
@@ -285,6 +289,7 @@ export interface Database {
         Insert: {
           id?: string
           quote_id: string
+          product_id?: string | null
           description: string
           quantity?: number
           unit_price: number
@@ -295,6 +300,7 @@ export interface Database {
         Update: {
           id?: string
           quote_id?: string
+          product_id?: string | null
           description?: string
           quantity?: number
           unit_price?: number
@@ -338,6 +344,147 @@ export interface Database {
           created_at?: string | null
         }
       }
+      products: {
+        Row: {
+          id: string
+          user_id: string
+          name: string
+          description: string | null
+          sku: string | null
+          category: string | null
+          unit_price: number
+          tax_rate: number
+          track_inventory: boolean
+          stock_quantity: number
+          low_stock_threshold: number
+          is_active: boolean
+          created_at: string | null
+          updated_at: string | null
+          deleted_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          name: string
+          description?: string | null
+          sku?: string | null
+          category?: string | null
+          unit_price?: number
+          tax_rate?: number
+          track_inventory?: boolean
+          stock_quantity?: number
+          low_stock_threshold?: number
+          is_active?: boolean
+          created_at?: string | null
+          updated_at?: string | null
+          deleted_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          name?: string
+          description?: string | null
+          sku?: string | null
+          category?: string | null
+          unit_price?: number
+          tax_rate?: number
+          track_inventory?: boolean
+          stock_quantity?: number
+          low_stock_threshold?: number
+          is_active?: boolean
+          created_at?: string | null
+          updated_at?: string | null
+          deleted_at?: string | null
+        }
+      }
+      orders: {
+        Row: {
+          id: string
+          user_id: string
+          client_id: string
+          order_number: string
+          date: string
+          expected_delivery_date: string | null
+          status: string
+          subtotal: number
+          tax_amount: number
+          total: number
+          notes: string | null
+          internal_notes: string | null
+          created_at: string | null
+          updated_at: string | null
+          deleted_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          client_id: string
+          order_number: string
+          date?: string
+          expected_delivery_date?: string | null
+          status?: string
+          subtotal?: number
+          tax_amount?: number
+          total?: number
+          notes?: string | null
+          internal_notes?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+          deleted_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          client_id?: string
+          order_number?: string
+          date?: string
+          expected_delivery_date?: string | null
+          status?: string
+          subtotal?: number
+          tax_amount?: number
+          total?: number
+          notes?: string | null
+          internal_notes?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+          deleted_at?: string | null
+        }
+      }
+      order_items: {
+        Row: {
+          id: string
+          order_id: string
+          product_id: string | null
+          description: string
+          quantity: number
+          unit_price: number
+          tax_rate: number
+          line_total: number
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          order_id: string
+          product_id?: string | null
+          description: string
+          quantity?: number
+          unit_price: number
+          tax_rate?: number
+          line_total: number
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          order_id?: string
+          product_id?: string | null
+          description?: string
+          quantity?: number
+          unit_price?: number
+          tax_rate?: number
+          line_total?: number
+          created_at?: string | null
+        }
+      }
       subscription_plans: {
         Row: {
           id: string
@@ -349,6 +496,8 @@ export interface Database {
           max_invoices: number | null
           max_clients: number | null
           max_quotes: number | null
+          max_products: number | null
+          max_orders: number | null
           features: Json
           is_active: boolean
           created_at: string | null
@@ -364,6 +513,8 @@ export interface Database {
           max_invoices?: number | null
           max_clients?: number | null
           max_quotes?: number | null
+          max_products?: number | null
+          max_orders?: number | null
           features?: Json
           is_active?: boolean
           created_at?: string | null
@@ -379,6 +530,8 @@ export interface Database {
           max_invoices?: number | null
           max_clients?: number | null
           max_quotes?: number | null
+          max_products?: number | null
+          max_orders?: number | null
           features?: Json
           is_active?: boolean
           created_at?: string | null
@@ -435,6 +588,8 @@ export interface Database {
           invoices_count: number
           quotes_count: number
           clients_count: number
+          products_count: number
+          orders_count: number
           created_at: string | null
           updated_at: string | null
         }
@@ -446,6 +601,8 @@ export interface Database {
           invoices_count?: number
           quotes_count?: number
           clients_count?: number
+          products_count?: number
+          orders_count?: number
           created_at?: string | null
           updated_at?: string | null
         }
@@ -457,6 +614,8 @@ export interface Database {
           invoices_count?: number
           quotes_count?: number
           clients_count?: number
+          products_count?: number
+          orders_count?: number
           created_at?: string | null
           updated_at?: string | null
         }
@@ -521,11 +680,28 @@ export type UsageTracking = Database['public']['Tables']['usage_tracking']['Row'
 export type UsageTrackingInsert = Database['public']['Tables']['usage_tracking']['Insert']
 export type UsageTrackingUpdate = Database['public']['Tables']['usage_tracking']['Update']
 
+// Helper types for new tables
+export type Product = Database['public']['Tables']['products']['Row']
+export type ProductInsert = Database['public']['Tables']['products']['Insert']
+export type ProductUpdate = Database['public']['Tables']['products']['Update']
+
+export type Order = Database['public']['Tables']['orders']['Row']
+export type OrderInsert = Database['public']['Tables']['orders']['Insert']
+export type OrderUpdate = Database['public']['Tables']['orders']['Update']
+
+export type OrderItem = Database['public']['Tables']['order_items']['Row']
+export type OrderItemInsert = Database['public']['Tables']['order_items']['Insert']
+export type OrderItemUpdate = Database['public']['Tables']['order_items']['Update']
+
 // Types with relationships
 export type InvoiceWithClient = Invoice & {
   client: Client
 }
 
 export type QuoteWithClient = Quote & {
+  client: Client
+}
+
+export type OrderWithClient = Order & {
   client: Client
 }
