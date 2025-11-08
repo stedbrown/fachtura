@@ -119,11 +119,14 @@ export async function POST(req: NextRequest) {
     // Converti i messaggi UI in formato modello (gestisce parts automaticamente)
     const coreMessages = convertToCoreMessages(messages)
 
+    console.log(`[Chat API] User: ${user.id}, Locale: ${locale}, Messages: ${messages.length}`)
+
     // StreamText di AI SDK con tools (sintassi corretta con 2 parametri)
     const result = await streamText({
-      model: openrouter('anthropic/claude-3.5-haiku'),
+      model: openrouter('google/gemini-2.0-flash-exp'),
       system: systemPrompts[locale as keyof typeof systemPrompts] || systemPrompts.it,
       messages: coreMessages,
+      toolChoice: 'auto', // Forza l'AI a considerare i tool
       tools: {
         // Tool 1: Lista clienti
         list_clients: tool({
@@ -257,7 +260,7 @@ export async function POST(req: NextRequest) {
 
         // Tool 5: Crea fattura
         create_invoice: tool({
-          description: 'Create a new invoice for a client with items. Returns the invoice ID and PDF download link.',
+          description: 'ALWAYS USE THIS TOOL when user asks to create an invoice or fattura. Creates a new invoice for a client with line items and saves it to the database. Returns the invoice ID and confirmation.',
           inputSchema: z.object({
             client_id: z.string().uuid().describe('The UUID of the client'),
             items: z.array(z.object({
@@ -269,6 +272,7 @@ export async function POST(req: NextRequest) {
             notes: z.string().optional().describe('Optional notes for the invoice')
           }),
           execute: async (input, options) => {
+            console.log('[create_invoice] Tool called with input:', JSON.stringify(input))
             const { client_id, items, notes } = input
 
             // Verifica limiti abbonamento
@@ -353,13 +357,15 @@ export async function POST(req: NextRequest) {
               return { error: `Errore aggiunta items: ${itemsError.message}` }
             }
 
-            return {
+            const response = {
               success: true,
               invoice_id: invoice.id,
               invoice_number: invoiceNumber,
               total: total,
               message: `Fattura ${invoiceNumber} creata con successo! Totale: CHF ${total.toFixed(2)}`
             }
+            console.log('[create_invoice] Success:', JSON.stringify(response))
+            return response
           }
         }),
 
