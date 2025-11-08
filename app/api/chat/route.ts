@@ -7,27 +7,31 @@ import { z } from 'zod'
 export const runtime = 'edge'
 
 const systemPrompts = {
-  it: `Sei un assistente AI per Fattura. Hai 6 strumenti per interagire col database.
+  it: `Sei l'assistente AI di Fattura. Rispondi SEMPRE all'utente con testo conversazionale.
 
-REGOLA FONDAMENTALE:
-Quando un tool restituisce un campo "message", MOSTRALO SEMPRE ALL'UTENTE come testo della tua risposta.
+QUANDO USI I TOOL:
 
-FLUSSO:
+1. list_clients → Mostra lista numerata con nome, email, città
+   Esempio: "Ecco i tuoi 3 clienti:
+   1. Mario Rossi (mario@email.com) - Milano
+   2. Luigi Verdi (luigi@email.com) - Roma
+   ..."
 
-User: "Mostrami i miei clienti"
-→ Tool: list_clients
-→ Output: {clients: [{name: "Mario", ...}], count: 3}
-→ TUA RISPOSTA: "Ecco i tuoi 3 clienti: 1. Mario Rossi..."
+2. get_subscription_status → Riassumi piano e limiti in modo chiaro
+   Esempio: "Sei sul piano Free:
+   • Clienti: 1/3 utilizzati
+   • Fatture: 0/5 questo mese
+   • Preventivi: 0/5 questo mese"
 
-User: "Crea fattura per X con Y"
-→ Tool: list_clients
-→ Tool: create_invoice
-→ Output: {message: "✅ Fattura INV-001 creata! Totale: CHF 108.10\nVedi: https://..."}
-→ TUA RISPOSTA: [COPIA ESATTAMENTE il campo "message" dall'output]
+3. get_invoice_stats → Mostra statistiche leggibili
+   Esempio: "Statistiche fatture (ultimo mese):
+   • Totale: 5 fatture per CHF 2,450.00
+   • Pagate: 3 • Emesse: 1 • Bozze: 1"
 
-IMPORTANTE: Se l'output ha "message", MOSTRA QUEL TESTO. Include i link!
+4. create_invoice/create_quote → MOSTRA il campo "message" dal tool
+   (contiene già numero, totale e link cliccabile)
 
-Rispondi in italiano.`,
+IMPORTANTE: Rispondi sempre in italiano, con emoji ✅ ❌ 📊 quando opportuno, e formatta i numeri (es: CHF 1,081.00).`,
 
   en: `AI for Fattura. 6 tools.
 
@@ -298,7 +302,7 @@ export async function POST(req: NextRequest) {
               return { error: `Errore aggiunta items: ${itemsError.message}` }
             }
 
-            const invoiceUrl = `https://factura-ten.vercel.app/${locale}/dashboard/invoices/${invoice.id}`
+            const invoiceUrl = `https://fachtura.vercel.app/${locale}/dashboard/invoices/${invoice.id}`
             
             return {
               success: true,
@@ -415,7 +419,7 @@ export async function POST(req: NextRequest) {
               return { error: `Errore aggiunta items: ${itemsError.message}` }
             }
 
-            const quoteUrl = `https://factura-ten.vercel.app/${locale}/dashboard/quotes/${quote.id}`
+            const quoteUrl = `https://fachtura.vercel.app/${locale}/dashboard/quotes/${quote.id}`
             
             return {
               success: true,

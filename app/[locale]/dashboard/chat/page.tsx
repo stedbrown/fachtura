@@ -183,29 +183,58 @@ export default function ChatPage() {
                           }
                           
                           // Render tool calls
-                          if (part.type && part.type.startsWith('tool-') && part.state === 'output-available' && part.output) {
+                          if (part.type && part.type.startsWith('tool-')) {
                             const toolName = part.type.replace('tool-', '')
                             const output = part.output as any
                             
-                            // If output has a "message" field, show it prominently
-                            if (output.message) {
+                            // Tool in esecuzione
+                            if (part.state === 'input-streaming' || part.state === 'processing') {
                               return (
-                                <div key={index} className="my-2 p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
-                                  <div className="text-sm font-semibold text-green-700 dark:text-green-400 mb-2">
-                                    ✅ {toolName}
+                                <div key={index} className="my-2 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg text-sm">
+                                  <div className="flex items-center gap-2">
+                                    <div className="animate-spin h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full"></div>
+                                    <span className="font-semibold text-blue-700 dark:text-blue-400">
+                                      Esecuzione: {toolName}...
+                                    </span>
                                   </div>
-                                  <div className="text-sm whitespace-pre-wrap">{output.message}</div>
                                 </div>
                               )
                             }
                             
-                            // Otherwise show JSON
-                            return (
-                              <div key={index} className="my-2 p-3 bg-accent/50 rounded-lg text-sm">
-                                <div className="font-semibold mb-1">🔧 {toolName}</div>
-                                <pre className="text-xs overflow-auto">{JSON.stringify(output, null, 2)}</pre>
-                              </div>
-                            )
+                            // Tool completato
+                            if (part.state === 'output-available' && output) {
+                              // Se c'è un errore
+                              if (output.error) {
+                                return (
+                                  <div key={index} className="my-2 p-4 bg-red-500/10 border border-red-500/20 rounded-lg">
+                                    <div className="text-sm font-semibold text-red-700 dark:text-red-400 mb-2">
+                                      ❌ Errore in {toolName}
+                                    </div>
+                                    <div className="text-sm">{output.error}</div>
+                                  </div>
+                                )
+                              }
+                              
+                              // Se c'è un messaggio formattato
+                              if (output.message) {
+                                return (
+                                  <div key={index} className="my-2 p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
+                                    <div className="text-sm font-semibold text-green-700 dark:text-green-400 mb-2">
+                                      ✅ {toolName}
+                                    </div>
+                                    <div className="text-sm whitespace-pre-wrap">{output.message}</div>
+                                  </div>
+                                )
+                              }
+                              
+                              // Altrimenti mostra JSON compatto (solo per debug)
+                              return (
+                                <div key={index} className="my-2 p-3 bg-accent/50 rounded-lg text-sm">
+                                  <div className="font-semibold mb-1 text-muted-foreground">🔧 {toolName}</div>
+                                  <pre className="text-xs overflow-auto max-h-32">{JSON.stringify(output, null, 2)}</pre>
+                                </div>
+                              )
+                            }
                           }
                           
                           return null
