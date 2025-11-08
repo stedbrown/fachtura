@@ -644,17 +644,14 @@ export async function POST(req: NextRequest) {
       console.log('[Chat API] Step 2: Tool calls detected without text, making second call for text generation...')
       
       // Build messages with tool results for second call
-      // SIMPLIFIED APPROACH: Add a user message that includes the tool results
-      // This forces the AI to generate a text response with the data
-      const toolResultsSummary = firstCall.toolResults.map(tr => 
-        `Tool ${tr.toolName} returned: ${JSON.stringify(tr.result)}`
-      ).join('\n')
-
+      // APPROACH: Stringify the entire toolResults to pass as context
+      const toolResultsJson = JSON.stringify(firstCall.toolResults, null, 2)
+      
       const messagesWithToolResults = [
         ...coreMessages,
         {
           role: 'user' as const,
-          content: `I tool hanno restituito questi dati:\n${toolResultsSummary}\n\nOra mostra questi dati all'utente in formato leggibile e conversazionale. DEVI mostrare TUTTI i dati ritornati dai tool!`,
+          content: `I tool hanno eseguito e restituito questi dati:\n\`\`\`json\n${toolResultsJson}\n\`\`\`\n\nOra mostra questi dati all'utente in formato leggibile e conversazionale. DEVI mostrare TUTTI i dati con i dettagli completi (nomi, email, telefoni, indirizzi, ecc.). Non dire solo "Ecco i tuoi X elementi" - elenca TUTTI i dettagli di ogni elemento!`,
         }
       ]
 
