@@ -65,58 +65,76 @@ export default function ChatPage() {
           {/* Messages Area */}
           <ScrollArea className="flex-1 p-4">
             <div className="space-y-4">
-              {messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={cn(
-                    'flex gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300',
-                    message.role === 'user' ? 'justify-end' : 'justify-start'
-                  )}
-                >
+              {messages.map((message) => {
+                // Debug: log message structure
+                console.log('Message:', message)
+                return (
                   <div
+                    key={message.id}
                     className={cn(
-                      'flex gap-3 max-w-[85%]',
-                      message.role === 'user' ? 'flex-row-reverse' : 'flex-row'
+                      'flex gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300',
+                      message.role === 'user' ? 'justify-end' : 'justify-start'
                     )}
                   >
-                    {/* Avatar */}
                     <div
                       className={cn(
-                        'h-8 w-8 rounded-full flex items-center justify-center shrink-0 mt-1',
-                        message.role === 'user'
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-muted'
+                        'flex gap-3 max-w-[85%]',
+                        message.role === 'user' ? 'flex-row-reverse' : 'flex-row'
                       )}
                     >
-                      {message.role === 'user' ? (
-                        <User className="h-4 w-4" />
-                      ) : (
-                        <Bot className="h-4 w-4" />
-                      )}
-                    </div>
+                      {/* Avatar */}
+                      <div
+                        className={cn(
+                          'h-8 w-8 rounded-full flex items-center justify-center shrink-0 mt-1',
+                          message.role === 'user'
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-muted'
+                        )}
+                      >
+                        {message.role === 'user' ? (
+                          <User className="h-4 w-4" />
+                        ) : (
+                          <Bot className="h-4 w-4" />
+                        )}
+                      </div>
 
-                    {/* Message Content */}
-                    <div
-                      className={cn(
-                        'rounded-lg px-4 py-3 break-words',
-                        message.role === 'user'
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-muted'
-                      )}
-                    >
-                      {/* Message Text */}
-                      <div className="whitespace-pre-wrap text-sm leading-relaxed">
-                        {message.parts?.map((part, index) => {
-                          if (part.type === 'text') {
-                            return <span key={index}>{part.text}</span>
-                          }
-                          return null
-                        })}
+                      {/* Message Content */}
+                      <div
+                        className={cn(
+                          'rounded-lg px-4 py-3 break-words',
+                          message.role === 'user'
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-muted'
+                        )}
+                      >
+                        {/* Message Text */}
+                        <div className="whitespace-pre-wrap text-sm leading-relaxed">
+                          {/* Support both content (string) and parts (array) */}
+                          {typeof message.content === 'string' ? (
+                            message.content
+                          ) : (
+                            message.parts?.map((part, index) => {
+                              // Render text parts
+                              if (part.type === 'text') {
+                                return <span key={index}>{part.text}</span>
+                              }
+                              // Show tool errors for debugging
+                              if (part.state === 'output-error' && part.errorText) {
+                                return (
+                                  <div key={index} className="text-xs text-red-500 mt-2 p-2 bg-red-50 dark:bg-red-950/20 rounded">
+                                    <strong>Tool Error ({part.type}):</strong> {part.errorText}
+                                  </div>
+                                )
+                              }
+                              return null
+                            })
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
 
               {/* Loading indicator */}
               {isLoading && (
@@ -192,4 +210,3 @@ export default function ChatPage() {
     </div>
   )
 }
-

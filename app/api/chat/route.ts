@@ -96,7 +96,7 @@ export async function POST(req: NextRequest) {
         list_clients: tool({
           description: 'Get a list of all active clients for the user',
           inputSchema: z.object({
-            limit: z.number().optional().default(10).describe('Maximum number of clients to return')
+            limit: z.coerce.number().optional().default(10).describe('Maximum number of clients to return')
           }),
           execute: async (input, options) => {
             const { limit } = input
