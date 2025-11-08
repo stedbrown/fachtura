@@ -17,7 +17,6 @@ export default function ChatPage() {
   const [inputValue, setInputValue] = useState('')
 
   const { messages, sendMessage, status, error } = useChat({
-    api: '/api/chat',
     body: { locale }
   })
 
