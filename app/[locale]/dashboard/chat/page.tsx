@@ -109,7 +109,7 @@ export default function ChatPage() {
 
       {/* Scrollable Messages Area */}
       <div className="flex-1 overflow-y-auto">
-        <div className="max-w-4xl mx-auto px-4 py-4">
+        <div className="max-w-7xl mx-auto px-4 py-4">
           {messages.length === 0 ? (
             <div className="flex items-center justify-center min-h-[400px]">
               <div className="max-w-2xl w-full text-center space-y-8">
@@ -199,7 +199,7 @@ export default function ChatPage() {
       {/* Error Alert */}
       {error && (
         <div className="shrink-0 px-4 py-2 border-t bg-destructive/10">
-          <Alert variant="destructive" className="max-w-4xl mx-auto">
+          <Alert variant="destructive" className="max-w-7xl mx-auto">
             <AlertDescription className="text-sm">{error.message}</AlertDescription>
           </Alert>
         </div>
@@ -207,7 +207,7 @@ export default function ChatPage() {
 
       {/* Fixed Input at Bottom */}
       <div className="shrink-0 bg-background px-4 py-3">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           <PromptInput
             value={inputValue}
             onChange={setInputValue}
