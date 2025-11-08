@@ -181,10 +181,23 @@ export default function ChatPage() {
                   >
                     <div className="prose prose-sm dark:prose-invert max-w-none">
                       {message.parts && message.parts.length > 0 ? (
-                        message.parts.map((part, index) => {
+                        message.parts.map((part: any, index) => {
+                          // Render text parts
                           if (part.type === 'text' && part.text) {
                             return <p key={index} className="whitespace-pre-wrap m-0">{part.text}</p>
                           }
+                          
+                          // Render tool calls
+                          if (part.type && part.type.startsWith('tool-') && part.state === 'output-available' && part.output) {
+                            const toolName = part.type.replace('tool-', '')
+                            return (
+                              <div key={index} className="my-2 p-3 bg-accent/50 rounded-lg text-sm">
+                                <div className="font-semibold mb-1">🔧 {toolName}</div>
+                                <pre className="text-xs overflow-auto">{JSON.stringify(part.output, null, 2)}</pre>
+                              </div>
+                            )
+                          }
+                          
                           return null
                         })
                       ) : (
