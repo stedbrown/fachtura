@@ -5,21 +5,26 @@ import { useLocale, useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Sparkles, Trash2, Lightbulb, Bot } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Message, MessageContent } from '@/components/ai/message'
 import { Response } from '@/components/ai/response'
 import { Tool } from '@/components/ai/tool'
-import { Conversation, ConversationContent } from '@/components/ai/conversation'
 import { PromptInput } from '@/components/ai/prompt-input'
 
 export default function ChatPage() {
   const locale = useLocale()
   const t = useTranslations('chat')
   const [inputValue, setInputValue] = useState('')
+  const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const { messages, sendMessage, status, error, setMessages, stop } = useChat()
 
   const isLoading = status === 'submitted'
+
+  // Auto-scroll to bottom when new messages arrive
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
 
   // Load chat history from localStorage on mount
   useEffect(() => {
@@ -76,9 +81,9 @@ export default function ChatPage() {
   ]
 
   return (
-    <div className="flex h-full w-full flex-col">
+    <div className="relative h-full w-full flex flex-col bg-background">
       {/* Fixed Header */}
-      <div className="flex-none flex items-center justify-between border-b bg-muted/50 px-4 py-3 sm:px-6">
+      <div className="shrink-0 flex items-center justify-between border-b bg-muted/50 px-4 py-3 sm:px-6">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
             <div className="size-2 rounded-full bg-green-500" />
@@ -102,106 +107,106 @@ export default function ChatPage() {
         )}
       </div>
 
-      {/* Scrollable Conversation Area - GROWS TO FILL SPACE */}
-      <div className="flex-1 min-h-0">
-        <Conversation className="h-full">
-          <ConversationContent>
-            {messages.length === 0 ? (
-              <div className="h-full flex items-center justify-center p-4">
-                <div className="max-w-2xl w-full text-center space-y-8">
-                  {/* Welcome */}
-                  <div className="space-y-4">
-                    <div className="inline-flex p-4 bg-primary/10 rounded-2xl">
-                      <Bot className="h-12 w-12 text-primary" />
-                    </div>
-                    <div className="space-y-2">
-                      <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
-                        {t('welcomeTitle') || 'Assistente AI Fattura'}
-                      </h2>
-                      <p className="text-sm sm:text-base text-muted-foreground max-w-lg mx-auto">
-                        {t('welcomeMessage') || 
-                          'Posso aiutarti a gestire clienti, fatture e preventivi. Chiedi qualsiasi cosa!'}
-                      </p>
-                    </div>
+      {/* Scrollable Messages Area */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-4xl mx-auto px-4 py-4">
+          {messages.length === 0 ? (
+            <div className="flex items-center justify-center min-h-[400px]">
+              <div className="max-w-2xl w-full text-center space-y-8">
+                {/* Welcome */}
+                <div className="space-y-4">
+                  <div className="inline-flex p-4 bg-primary/10 rounded-2xl">
+                    <Bot className="h-12 w-12 text-primary" />
                   </div>
+                  <div className="space-y-2">
+                    <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
+                      {t('welcomeTitle') || 'Assistente AI Fattura'}
+                    </h2>
+                    <p className="text-sm sm:text-base text-muted-foreground max-w-lg mx-auto">
+                      {t('welcomeMessage') || 
+                        'Posso aiutarti a gestire clienti, fatture e preventivi. Chiedi qualsiasi cosa!'}
+                    </p>
+                  </div>
+                </div>
 
-                  {/* Examples */}
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-center gap-2 text-xs sm:text-sm text-muted-foreground">
-                      <Lightbulb className="h-4 w-4" />
-                      <span>{t('examplesTitle') || 'Prova questi esempi'}</span>
-                    </div>
-                    <div className="grid gap-2 sm:gap-3">
-                      {examples.map((example, i) => (
-                        <button
-                          key={i}
-                          onClick={() => handleExample(example)}
-                          className="px-4 py-3 text-xs sm:text-sm text-left bg-muted hover:bg-muted/80 rounded-lg transition-colors border border-transparent hover:border-border"
-                        >
-                          <span className="text-muted-foreground mr-2">→</span>
-                          {example}
-                        </button>
-                      ))}
-                    </div>
+                {/* Examples */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-center gap-2 text-xs sm:text-sm text-muted-foreground">
+                    <Lightbulb className="h-4 w-4" />
+                    <span>{t('examplesTitle') || 'Prova questi esempi'}</span>
+                  </div>
+                  <div className="grid gap-2 sm:gap-3">
+                    {examples.map((example, i) => (
+                      <button
+                        key={i}
+                        onClick={() => handleExample(example)}
+                        className="px-4 py-3 text-xs sm:text-sm text-left bg-muted hover:bg-muted/80 rounded-lg transition-colors border border-transparent hover:border-border"
+                      >
+                        <span className="text-muted-foreground mr-2">→</span>
+                        {example}
+                      </button>
+                    ))}
                   </div>
                 </div>
               </div>
-            ) : (
-              <>
-                {messages.map((message) => (
-                  <Message key={message.id} from={message.role}>
-                    <MessageContent>
-                      {message.parts?.map((part, index) => {
-                        // Render text parts
-                        if (part.type === 'text') {
-                          const textContent = 'text' in part ? part.text : ''
-                          if (textContent) {
-                            return <Response key={index}>{textContent}</Response>
-                          }
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {messages.map((message) => (
+                <Message key={message.id} from={message.role}>
+                  <MessageContent>
+                    {message.parts?.map((part, index) => {
+                      // Render text parts
+                      if (part.type === 'text') {
+                        const textContent = 'text' in part ? part.text : ''
+                        if (textContent) {
+                          return <Response key={index}>{textContent}</Response>
                         }
+                      }
+                      
+                      // Render tool calls
+                      if (part.type?.startsWith('tool-')) {
+                        const toolName = part.type.replace('tool-', '')
+                        const toolOutput = 'result' in part ? part.result : undefined
+                        const toolState = 'state' in part ? part.state : 'output-available'
+                        const toolError = toolOutput && typeof toolOutput === 'object' && 'error' in toolOutput 
+                          ? (toolOutput as any).error 
+                          : undefined
                         
-                        // Render tool calls
-                        if (part.type?.startsWith('tool-')) {
-                          const toolName = part.type.replace('tool-', '')
-                          const toolOutput = 'result' in part ? part.result : undefined
-                          const toolState = 'state' in part ? part.state : 'output-available'
-                          const toolError = toolOutput && typeof toolOutput === 'object' && 'error' in toolOutput 
-                            ? (toolOutput as any).error 
-                            : undefined
-                          
-                          return (
-                            <Tool
-                              key={index}
-                              name={toolName}
-                              status={toolState as any}
-                              result={toolOutput}
-                              error={toolError}
-                            />
-                          )
-                        }
-                        
-                        return null
-                      })}
-                    </MessageContent>
-                  </Message>
-                ))}
-              </>
-            )}
-          </ConversationContent>
-        </Conversation>
+                        return (
+                          <Tool
+                            key={index}
+                            name={toolName}
+                            status={toolState as any}
+                            result={toolOutput}
+                            error={toolError}
+                          />
+                        )
+                      }
+                      
+                      return null
+                    })}
+                  </MessageContent>
+                </Message>
+              ))}
+              {/* Auto-scroll anchor */}
+              <div ref={messagesEndRef} />
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Error Alert - Fixed above input */}
+      {/* Error Alert */}
       {error && (
-        <div className="flex-none px-4 py-2 border-t bg-destructive/10">
+        <div className="shrink-0 px-4 py-2 border-t bg-destructive/10">
           <Alert variant="destructive" className="max-w-4xl mx-auto">
             <AlertDescription className="text-sm">{error.message}</AlertDescription>
           </Alert>
         </div>
       )}
 
-      {/* Fixed Input at Bottom - ALWAYS VISIBLE */}
-      <div className="flex-none border-t bg-background">
+      {/* Fixed Input at Bottom */}
+      <div className="shrink-0 border-t bg-background">
         <div className="max-w-4xl mx-auto p-4">
           <PromptInput
             value={inputValue}
@@ -214,8 +219,8 @@ export default function ChatPage() {
         </div>
       </div>
 
-      {/* Fixed Footer - ALWAYS VISIBLE */}
-      <div className="flex-none border-t bg-muted/30 px-4 py-2">
+      {/* Fixed Footer */}
+      <div className="shrink-0 border-t bg-muted/30 px-4 py-2">
         <p className="text-xs text-center text-muted-foreground">
           {t('footerText') || 
             'L\'AI può commettere errori. Verifica sempre le informazioni importanti.'}
