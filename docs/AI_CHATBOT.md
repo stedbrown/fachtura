@@ -24,7 +24,7 @@ Il **Chatbot AI** è un assistente intelligente integrato nella piattaforma Fatt
 
 **Caratteristiche chiave**:
 - ✅ **100% Serverless** - Deploy su Vercel Edge Functions
-- ✅ **Completamente Gratuito** - Usa Gemini 2.0 Flash (free tier)
+- ✅ **Completamente Gratuito** - Usa Mistral 7B Instruct (7.3B parametri)
 - ✅ **Multi-lingua** - Supporta IT, EN, DE, FR, RM
 - ✅ **Sicuro** - RLS Supabase + controllo limiti automatico
 - ✅ **Type-safe** - TypeScript end-to-end
@@ -33,20 +33,22 @@ Il **Chatbot AI** è un assistente intelligente integrato nella piattaforma Fatt
 
 ## 🤖 Modello AI
 
-### Google Gemini 2.0 Flash Experimental (Free)
+### Mistral 7B Instruct (Free)
 
-**ID Modello**: `google/gemini-2.0-flash-exp:free`
+**ID Modello**: `mistralai/mistral-7b-instruct:free`
 
-**Perché Gemini 2.0 Flash?**
-- ✅ **100% Gratuito** su OpenRouter
-- ✅ **Multilingua nativo** - Perfetto per IT, EN, DE, FR, RM
-- ✅ **Eccellente function calling** - Ideale per operazioni database
-- ✅ **Velocissimo** - < 1s di risposta media
-- ✅ **Affidabile** - Mantiene il contesto per 5+ step di conversazione
+**Perché Mistral 7B?**
+- ✅ **100% Gratuito** su OpenRouter senza limiti stretti
+- ✅ **7.3B parametri** - Leggero e velocissimo (< 1s risposta)
+- ✅ **Multilingua** - Ottimo per IT, EN, DE, FR, RM
+- ✅ **Function calling affidabile** - Ideale per operazioni database
+- ✅ **Context window 8K** - Mantiene conversazioni medie
+- ✅ **Basso consumo crediti** - Perfetto per free tier
 
-**Alternative gratuite**:
-- `meta-llama/llama-3.1-8b-instruct:free` - Buono per inglese
-- `deepseek/deepseek-chat:free` - Ottimo per coding tasks
+**Alternative gratuite (richiedono più crediti)**:
+- `deepseek/deepseek-r1` - 671B parametri (37B attivi), reasoning avanzato
+- `meta-llama/llama-3.3-70b-instruct` - 70B parametri, ottimo general-purpose
+- `qwen/qwen-2.5-72b-instruct` - 72B parametri, eccellente multilingua
 
 ---
 

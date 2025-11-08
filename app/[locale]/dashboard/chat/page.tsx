@@ -18,14 +18,7 @@ export default function ChatPage() {
 
   const { messages, sendMessage, status, error } = useChat({
     api: '/api/chat',
-    body: { locale },
-    initialMessages: [
-      {
-        id: 'welcome',
-        role: 'assistant',
-        content: t('welcomeMessage')
-      }
-    ]
+    body: { locale }
   })
 
   const isLoading = status === 'streaming' || status === 'awaiting-response'
@@ -38,14 +31,15 @@ export default function ChatPage() {
     setInputValue('')
     
     try {
-      await sendMessage({ content: message })
+      // In AI SDK v5, usa 'text' invece di 'content'
+      await sendMessage({ text: message })
     } catch (error) {
       console.error('Error sending message:', error)
     }
   }
 
   return (
-    <div className="container mx-auto p-6 max-w-5xl">
+    <div className="h-full flex flex-col p-6">
       <div className="mb-6">
         <div className="flex items-center gap-3 mb-2">
           <div className="p-2 bg-primary/10 rounded-lg">
@@ -58,7 +52,7 @@ export default function ChatPage() {
         </div>
       </div>
 
-      <Card className="h-[calc(100vh-250px)] flex flex-col">
+      <Card className="flex-1 flex flex-col min-h-0">
         <CardHeader className="border-b">
           <CardTitle className="flex items-center gap-2 text-lg">
             <Bot className="h-5 w-5" />
@@ -142,7 +136,12 @@ export default function ChatPage() {
 
                       {/* Message Text */}
                       <div className="whitespace-pre-wrap text-sm leading-relaxed">
-                        {message.content}
+                        {message.parts?.map((part, index) => {
+                          if (part.type === 'text') {
+                            return <span key={index}>{part.text}</span>
+                          }
+                          return null
+                        })}
                       </div>
                     </div>
                   </div>
@@ -220,51 +219,6 @@ export default function ChatPage() {
           </div>
         </CardContent>
       </Card>
-
-      {/* Info Cards */}
-      <div className="mt-6 grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-blue-500/10 rounded-lg">
-                <Bot className="h-4 w-4 text-blue-500" />
-              </div>
-              <div>
-                <p className="text-sm font-medium">{t('capability1Title')}</p>
-                <p className="text-xs text-muted-foreground">{t('capability1Description')}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-green-500/10 rounded-lg">
-                <CheckCircle className="h-4 w-4 text-green-500" />
-              </div>
-              <div>
-                <p className="text-sm font-medium">{t('capability2Title')}</p>
-                <p className="text-xs text-muted-foreground">{t('capability2Description')}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-purple-500/10 rounded-lg">
-                <Sparkles className="h-4 w-4 text-purple-500" />
-              </div>
-              <div>
-                <p className="text-sm font-medium">{t('capability3Title')}</p>
-                <p className="text-xs text-muted-foreground">{t('capability3Description')}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
     </div>
   )
 }
