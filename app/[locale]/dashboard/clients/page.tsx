@@ -225,7 +225,10 @@ export default function ClientsPage() {
       } else {
         // Verifica limiti prima di creare
         const limitsResult = await checkLimits('client')
+        console.log('[ClientsPage] Limits check result:', limitsResult) // 🔍 DEBUG
+        
         if (!limitsResult.allowed) {
+          console.log('[ClientsPage] Limit reached, showing upgrade dialog') // 🔍 DEBUG
           // Aggiorna i parametri per il dialog
           setUpgradeDialogParams({
             currentCount: limitsResult.current_count,
