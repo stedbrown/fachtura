@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Send, Bot, User, Sparkles, AlertCircle, CheckCircle } from 'lucide-react'
+import { Send, Bot, User, Sparkles, AlertCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useState, FormEvent } from 'react'
@@ -104,36 +104,6 @@ export default function ChatPage() {
                           : 'bg-muted'
                       )}
                     >
-                      {/* Tool Invocations */}
-                      {message.toolInvocations && message.toolInvocations.length > 0 && (
-                        <div className="space-y-2 mb-2">
-                          {message.toolInvocations.map((tool, index) => (
-                            <div
-                              key={index}
-                              className={cn(
-                                'text-xs rounded p-2 border',
-                                message.role === 'user'
-                                  ? 'bg-primary-foreground/10 border-primary-foreground/20'
-                                  : 'bg-background/50 border-border/50'
-                              )}
-                            >
-                              {tool.state === 'call' && (
-                                <div className="flex items-center gap-2 text-muted-foreground">
-                                  <div className="h-3 w-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                                  <span>{t('executing')}: {tool.toolName}</span>
-                                </div>
-                              )}
-                              {tool.state === 'result' && (
-                                <div className="flex items-center gap-2">
-                                  <CheckCircle className="h-3 w-3 text-green-600" />
-                                  <span className="text-muted-foreground">{t('executed')}: {tool.toolName}</span>
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
                       {/* Message Text */}
                       <div className="whitespace-pre-wrap text-sm leading-relaxed">
                         {message.parts?.map((part, index) => {
