@@ -206,7 +206,7 @@ export default function ChatPage() {
       )}
 
       {/* Fixed Input at Bottom */}
-      <div className="shrink-0 bg-background px-4 py-3 border-t">
+      <div className="shrink-0 bg-background px-4 py-3">
         <div className="max-w-4xl mx-auto">
           <PromptInput
             value={inputValue}
@@ -217,14 +217,6 @@ export default function ChatPage() {
             placeholder={t('inputPlaceholder') || 'Messaggio AI...'}
           />
         </div>
-      </div>
-
-      {/* Fixed Footer */}
-      <div className="shrink-0 border-t bg-muted/30 px-4 py-2">
-        <p className="text-xs text-center text-muted-foreground">
-          {t('footerText') || 
-            'L\'AI può commettere errori. Verifica sempre le informazioni importanti.'}
-        </p>
       </div>
     </div>
   )
