@@ -13,6 +13,8 @@ export interface SubscriptionPlan {
   max_invoices: number | null;
   max_clients: number | null;
   max_quotes: number | null;
+  max_products: number | null;
+  max_orders: number | null;
   features: string[];
   is_active: boolean;
 }
