@@ -83,7 +83,7 @@ export default function ProductsPage() {
 
   async function handleAddNew() {
     // Check subscription limits
-    const limitsCheck = await checkLimits('products')
+    const limitsCheck = await checkLimits('product')
     if (!limitsCheck.allowed) {
       setUpgradeDialogParams({
         currentCount: limitsCheck.currentCount || 0,

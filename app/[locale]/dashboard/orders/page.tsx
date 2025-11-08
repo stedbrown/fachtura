@@ -111,7 +111,7 @@ export default function OrdersPage() {
   }
 
   async function handleAddNew() {
-    const limitsCheck = await checkLimits('orders')
+    const limitsCheck = await checkLimits('order')
     if (!limitsCheck.allowed) {
       setUpgradeDialogParams({
         currentCount: limitsCheck.currentCount || 0,

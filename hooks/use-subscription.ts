@@ -111,7 +111,7 @@ export function useSubscription() {
     fetchSubscription();
   }, []);
 
-  const checkLimits = async (resourceType: 'invoice' | 'quote' | 'client'): Promise<UsageLimits> => {
+  const checkLimits = async (resourceType: 'invoice' | 'quote' | 'client' | 'product' | 'order'): Promise<UsageLimits> => {
     try {
       const response = await fetch('/api/subscription/check-limits', {
         method: 'POST',

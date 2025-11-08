@@ -17,9 +17,9 @@ export async function POST(req: NextRequest) {
 
     const { resourceType } = await req.json();
 
-    if (!resourceType || !['invoice', 'quote', 'client'].includes(resourceType)) {
+    if (!resourceType || !['invoice', 'quote', 'client', 'product', 'order'].includes(resourceType)) {
       return NextResponse.json(
-        { error: 'resourceType non valido (invoice, quote, client)' },
+        { error: 'resourceType non valido (invoice, quote, client, product, order)' },
         { status: 400 }
       );
     }
