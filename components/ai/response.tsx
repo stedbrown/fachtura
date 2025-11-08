@@ -10,7 +10,7 @@ export function Response({ children, className, ...props }: ResponseProps) {
   return (
     <div
       className={cn(
-        'prose prose-sm dark:prose-invert max-w-none',
+        'prose prose-base dark:prose-invert max-w-none',
         'prose-p:leading-relaxed prose-pre:p-0',
         'prose-headings:font-semibold',
         'prose-code:bg-muted prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:before:content-none prose-code:after:content-none',

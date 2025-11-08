@@ -39,11 +39,32 @@ interface MessageContentProps extends React.HTMLAttributes<HTMLDivElement> {}
 export function MessageContent({ className, children, ...props }: MessageContentProps) {
   return (
     <div
-      className={cn('space-y-2 text-sm', className)}
+      className={cn('space-y-2 text-base', className)}
       {...props}
     >
       {children}
     </div>
+  )
+}
+
+interface ThinkingMessageProps {
+  text?: string
+}
+
+export function ThinkingMessage({ text = 'Sto pensando...' }: ThinkingMessageProps) {
+  return (
+    <Message from="assistant">
+      <MessageContent>
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <span className="text-base">{text}</span>
+          <div className="flex gap-1">
+            <span className="animate-bounce" style={{ animationDelay: '0ms' }}>.</span>
+            <span className="animate-bounce" style={{ animationDelay: '150ms' }}>.</span>
+            <span className="animate-bounce" style={{ animationDelay: '300ms' }}>.</span>
+          </div>
+        </div>
+      </MessageContent>
+    </Message>
   )
 }
 

@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Sparkles, Trash2, Lightbulb, Bot } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useState, useEffect, useRef } from 'react'
-import { Message, MessageContent } from '@/components/ai/message'
+import { Message, MessageContent, ThinkingMessage } from '@/components/ai/message'
 import { Response } from '@/components/ai/response'
 import { Tool } from '@/components/ai/tool'
 import { PromptInput } from '@/components/ai/prompt-input'
@@ -189,6 +189,10 @@ export default function ChatPage() {
                   </MessageContent>
                 </Message>
               ))}
+              
+              {/* Thinking indicator while AI is responding */}
+              {isLoading && <ThinkingMessage text={t('thinking') || 'Sto pensando...'} />}
+              
               {/* Auto-scroll anchor */}
               <div ref={messagesEndRef} />
             </div>
