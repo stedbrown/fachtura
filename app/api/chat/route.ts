@@ -14,8 +14,13 @@ Hai accesso ai seguenti strumenti:
 - search_client: Cerca un cliente per nome
 - get_subscription_status: Verifica piano e limiti
 - get_invoice_stats: Statistiche fatture
+- create_invoice: Crea una nuova fattura per un cliente con righe
+- create_quote: Crea un nuovo preventivo per un cliente con righe
 
-IMPORTANTE: Quando l'utente chiede informazioni, USA SEMPRE gli strumenti disponibili per ottenere dati reali dal database. NON inventare o ipotizzare dati.
+IMPORTANTE: 
+- Quando l'utente chiede informazioni, USA SEMPRE gli strumenti disponibili per ottenere dati reali dal database. NON inventare o ipotizzare dati.
+- Per creare fatture/preventivi, chiedi conferma all'utente prima di procedere e assicurati di avere tutti i dati necessari (cliente, items, prezzi).
+- Quando crei documenti, conferma sempre il totale e il numero documento.
 
 Rispondi sempre in italiano, in modo conciso, professionale e amichevole.
 Quando mostri dati, formattali in modo chiaro e leggibile.`,
@@ -27,8 +32,13 @@ You have access to the following tools:
 - search_client: Search for a client by name
 - get_subscription_status: Check plan and limits
 - get_invoice_stats: Invoice statistics
+- create_invoice: Create a new invoice for a client with line items
+- create_quote: Create a new quote for a client with line items
 
-IMPORTANT: When users request information, ALWAYS USE the available tools to get real data from the database. DO NOT make up or assume data.
+IMPORTANT: 
+- When users request information, ALWAYS USE the available tools to get real data from the database. DO NOT make up or assume data.
+- For creating invoices/quotes, ask for user confirmation before proceeding and ensure you have all required data (client, items, prices).
+- When creating documents, always confirm the total and document number.
 
 Always respond in English, concisely, professionally, and friendly.
 When showing data, format it clearly and readably.`,
@@ -40,8 +50,13 @@ Du hast Zugriff auf folgende Tools:
 - search_client: Kunden nach Namen suchen
 - get_subscription_status: Plan und Limits prüfen
 - get_invoice_stats: Rechnungsstatistiken
+- create_invoice: Neue Rechnung für Kunden erstellen
+- create_quote: Neues Angebot für Kunden erstellen
 
-WICHTIG: Wenn Benutzer nach Informationen fragen, VERWENDE IMMER die verfügbaren Tools, um echte Daten aus der Datenbank zu erhalten. ERFINDE KEINE Daten.
+WICHTIG: 
+- Wenn Benutzer nach Informationen fragen, VERWENDE IMMER die verfügbaren Tools, um echte Daten aus der Datenbank zu erhalten. ERFINDE KEINE Daten.
+- Beim Erstellen von Rechnungen/Angeboten, frage nach Bestätigung und stelle sicher, dass alle Daten vorhanden sind.
+- Bestätige immer den Gesamtbetrag und die Dokumentnummer.
 
 Antworte immer auf Deutsch, prägnant, professionell und freundlich.
 Formatiere Daten klar und lesbar.`,
@@ -53,8 +68,13 @@ Tu as accès aux outils suivants:
 - search_client: Rechercher un client par nom
 - get_subscription_status: Vérifier plan et limites
 - get_invoice_stats: Statistiques de factures
+- create_invoice: Créer une nouvelle facture pour un client
+- create_quote: Créer un nouveau devis pour un client
 
-IMPORTANT: Quand les utilisateurs demandent des informations, UTILISE TOUJOURS les outils disponibles pour obtenir des données réelles de la base de données. N'INVENTE PAS de données.
+IMPORTANT: 
+- Quand les utilisateurs demandent des informations, UTILISE TOUJOURS les outils disponibles pour obtenir des données réelles de la base de données. N'INVENTE PAS de données.
+- Pour créer des factures/devis, demande confirmation et assure-toi d'avoir toutes les données nécessaires.
+- Confirme toujours le total et le numéro de document.
 
 Réponds toujours en français, de manière concise, professionnelle et amicale.
 Formate les données de manière claire et lisible.`,
@@ -66,8 +86,13 @@ Ti has access als suandants instruments:
 - search_client: Tschertgar client tenor num
 - get_subscription_status: Verifitgar plan e limits
 - get_invoice_stats: Statisticas da facturas
+- create_invoice: Crear nova factura per client
+- create_quote: Crear nov preventiv per client
 
-IMPURTANT: Sche utilisaders dumandan infurmaziuns, DUVRA ADINA ils instruments disponibels per survegnir datas realas da la banca da datas. NA INVENTESCHA NAGINAS datas.
+IMPURTANT: 
+- Sche utilisaders dumandan infurmaziuns, DUVRA ADINA ils instruments disponibels per survegnir datas realas da la banca da datas. NA INVENTESCHA NAGINAS datas.
+- Per crear facturas/preventivs, dumonda conferma e assegura che tut las datas necessarias èn disponiblas.
+- Conferma adina il total ed il number dal document.
 
 Respunda adina en rumantsch, da moda concisa, profesiunala ed amiaivla.
 Formatescha datas cler e legibel.`
@@ -228,8 +253,232 @@ export async function POST(req: NextRequest) {
 
             return stats
           }
+        }),
+
+        // Tool 5: Crea fattura
+        create_invoice: tool({
+          description: 'Create a new invoice for a client with items. Returns the invoice ID and PDF download link.',
+          inputSchema: z.object({
+            client_id: z.string().uuid().describe('The UUID of the client'),
+            items: z.array(z.object({
+              description: z.string().describe('Item description'),
+              quantity: z.coerce.number().describe('Quantity'),
+              unit_price: z.coerce.number().describe('Unit price in CHF'),
+              tax_rate: z.coerce.number().optional().default(8.1).describe('Tax rate percentage (default 8.1)')
+            })).describe('List of invoice items'),
+            notes: z.string().optional().describe('Optional notes for the invoice')
+          }),
+          execute: async (input, options) => {
+            const { client_id, items, notes } = input
+
+            // Verifica limiti abbonamento
+            const { data: subscription } = await supabase
+              .from('user_subscriptions')
+              .select('*, plan:subscription_plans(*)')
+              .eq('user_id', user.id)
+              .single()
+
+            if (!subscription) {
+              return { error: 'No active subscription found' }
+            }
+
+            // Conta fatture questo mese
+            const now = new Date()
+            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
+            const { count: invoiceCount } = await supabase
+              .from('invoices')
+              .select('*', { count: 'exact', head: true })
+              .eq('user_id', user.id)
+              .gte('created_at', startOfMonth)
+
+            if (invoiceCount && invoiceCount >= (subscription.plan?.max_invoices || 0)) {
+              return { error: `Limite fatture raggiunto (${subscription.plan?.max_invoices}/mese)` }
+            }
+
+            // Genera numero fattura
+            const { count: totalInvoices } = await supabase
+              .from('invoices')
+              .select('*', { count: 'exact', head: true })
+              .eq('user_id', user.id)
+
+            const invoiceNumber = `INV-${String((totalInvoices || 0) + 1).padStart(4, '0')}`
+
+            // Calcola totali
+            const subtotal = items.reduce((sum, item) => 
+              sum + (item.quantity * item.unit_price), 0
+            )
+            const tax_amount = items.reduce((sum, item) => 
+              sum + (item.quantity * item.unit_price * (item.tax_rate || 8.1) / 100), 0
+            )
+            const total = subtotal + tax_amount
+
+            // Crea fattura
+            const { data: invoice, error: invoiceError } = await supabase
+              .from('invoices')
+              .insert({
+                user_id: user.id,
+                client_id,
+                invoice_number: invoiceNumber,
+                date: new Date().toISOString().split('T')[0],
+                status: 'draft',
+                subtotal,
+                tax_amount,
+                total,
+                notes: notes || null
+              })
+              .select()
+              .single()
+
+            if (invoiceError || !invoice) {
+              return { error: `Errore creazione fattura: ${invoiceError?.message}` }
+            }
+
+            // Aggiungi items
+            const invoiceItems = items.map(item => ({
+              invoice_id: invoice.id,
+              description: item.description,
+              quantity: item.quantity,
+              unit_price: item.unit_price,
+              tax_rate: item.tax_rate || 8.1,
+              total: item.quantity * item.unit_price * (1 + (item.tax_rate || 8.1) / 100)
+            }))
+
+            const { error: itemsError } = await supabase
+              .from('invoice_items')
+              .insert(invoiceItems)
+
+            if (itemsError) {
+              // Rollback: cancella fattura
+              await supabase.from('invoices').delete().eq('id', invoice.id)
+              return { error: `Errore aggiunta items: ${itemsError.message}` }
+            }
+
+            return {
+              success: true,
+              invoice_id: invoice.id,
+              invoice_number: invoiceNumber,
+              total: total,
+              message: `Fattura ${invoiceNumber} creata con successo! Totale: CHF ${total.toFixed(2)}`
+            }
+          }
+        }),
+
+        // Tool 6: Crea preventivo
+        create_quote: tool({
+          description: 'Create a new quote for a client with items. Returns the quote ID and PDF download link.',
+          inputSchema: z.object({
+            client_id: z.string().uuid().describe('The UUID of the client'),
+            items: z.array(z.object({
+              description: z.string().describe('Item description'),
+              quantity: z.coerce.number().describe('Quantity'),
+              unit_price: z.coerce.number().describe('Unit price in CHF'),
+              tax_rate: z.coerce.number().optional().default(8.1).describe('Tax rate percentage (default 8.1)')
+            })).describe('List of quote items'),
+            notes: z.string().optional().describe('Optional notes for the quote'),
+            valid_days: z.coerce.number().optional().default(30).describe('Days until quote expires (default 30)')
+          }),
+          execute: async (input, options) => {
+            const { client_id, items, notes, valid_days } = input
+
+            // Verifica limiti abbonamento
+            const { data: subscription } = await supabase
+              .from('user_subscriptions')
+              .select('*, plan:subscription_plans(*)')
+              .eq('user_id', user.id)
+              .single()
+
+            if (!subscription) {
+              return { error: 'No active subscription found' }
+            }
+
+            // Conta preventivi questo mese
+            const now = new Date()
+            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
+            const { count: quoteCount } = await supabase
+              .from('quotes')
+              .select('*', { count: 'exact', head: true })
+              .eq('user_id', user.id)
+              .gte('created_at', startOfMonth)
+
+            if (quoteCount && quoteCount >= (subscription.plan?.max_quotes || 0)) {
+              return { error: `Limite preventivi raggiunto (${subscription.plan?.max_quotes}/mese)` }
+            }
+
+            // Genera numero preventivo
+            const { count: totalQuotes } = await supabase
+              .from('quotes')
+              .select('*', { count: 'exact', head: true })
+              .eq('user_id', user.id)
+
+            const quoteNumber = `QUO-${String((totalQuotes || 0) + 1).padStart(4, '0')}`
+
+            // Calcola totali
+            const subtotal = items.reduce((sum, item) => 
+              sum + (item.quantity * item.unit_price), 0
+            )
+            const tax_amount = items.reduce((sum, item) => 
+              sum + (item.quantity * item.unit_price * (item.tax_rate || 8.1) / 100), 0
+            )
+            const total = subtotal + tax_amount
+
+            // Calcola data scadenza
+            const validUntil = new Date()
+            validUntil.setDate(validUntil.getDate() + (valid_days || 30))
+
+            // Crea preventivo
+            const { data: quote, error: quoteError } = await supabase
+              .from('quotes')
+              .insert({
+                user_id: user.id,
+                client_id,
+                quote_number: quoteNumber,
+                date: new Date().toISOString().split('T')[0],
+                valid_until: validUntil.toISOString().split('T')[0],
+                status: 'draft',
+                subtotal,
+                tax_amount,
+                total,
+                notes: notes || null
+              })
+              .select()
+              .single()
+
+            if (quoteError || !quote) {
+              return { error: `Errore creazione preventivo: ${quoteError?.message}` }
+            }
+
+            // Aggiungi items
+            const quoteItems = items.map(item => ({
+              quote_id: quote.id,
+              description: item.description,
+              quantity: item.quantity,
+              unit_price: item.unit_price,
+              tax_rate: item.tax_rate || 8.1,
+              total: item.quantity * item.unit_price * (1 + (item.tax_rate || 8.1) / 100)
+            }))
+
+            const { error: itemsError } = await supabase
+              .from('quote_items')
+              .insert(quoteItems)
+
+            if (itemsError) {
+              // Rollback: cancella preventivo
+              await supabase.from('quotes').delete().eq('id', quote.id)
+              return { error: `Errore aggiunta items: ${itemsError.message}` }
+            }
+
+            return {
+              success: true,
+              quote_id: quote.id,
+              quote_number: quoteNumber,
+              total: total,
+              valid_until: validUntil.toISOString().split('T')[0],
+              message: `Preventivo ${quoteNumber} creato con successo! Totale: CHF ${total.toFixed(2)}`
+            }
+          }
         })
-      }
+      },
+      maxSteps: 10
     })
 
     // Metodo per useChat hook con headers espliciti
