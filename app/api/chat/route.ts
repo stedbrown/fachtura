@@ -644,28 +644,18 @@ export async function POST(req: NextRequest) {
       console.log('[Chat API] Step 2: Tool calls detected without text, making second call for text generation...')
       
       // Build messages with tool results for second call
+      // SIMPLIFIED APPROACH: Add a user message that includes the tool results
+      // This forces the AI to generate a text response with the data
+      const toolResultsSummary = firstCall.toolResults.map(tr => 
+        `Tool ${tr.toolName} returned: ${JSON.stringify(tr.result)}`
+      ).join('\n')
+
       const messagesWithToolResults = [
         ...coreMessages,
         {
-          role: 'assistant' as const,
-          content: firstCall.toolCalls.map(tc => ({
-            type: 'tool-call' as const,
-            toolCallId: tc.toolCallId,
-            toolName: tc.toolName,
-            args: tc.args,
-          })),
-        },
-        ...firstCall.toolResults.map(tr => ({
-          role: 'tool' as const,
-          content: [
-            {
-              type: 'tool-result' as const,
-              toolCallId: tr.toolCallId,
-              toolName: tr.toolName,
-              result: tr.result,
-            }
-          ],
-        })),
+          role: 'user' as const,
+          content: `I tool hanno restituito questi dati:\n${toolResultsSummary}\n\nOra mostra questi dati all'utente in formato leggibile e conversazionale. DEVI mostrare TUTTI i dati ritornati dai tool!`,
+        }
       ]
 
       // STEP 3: Second call - FORCE text generation only (no more tools)
