@@ -119,7 +119,7 @@ export async function POST(req: NextRequest) {
             
             const { data: clients, error } = await supabase
               .from('clients')
-              .select('id, name, email, phone, address, city, zip_code, country, created_at')
+              .select('id, name, email, phone, address, city, postal_code, country, created_at')
               .eq('user_id', user.id)
               .is('deleted_at', null)
               .order('created_at', { ascending: false })
@@ -147,7 +147,7 @@ export async function POST(req: NextRequest) {
             
             const { data: client, error } = await supabase
               .from('clients')
-              .select('id, name, email, phone, address, city, zip_code, country')
+              .select('id, name, email, phone, address, city, postal_code, country')
               .eq('user_id', user.id)
               .is('deleted_at', null)
               .ilike('name', `%${name}%`)
