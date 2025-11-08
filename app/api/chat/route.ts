@@ -1,5 +1,5 @@
 import { streamText, generateText, convertToCoreMessages, tool } from 'ai'
-import { createOpenRouter } from '@openrouter/ai-sdk-provider'
+import { openai } from '@ai-sdk/openai'
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest } from 'next/server'
 import { z } from 'zod'
@@ -132,10 +132,6 @@ export async function POST(req: NextRequest) {
     if (authError || !user) {
       return new Response('Unauthorized', { status: 401 })
     }
-
-    const openrouter = createOpenRouter({
-      apiKey: process.env.OPENROUTER_API_KEY!,
-    })
 
     // Converti i messaggi UI in formato modello (gestisce parts automaticamente)
     const coreMessages = convertToCoreMessages(messages)
@@ -620,9 +616,10 @@ export async function POST(req: NextRequest) {
     }; // End of toolsConfig
 
     // STEP 1: First call - Execute tools (non-streaming to check results)
-    console.log('[Chat API] Step 1: Calling AI with tools...')
+    // Using GPT-4o for better tool calling and automatic multi-turn handling
+    console.log('[Chat API] Step 1: Calling OpenAI GPT-4o with tools...')
     const firstCall = await generateText({
-      model: openrouter('anthropic/claude-3.5-haiku'),
+      model: openai('gpt-4o'),
       system: systemPrompts[locale as keyof typeof systemPrompts] || systemPrompts.it,
       messages: coreMessages,
       temperature: 0.7,
@@ -657,9 +654,9 @@ export async function POST(req: NextRequest) {
       ]
 
       // STEP 3: Second call - FORCE text generation only (no more tools)
-      console.log('[Chat API] Step 3: Generating final text response...')
+      console.log('[Chat API] Step 3: OpenAI GPT-4o generating final text response...')
       const secondCall = await streamText({
-        model: openrouter('anthropic/claude-3.5-haiku'),
+        model: openai('gpt-4o'),
         system: systemPrompts[locale as keyof typeof systemPrompts] || systemPrompts.it,
         messages: messagesWithToolResults,
         temperature: 0.7,
@@ -681,7 +678,7 @@ export async function POST(req: NextRequest) {
     console.log('[Chat API] No tool calls detected or already complete response, streaming normally...')
     console.log('[Chat API] finishReason:', firstCall.finishReason, '- This path should rarely be taken!')
     const result = await streamText({
-      model: openrouter('anthropic/claude-3.5-haiku'),
+      model: openai('gpt-4o'),
       system: systemPrompts[locale as keyof typeof systemPrompts] || systemPrompts.it,
       messages: coreMessages,
       temperature: 0.7,
