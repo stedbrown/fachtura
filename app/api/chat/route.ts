@@ -639,9 +639,10 @@ export async function POST(req: NextRequest) {
     })
 
     // STEP 2: Check if we need a second call
-    // If the AI only made tool calls without generating text, do a second call
-    if (firstCall.toolCalls && firstCall.toolCalls.length > 0 && !firstCall.text) {
-      console.log('[Chat API] Step 2: Tool calls detected without text, making second call for text generation...')
+    // If finishReason is 'tool-calls', the AI stopped to wait for tool results
+    // We MUST make a second call to generate the final text response with tool results
+    if (firstCall.finishReason === 'tool-calls') {
+      console.log('[Chat API] Step 2: Tool calls detected (finishReason: tool-calls), making second call for final text generation...')
       
       // Build messages with tool results for second call
       // APPROACH: Stringify the entire toolResults to pass as context
@@ -675,8 +676,10 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    // If the first call already generated text, just stream it
-    console.log('[Chat API] First call already has text, streaming it...')
+    // If finishReason is NOT 'tool-calls', the AI has already generated a complete response
+    // Just stream it normally (this shouldn't happen often with our tool-heavy setup)
+    console.log('[Chat API] No tool calls detected or already complete response, streaming normally...')
+    console.log('[Chat API] finishReason:', firstCall.finishReason, '- This path should rarely be taken!')
     const result = await streamText({
       model: openrouter('anthropic/claude-3.5-haiku'),
       system: systemPrompts[locale as keyof typeof systemPrompts] || systemPrompts.it,
