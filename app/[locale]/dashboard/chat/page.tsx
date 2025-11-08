@@ -103,7 +103,7 @@ export default function ChatPage() {
       </div>
 
       {/* Scrollable Conversation Area - GROWS TO FILL SPACE */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 min-h-0">
         <Conversation className="h-full">
           <ConversationContent>
             {messages.length === 0 ? (
