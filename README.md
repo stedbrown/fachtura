@@ -17,7 +17,7 @@ Un'applicazione SaaS moderna per la gestione di clienti, preventivi e fatture co
 - **Export Data**: xlsx (Excel) + papaparse (CSV)
 - **State Persistence**: js-cookie
 - **Icons**: Lucide React
-- **AI**: Vercel AI SDK + OpenRouter (Mistral 7B Instruct - 100% Gratuito)
+- **AI**: Vercel AI SDK + OpenRouter (LLaMA 3.3 70B - Molto Economico)
 
 ## 📋 Funzionalità
 
@@ -32,9 +32,9 @@ Un'applicazione SaaS moderna per la gestione di clienti, preventivi e fatture co
 - **Cerca e visualizza clienti**: "Mostrami i clienti di Zurigo"
 - **Verifica limiti e statistiche**: "Quante fatture posso ancora creare?"
 - **Multi-lingua**: Risponde automaticamente nella lingua dell'utente (IT, EN, DE, FR, RM)
-- **100% Gratuito**: Usa Mistral 7B Instruct (7.3B parametri, free tier su OpenRouter)
+- **Molto Economico**: Usa LLaMA 3.3 70B (70B parametri, ~$0.04/1M token, 125k chat con $5)
 - **Sicuro**: Rispetta RLS Supabase e limiti abbonamento
-- **6 tools AI**: get_subscription_status, list_clients, search_client, create_invoice, create_quote, get_invoice_stats
+- **4 tools AI**: get_subscription_status, list_clients, search_client, get_invoice_stats
 - Pagina dedicata `/dashboard/chat`
 - 📚 Documentazione completa: [docs/AI_CHATBOT.md](./docs/AI_CHATBOT.md)
 

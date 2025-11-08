@@ -24,7 +24,7 @@ Il **Chatbot AI** è un assistente intelligente integrato nella piattaforma Fatt
 
 **Caratteristiche chiave**:
 - ✅ **100% Serverless** - Deploy su Vercel Edge Functions
-- ✅ **Completamente Gratuito** - Usa Mistral 7B Instruct (7.3B parametri)
+- ✅ **Molto Economico** - LLaMA 3.3 70B (~$0.04/1M token, 125k chat con $5)
 - ✅ **Multi-lingua** - Supporta IT, EN, DE, FR, RM
 - ✅ **Sicuro** - RLS Supabase + controllo limiti automatico
 - ✅ **Type-safe** - TypeScript end-to-end
@@ -33,22 +33,22 @@ Il **Chatbot AI** è un assistente intelligente integrato nella piattaforma Fatt
 
 ## 🤖 Modello AI
 
-### Mistral 7B Instruct (Free)
+### Meta LLaMA 3.3 70B Instruct
 
-**ID Modello**: `mistralai/mistral-7b-instruct:free`
+**ID Modello**: `meta-llama/llama-3.3-70b-instruct`
 
-**Perché Mistral 7B?**
-- ✅ **100% Gratuito** su OpenRouter senza limiti stretti
-- ✅ **7.3B parametri** - Leggero e velocissimo (< 1s risposta)
-- ✅ **Multilingua** - Ottimo per IT, EN, DE, FR, RM
-- ✅ **Function calling affidabile** - Ideale per operazioni database
-- ✅ **Context window 8K** - Mantiene conversazioni medie
-- ✅ **Basso consumo crediti** - Perfetto per free tier
+**Perché LLaMA 3.3 70B?**
+- ✅ **Supporta nativamente tool calling** - Funziona perfettamente con tools
+- ✅ **70B parametri** - Potente ma veloce (< 2s risposta)
+- ✅ **Multilingua** - Eccellente per IT, EN, DE, FR, RM
+- ✅ **Molto economico** - ~$0.04 per 1M token input (~125k chat con $5)
+- ✅ **Context window 128K** - Mantiene conversazioni lunghissime
+- ✅ **Affidabile** - Nessun rate limit, sempre disponibile
 
-**Alternative gratuite (richiedono più crediti)**:
+**Alternative (non testate con tool calling)**:
 - `deepseek/deepseek-r1` - 671B parametri (37B attivi), reasoning avanzato
-- `meta-llama/llama-3.3-70b-instruct` - 70B parametri, ottimo general-purpose
 - `qwen/qwen-2.5-72b-instruct` - 72B parametri, eccellente multilingua
+- `openai/gpt-4o-mini` - Molto economico, tool calling perfetto
 
 ---
 
@@ -480,10 +480,11 @@ parameters: z.object({
 ## 💰 Costi
 
 ### OpenRouter (AI)
-- **Modello**: `google/gemini-2.0-flash-exp:free`
-- **Costo**: **$0.00** ✅
-- **Limiti**: Nessun limite di rate (al momento)
-- **Rate limit**: 10 requests/second
+- **Modello**: `meta-llama/llama-3.3-70b-instruct`
+- **Costo**: **~$0.04 per 1M token input** / **~$0.04 per 1M token output**
+- **Chat tipica**: ~2,000 token = **$0.00016** (meno di 2 centesimi)
+- **Con $5**: Circa **125,000 chat** disponibili! 🚀
+- **Nessun rate limit**: Sempre disponibile
 
 ### Vercel (Hosting)
 - **Edge Functions**: Incluse nel piano Hobby
@@ -495,7 +496,7 @@ parameters: z.object({
 - **API Calls**: Illimitate
 - **Costo**: **$0.00** ✅
 
-### **Totale Mensile: $0.00** 🎉
+### **Totale Mensile: ~$0.50 - $2.00** (dipende dall'uso) 💰
 
 ---
 
