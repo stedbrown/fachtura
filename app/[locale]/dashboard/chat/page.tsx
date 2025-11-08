@@ -179,13 +179,6 @@ export default function ChatPage() {
                         if (part.type === 'text') {
                           return <p key={index} className="whitespace-pre-wrap m-0">{part.text}</p>
                         }
-                        if (part.state === 'output-error' && part.errorText) {
-                          return (
-                            <div key={index} className="text-xs text-destructive mt-2">
-                              <strong>Errore:</strong> {part.errorText}
-                            </div>
-                          )
-                        }
                         return null
                       })}
                     </div>
