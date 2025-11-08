@@ -118,13 +118,16 @@ export default function NewProductPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="sku">{t('sku') || 'SKU/Codice'}</Label>
+                <Label htmlFor="sku">{t('sku') || 'SKU/Codice'} <span className="text-xs text-muted-foreground">({t('optional') || 'opzionale'})</span></Label>
                 <Input
                   id="sku"
                   value={formData.sku}
                   onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                  placeholder={t('skuPlaceholder') || 'es. CONS-001'}
+                  placeholder={t('skuPlaceholder') || 'Lascia vuoto per generazione automatica (es. PRD-202501-001)'}
                 />
+                <p className="text-xs text-muted-foreground">
+                  {t('skuAutoGenerate') || 'Se lasciato vuoto, verrà generato automaticamente'}
+                </p>
               </div>
             </div>
 
