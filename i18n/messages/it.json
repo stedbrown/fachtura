@@ -746,7 +746,10 @@
     "restoreError": "Errore nel ripristino del prodotto",
     "loadError": "Errore nel caricamento dei prodotti",
     "deleteDialogTitle": "Eliminare questo prodotto?",
-    "deleteDialogDescription": "Il prodotto sarà archiviato e potrà essere ripristinato in seguito."
+    "deleteDialogDescription": "Il prodotto sarà archiviato e potrà essere ripristinato in seguito.",
+    "addFromCatalogHint": "Aggiungi rapidamente prodotti dal tuo catalogo oppure inserisci manualmente",
+    "fillFromCatalog": "Compila dal Catalogo (opzionale)",
+    "selectProductToFill": "Seleziona per compilare automaticamente"
   },
   "orders": {
     "title": "Ordini",

@@ -19,6 +19,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Plus, Trash2 } from 'lucide-react'
 import type { Client } from '@/lib/types/database'
 import type { InvoiceItemInput } from '@/lib/validations/invoice'
+import type { Product } from '@/lib/types/database'
 import { calculateInvoiceTotals, generateInvoiceNumber } from '@/lib/utils/invoice-utils'
 import { SetupAlert } from '@/components/setup-alert'
 import { useCompanySettings } from '@/hooks/use-company-settings'
@@ -35,9 +36,11 @@ export default function NewInvoicePage() {
   const tStatus = useTranslations('invoices.status')
   const tSubscription = useTranslations('subscription')
   const tErrors = useTranslations('errors')
+  const tProducts = useTranslations('products')
   const { hasRequiredFields } = useCompanySettings()
   const { subscription, checkLimits } = useSubscription()
   const [clients, setClients] = useState<Client[]>([])
+  const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(false)
   const [clientId, setClientId] = useState('')
   const [date, setDate] = useState(new Date().toISOString().split('T')[0])
@@ -57,6 +60,7 @@ export default function NewInvoicePage() {
 
   useEffect(() => {
     loadClients()
+    loadProducts()
     loadCompanyDefaults()
     loadInvoiceCount()
   }, [])
@@ -73,10 +77,32 @@ export default function NewInvoicePage() {
       .from('clients')
       .select('*')
       .eq('user_id', user.id)
+      .is('deleted_at', null)
       .order('name')
 
     if (data) {
       setClients(data)
+    }
+  }
+
+  const loadProducts = async () => {
+    const supabase = createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) return
+
+    const { data } = await supabase
+      .from('products')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('is_active', true)
+      .is('deleted_at', null)
+      .order('name')
+
+    if (data) {
+      setProducts(data)
     }
   }
 
@@ -131,6 +157,32 @@ export default function NewInvoicePage() {
       ...items,
       { description: '', quantity: 1, unit_price: 0, tax_rate: 8.1 },
     ])
+  }
+
+  const addProductItem = (productId: string) => {
+    const product = products.find(p => p.id === productId)
+    if (!product) return
+
+    setItems([...items, {
+      description: product.name + (product.description ? `\n${product.description}` : ''),
+      quantity: 1,
+      unit_price: Number(product.unit_price),
+      tax_rate: Number(product.tax_rate),
+    }])
+  }
+
+  const fillFromProduct = (index: number, productId: string) => {
+    const product = products.find(p => p.id === productId)
+    if (!product) return
+
+    const newItems = [...items]
+    newItems[index] = {
+      description: product.name + (product.description ? `\n${product.description}` : ''),
+      quantity: newItems[index].quantity || 1,
+      unit_price: Number(product.unit_price),
+      tax_rate: Number(product.tax_rate),
+    }
+    setItems(newItems)
   }
 
   const removeItem = (index: number) => {
@@ -366,6 +418,27 @@ export default function NewInvoicePage() {
             </Button>
           </CardHeader>
           <CardContent className="space-y-4">
+            {products.length > 0 && (
+              <div className="space-y-2 p-4 bg-muted/50 rounded-lg">
+                <Label htmlFor="add_product">{tProducts('addFromCatalog') || 'Aggiungi dal Catalogo'}</Label>
+                <Select onValueChange={addProductItem}>
+                  <SelectTrigger>
+                    <SelectValue placeholder={tProducts('selectProduct') || 'Seleziona Prodotto'} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {products.map((product) => (
+                      <SelectItem key={product.id} value={product.id}>
+                        {product.name} - CHF {Number(product.unit_price).toFixed(2)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  {tProducts('addFromCatalogHint') || 'Aggiungi rapidamente prodotti dal tuo catalogo oppure inserisci manualmente'}
+                </p>
+              </div>
+            )}
+
             {items.map((item, index) => (
               <div
                 key={index}
@@ -382,14 +455,34 @@ export default function NewInvoicePage() {
                     <Trash2 className="h-4 w-4 text-red-600" />
                   </Button>
                 )}
+                
+                {products.length > 0 && (
+                  <div className="space-y-2">
+                    <Label>{tProducts('fillFromCatalog') || 'Compila dal Catalogo (opzionale)'}</Label>
+                    <Select onValueChange={(productId) => fillFromProduct(index, productId)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder={tProducts('selectProductToFill') || 'Seleziona per compilare automaticamente'} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {products.map((product) => (
+                          <SelectItem key={product.id} value={product.id}>
+                            {product.name} - CHF {Number(product.unit_price).toFixed(2)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
                 <div className="space-y-2">
                   <Label>{t('fields.description')}</Label>
-                  <Input
+                  <Textarea
                     value={item.description}
                     onChange={(e) =>
                       updateItem(index, 'description', e.target.value)
                     }
                     placeholder={t('form.itemDescription')}
+                    rows={2}
                   />
                 </div>
                 <div className="grid grid-cols-3 gap-4">
