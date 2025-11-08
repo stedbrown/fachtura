@@ -17,7 +17,7 @@ Un'applicazione SaaS moderna per la gestione di clienti, preventivi e fatture co
 - **Export Data**: xlsx (Excel) + papaparse (CSV)
 - **State Persistence**: js-cookie
 - **Icons**: Lucide React
-- **AI**: Vercel AI SDK + OpenRouter (Claude 3.5 Haiku - Tool Calling Perfetto)
+- **AI**: Vercel AI SDK + OpenRouter (DeepSeek V3.1 - 100% Gratuito)
 
 ## 📋 Funzionalità
 
