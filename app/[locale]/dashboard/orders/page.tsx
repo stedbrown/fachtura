@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -14,7 +14,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Edit, Trash2, Archive, ArchiveRestore, ShoppingCart } from 'lucide-react'
+import { Plus, Edit, Trash2, Archive, ArchiveRestore, ShoppingCart, Download } from 'lucide-react'
 import { DeleteDialog } from '@/components/delete-dialog'
 import type { OrderWithClient } from '@/lib/types/database'
 import { format } from 'date-fns'
@@ -24,6 +24,8 @@ import { toast } from 'sonner'
 import { useSubscription } from '@/hooks/use-subscription'
 import { SubscriptionUpgradeDialog } from '@/components/subscription-upgrade-dialog'
 import { Input } from '@/components/ui/input'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { exportFormattedToCSV, exportFormattedToExcel, formatDateForExport, formatCurrencyForExport } from '@/lib/export-utils'
 
 const localeMap: Record<string, Locale> = {
   it: it,
@@ -54,6 +56,7 @@ export default function OrdersPage() {
   const locale = params.locale as string
   const t = useTranslations('orders')
   const tCommon = useTranslations('common')
+  const tTabs = useTranslations('tabs')
   const tStatus = useTranslations('orders.status')
   
   const { subscription, checkLimits } = useSubscription()
@@ -164,221 +167,280 @@ export default function OrdersPage() {
     }
   }
 
-  const filteredOrders = orders.filter(order => {
-    if (!searchQuery) return true
-    const search = searchQuery.toLowerCase()
-    return (
-      order.order_number.toLowerCase().includes(search) ||
-      order.client.name.toLowerCase().includes(search)
-    )
-  })
+  function handleExport(format: 'csv' | 'excel') {
+    const dataToExport = filteredOrders.map(order => ({
+      [t('orderNumber') || 'Numero Ordine']: order.order_number,
+      [t('client') || 'Cliente']: order.client?.name || '',
+      [t('orderDate') || 'Data']: formatDateForExport(order.date),
+      [t('deliveryDate') || 'Consegna']: order.expected_delivery_date ? formatDateForExport(order.expected_delivery_date) : '',
+      [t('status') || 'Stato']: tStatus(order.status) || order.status,
+      [t('totalAmount') || 'Totale']: formatCurrencyForExport(order.total),
+    }))
 
-  const totalValue = filteredOrders.reduce((sum, o) => sum + Number(o.total), 0)
+    const filename = `ordini_${new Date().toISOString().split('T')[0]}`
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">{tCommon('loading')}</p>
-        </div>
-      </div>
-    )
+    if (format === 'csv') {
+      exportFormattedToCSV(dataToExport, filename)
+    } else {
+      exportFormattedToExcel(dataToExport, filename)
+    }
+
+    toast.success(tCommon('exportSuccess') || 'Export completato con successo')
   }
 
+  const filteredOrders = useMemo(() => {
+    return orders.filter(order => {
+      if (!searchQuery) return true
+      const search = searchQuery.toLowerCase()
+      return (
+        order.order_number.toLowerCase().includes(search) ||
+        order.client?.name.toLowerCase().includes(search) ||
+        order.notes?.toLowerCase().includes(search)
+      )
+    })
+  }, [orders, searchQuery])
+
+  // Calculate statistics
+  const stats = useMemo(() => {
+    const activeOrders = orders.filter(o => !o.deleted_at)
+    const totalValue = activeOrders.reduce((sum, o) => sum + Number(o.total), 0)
+    const pendingOrders = activeOrders.filter(o => ['draft', 'confirmed', 'processing'].includes(o.status))
+    const deliveredOrders = activeOrders.filter(o => o.status === 'delivered')
+
+    return {
+      total: activeOrders.length,
+      ordersValue: totalValue,
+      pending: pendingOrders.length,
+      delivered: deliveredOrders.length,
+      maxAllowed: subscription?.plan?.max_orders
+    }
+  }, [orders, subscription])
+
+  const dateLocale = localeMap[locale] || it
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       {/* Header */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            {t('title') || 'Ordini'}
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            {t('description') || 'Gestisci gli ordini dei tuoi clienti'}
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">{t('title')}</h1>
+          <p className="text-sm md:text-base text-muted-foreground mt-1">
+            {t('description')}
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            onClick={() => setShowArchived(!showArchived)}
-          >
-            {showArchived ? (
-              <>
-                <ShoppingCart className="mr-2 h-4 w-4" />
-                {t('showActive') || 'Mostra Attivi'}
-              </>
-            ) : (
-              <>
-                <Archive className="mr-2 h-4 w-4" />
-                {t('showArchived') || 'Mostra Archiviati'}
-              </>
-            )}
-          </Button>
-          <Button onClick={handleAddNew}>
-            <Plus className="mr-2 h-4 w-4" />
-            {t('addNew') || 'Nuovo Ordine'}
-          </Button>
+        <Button onClick={handleAddNew} size="default" className="w-full sm:w-auto">
+          <Plus className="h-4 w-4 mr-2" />
+          {t('addNew')}
+        </Button>
+      </div>
+
+      {/* Statistics Cards */}
+      {!showArchived && (
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardDescription className="text-xs md:text-sm">{t('totalOrders')}</CardDescription>
+              <CardTitle className="text-2xl md:text-3xl">{stats.total}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-xs md:text-sm text-muted-foreground">
+                {t('planLimit')}: {stats.maxAllowed ? stats.maxAllowed.toLocaleString() + '/mese' : '∞'}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardDescription className="text-xs md:text-sm">{t('ordersValue')}</CardDescription>
+              <CardTitle className="text-2xl md:text-3xl">
+                CHF {stats.ordersValue.toLocaleString('it-CH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-xs md:text-sm text-muted-foreground">
+                {t('totalValue') || 'Valore totale ordini'}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardDescription className="text-xs md:text-sm">{t('pendingOrders') || 'In Corso'}</CardDescription>
+              <CardTitle className="text-2xl md:text-3xl text-blue-600">{stats.pending}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-xs md:text-sm text-muted-foreground">
+                {t('awaitingDelivery') || 'In attesa di consegna'}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardDescription className="text-xs md:text-sm">{t('deliveredOrders') || 'Consegnati'}</CardDescription>
+              <CardTitle className="text-2xl md:text-3xl text-green-600">{stats.delivered}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-xs md:text-sm text-muted-foreground">
+                {t('completed') || 'Completati'}
+              </p>
+            </CardContent>
+          </Card>
         </div>
-      </div>
+      )}
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              {t('totalOrders') || 'Ordini Totali'}
-            </CardTitle>
-            <ShoppingCart className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{filteredOrders.length}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              {t('ordersValue') || 'Valore Totale'}
-            </CardTitle>
-            <ShoppingCart className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">CHF {totalValue.toFixed(2)}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              {t('planLimit') || 'Limite Piano'}
-            </CardTitle>
-            <ShoppingCart className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {subscription?.plan?.max_orders ? `${filteredOrders.length}/${subscription.plan.max_orders}` : '∞'}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {subscription?.plan?.name || 'Free'} Plan
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Search */}
-      <div className="flex items-center gap-4">
-        <Input
-          placeholder={t('searchPlaceholder') || 'Cerca per numero ordine, cliente...'}
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="max-w-md"
-        />
-      </div>
-
-      {/* Orders Table */}
+      {/* Main Content Card */}
       <Card>
-        <CardHeader>
-          <CardTitle>
-            {showArchived ? (t('archivedOrders') || 'Ordini Archiviati') : (t('yourOrders') || 'I Tuoi Ordini')}
+        <CardHeader className="pb-3 md:pb-4">
+          <div className="flex flex-col gap-4">
+            {/* Tabs and Search Row */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <Tabs value={showArchived ? 'archived' : 'active'} onValueChange={(v) => setShowArchived(v === 'archived')} className="w-full sm:w-auto">
+                <TabsList className="grid w-full sm:w-auto grid-cols-2">
+                  <TabsTrigger value="active" className="text-xs md:text-sm">
+                    <ShoppingCart className="h-4 w-4 mr-2" />
+                    {tTabs('active')}
+                  </TabsTrigger>
+                  <TabsTrigger value="archived" className="text-xs md:text-sm">
+                    <Archive className="h-4 w-4 mr-2" />
+                    {tTabs('archived')}
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+
+              {/* Export Buttons */}
+              {!showArchived && filteredOrders.length > 0 && (
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={() => handleExport('csv')} className="flex-1 sm:flex-none">
+                    <Download className="h-4 w-4 mr-2" />
+                    <span className="hidden sm:inline">CSV</span>
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => handleExport('excel')} className="flex-1 sm:flex-none">
+                    <Download className="h-4 w-4 mr-2" />
+                    <span className="hidden sm:inline">Excel</span>
+                  </Button>
+                </div>
+              )}
+            </div>
+
+            {/* Search Bar */}
+            {!showArchived && (
+              <Input
+                placeholder={t('searchPlaceholder') || 'Cerca per numero ordine, cliente...'}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="max-w-full sm:max-w-sm"
+              />
+            )}
+          </div>
+
+          <CardTitle className="mt-4 text-lg md:text-xl">
+            {showArchived ? t('archivedOrders') : t('yourOrders')}
           </CardTitle>
-          <CardDescription>
-            {showArchived
-              ? (t('archivedDescription') || 'Ordini eliminati che possono essere ripristinati')
-              : (t('tableDescription') || 'Visualizza e gestisci gli ordini dei clienti')}
+          <CardDescription className="text-xs md:text-sm">
+            {showArchived ? t('archivedDescription') : t('tableDescription')}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {filteredOrders.length === 0 ? (
-            <div className="text-center py-12">
-              <ShoppingCart className="mx-auto h-12 w-12 text-muted-foreground" />
-              <h3 className="mt-4 text-lg font-semibold">
-                {showArchived
-                  ? (t('noArchivedOrders') || 'Nessun ordine archiviato')
-                  : (t('noOrders') || 'Nessun ordine')}
+          {loading ? (
+            <div className="text-center py-8 md:py-12 text-muted-foreground">
+              {tCommon('loading')}...
+            </div>
+          ) : filteredOrders.length === 0 ? (
+            <div className="text-center py-8 md:py-12">
+              <ShoppingCart className="h-12 w-12 md:h-16 md:w-16 mx-auto text-muted-foreground mb-4" />
+              <h3 className="text-base md:text-lg font-semibold mb-2">
+                {showArchived ? t('noArchivedOrders') : t('noOrders')}
               </h3>
-              <p className="mt-2 text-sm text-muted-foreground">
-                {showArchived
-                  ? (t('noArchivedDescription') || 'Non hai ordini archiviati.')
-                  : (t('noOrdersDescription') || 'Inizia creando il tuo primo ordine.')}
+              <p className="text-sm text-muted-foreground mb-4">
+                {showArchived ? t('noArchivedDescription') : t('noOrdersDescription')}
               </p>
               {!showArchived && (
-                <Button onClick={handleAddNew} className="mt-4">
-                  <Plus className="mr-2 h-4 w-4" />
-                  {t('createFirst') || 'Crea il tuo primo ordine'}
+                <Button onClick={handleAddNew}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  {t('createFirst')}
                 </Button>
               )}
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t('orderNumber') || 'N. Ordine'}</TableHead>
-                  <TableHead>{t('client') || 'Cliente'}</TableHead>
-                  <TableHead>{t('orderDate') || 'Data'}</TableHead>
-                  <TableHead>{t('status') || 'Stato'}</TableHead>
-                  <TableHead className="text-right">{t('totalAmount') || 'Totale'}</TableHead>
-                  <TableHead className="text-right">{tCommon('actions') || 'Azioni'}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredOrders.map((order) => (
-                  <TableRow key={order.id}>
-                    <TableCell className="font-medium font-mono text-sm">
-                      {order.order_number}
-                    </TableCell>
-                    <TableCell>{order.client.name}</TableCell>
-                    <TableCell>
-                      {format(new Date(order.date), 'dd/MM/yyyy', { locale: localeMap[locale] || enUS })}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={getOrderStatusVariant(order.status)}>
-                        {tStatus(order.status as any)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right font-mono">
-                      CHF {Number(order.total).toFixed(2)}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        {showArchived ? (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleRestore(order.id)}
-                            title={t('restore') || 'Ripristina'}
-                          >
-                            <ArchiveRestore className="h-4 w-4" />
-                          </Button>
-                        ) : (
-                          <>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => router.push(`/${locale}/dashboard/orders/${order.id}`)}
-                              title={t('edit') || 'Modifica'}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => {
-                                setOrderToDelete(order.id)
-                                setDeleteDialogOpen(true)
-                              }}
-                              title={t('delete') || 'Elimina'}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <div className="overflow-x-auto -mx-4 sm:mx-0">
+              <div className="inline-block min-w-full align-middle">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-xs md:text-sm">{t('orderNumber')}</TableHead>
+                      <TableHead className="text-xs md:text-sm">{t('client')}</TableHead>
+                      <TableHead className="hidden md:table-cell text-xs md:text-sm">{t('orderDate')}</TableHead>
+                      <TableHead className="hidden lg:table-cell text-xs md:text-sm">{t('deliveryDate')}</TableHead>
+                      <TableHead className="text-xs md:text-sm">{t('status')}</TableHead>
+                      <TableHead className="text-right text-xs md:text-sm">{t('totalAmount')}</TableHead>
+                      <TableHead className="text-right text-xs md:text-sm">{tCommon('actions')}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredOrders.map((order) => (
+                      <TableRow key={order.id}>
+                        <TableCell className="font-medium text-xs md:text-sm">{order.order_number}</TableCell>
+                        <TableCell className="text-xs md:text-sm">{order.client?.name || '-'}</TableCell>
+                        <TableCell className="hidden md:table-cell text-xs md:text-sm">
+                          {format(new Date(order.date), 'dd MMM yyyy', { locale: dateLocale })}
+                        </TableCell>
+                        <TableCell className="hidden lg:table-cell text-xs md:text-sm">
+                          {order.expected_delivery_date 
+                            ? format(new Date(order.expected_delivery_date), 'dd MMM yyyy', { locale: dateLocale })
+                            : '-'
+                          }
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={getOrderStatusVariant(order.status)} className="text-xs">
+                            {tStatus(order.status)}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right font-medium text-xs md:text-sm">
+                          CHF {Number(order.total).toLocaleString('it-CH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            {showArchived ? (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleRestore(order.id)}
+                                title={t('restore')}
+                              >
+                                <ArchiveRestore className="h-4 w-4" />
+                              </Button>
+                            ) : (
+                              <>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => router.push(`/${locale}/dashboard/orders/${order.id}`)}
+                                  title={t('edit')}
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => {
+                                    setOrderToDelete(order.id)
+                                    setDeleteDialogOpen(true)
+                                  }}
+                                  title={t('delete')}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
           )}
         </CardContent>
       </Card>
@@ -388,8 +450,8 @@ export default function OrdersPage() {
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={() => orderToDelete && handleDelete(orderToDelete)}
-        title={t('deleteDialogTitle') || 'Eliminare questo ordine?'}
-        description={t('deleteDialogDescription') || 'L\'ordine sarà archiviato e potrà essere ripristinato in seguito.'}
+        title={t('deleteDialogTitle')}
+        description={t('deleteDialogDescription')}
         isDeleting={isDeleting}
       />
 
@@ -405,4 +467,3 @@ export default function OrdersPage() {
     </div>
   )
 }
-

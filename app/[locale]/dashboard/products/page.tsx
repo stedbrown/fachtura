@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -14,7 +14,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Eye, Trash2, Edit, Package, Archive, ArchiveRestore } from 'lucide-react'
+import { Plus, Edit, Trash2, Archive, ArchiveRestore, Package, Download } from 'lucide-react'
 import { DeleteDialog } from '@/components/delete-dialog'
 import type { Product } from '@/lib/types/database'
 import { useTranslations } from 'next-intl'
@@ -22,6 +22,8 @@ import { toast } from 'sonner'
 import { useSubscription } from '@/hooks/use-subscription'
 import { SubscriptionUpgradeDialog } from '@/components/subscription-upgrade-dialog'
 import { Input } from '@/components/ui/input'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { exportFormattedToCSV, exportFormattedToExcel, formatCurrencyForExport } from '@/lib/export-utils'
 
 export default function ProductsPage() {
   const router = useRouter()
@@ -29,6 +31,7 @@ export default function ProductsPage() {
   const locale = params.locale as string
   const t = useTranslations('products')
   const tCommon = useTranslations('common')
+  const tTabs = useTranslations('tabs')
   
   const { subscription, checkLimits } = useSubscription()
   const [products, setProducts] = useState<Product[]>([])
@@ -137,261 +140,292 @@ export default function ProductsPage() {
     }
   }
 
-  const filteredProducts = products.filter(product => {
-    if (!searchQuery) return true
-    const search = searchQuery.toLowerCase()
-    return (
-      product.name.toLowerCase().includes(search) ||
-      product.sku?.toLowerCase().includes(search) ||
-      product.category?.toLowerCase().includes(search) ||
-      product.description?.toLowerCase().includes(search)
-    )
-  })
+  function handleExport(format: 'csv' | 'excel') {
+    const dataToExport = filteredProducts.map(product => ({
+      [t('sku') || 'SKU']: product.sku || '',
+      [t('name') || 'Nome']: product.name,
+      [t('category') || 'Categoria']: product.category || '',
+      [t('price') || 'Prezzo']: formatCurrencyForExport(product.unit_price),
+      [t('taxRate') || 'IVA %']: `${product.tax_rate}%`,
+      [t('stock') || 'Stock']: product.track_inventory ? product.stock_quantity?.toString() || '0' : t('notTracked') || 'Non tracciato',
+      [t('status') || 'Stato']: product.is_active ? (t('active') || 'Attivo') : (t('inactive') || 'Inattivo'),
+    }))
 
-  const activeProducts = filteredProducts.filter(p => p.is_active && !showArchived).length
-  const inactiveProducts = filteredProducts.filter(p => !p.is_active && !showArchived).length
-  const totalValue = filteredProducts.reduce((sum, p) => sum + Number(p.unit_price), 0)
+    const filename = `prodotti_${new Date().toISOString().split('T')[0]}`
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">{tCommon('loading')}</p>
-        </div>
-      </div>
-    )
+    if (format === 'csv') {
+      exportFormattedToCSV(dataToExport, filename)
+    } else {
+      exportFormattedToExcel(dataToExport, filename)
+    }
+
+    toast.success(tCommon('exportSuccess') || 'Export completato con successo')
   }
 
+  const filteredProducts = useMemo(() => {
+    return products.filter(product => {
+      if (!searchQuery) return true
+      const search = searchQuery.toLowerCase()
+      return (
+        product.name.toLowerCase().includes(search) ||
+        product.sku?.toLowerCase().includes(search) ||
+        product.category?.toLowerCase().includes(search) ||
+        product.description?.toLowerCase().includes(search)
+      )
+    })
+  }, [products, searchQuery])
+
+  // Calculate statistics
+  const stats = useMemo(() => {
+    const activeProducts = products.filter(p => !p.deleted_at && p.is_active)
+    const totalValue = activeProducts.reduce((sum, p) => sum + Number(p.unit_price), 0)
+    const avgPrice = activeProducts.length > 0 ? totalValue / activeProducts.length : 0
+    const lowStockCount = activeProducts.filter(p => 
+      p.track_inventory && (p.stock_quantity || 0) <= (p.low_stock_threshold || 10)
+    ).length
+
+    return {
+      total: activeProducts.length,
+      catalogValue: totalValue,
+      averagePrice: avgPrice,
+      lowStock: lowStockCount,
+      maxAllowed: subscription?.plan?.max_products
+    }
+  }, [products, subscription])
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       {/* Header */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">
-            {t('title') || 'Prodotti'}
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            {t('description') || 'Gestisci il catalogo dei tuoi prodotti e servizi'}
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">{t('title')}</h1>
+          <p className="text-sm md:text-base text-muted-foreground mt-1">
+            {t('description')}
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            onClick={() => setShowArchived(!showArchived)}
-          >
-            {showArchived ? (
-              <>
-                <Package className="mr-2 h-4 w-4" />
-                {t('showActive') || 'Mostra Attivi'}
-              </>
-            ) : (
-              <>
-                <Archive className="mr-2 h-4 w-4" />
-                {t('showArchived') || 'Mostra Archiviati'}
-              </>
-            )}
-          </Button>
-          <Button onClick={handleAddNew}>
-            <Plus className="mr-2 h-4 w-4" />
-            {t('addNew') || 'Nuovo Prodotto'}
-          </Button>
+        <Button onClick={handleAddNew} size="default" className="w-full sm:w-auto">
+          <Plus className="h-4 w-4 mr-2" />
+          {t('addNew')}
+        </Button>
+      </div>
+
+      {/* Statistics Cards */}
+      {!showArchived && (
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardDescription className="text-xs md:text-sm">{t('totalProducts')}</CardDescription>
+              <CardTitle className="text-2xl md:text-3xl">{stats.total}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-xs md:text-sm text-muted-foreground">
+                {t('planLimit')}: {stats.maxAllowed ? stats.maxAllowed.toLocaleString() : '∞'}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardDescription className="text-xs md:text-sm">{t('catalogValue')}</CardDescription>
+              <CardTitle className="text-2xl md:text-3xl">
+                CHF {stats.catalogValue.toLocaleString('it-CH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-xs md:text-sm text-muted-foreground">
+                {t('totalValue') || 'Valore totale catalogo'}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardDescription className="text-xs md:text-sm">{t('averagePrice')}</CardDescription>
+              <CardTitle className="text-2xl md:text-3xl">
+                CHF {stats.averagePrice.toLocaleString('it-CH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-xs md:text-sm text-muted-foreground">
+                {t('avgPerProduct') || 'Media per prodotto'}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardDescription className="text-xs md:text-sm">{t('lowStockItems') || 'Scorte Basse'}</CardDescription>
+              <CardTitle className="text-2xl md:text-3xl text-destructive">{stats.lowStock}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-xs md:text-sm text-muted-foreground">
+                {t('requiresAttention') || 'Richiedono attenzione'}
+              </p>
+            </CardContent>
+          </Card>
         </div>
-      </div>
+      )}
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              {t('totalProducts') || 'Prodotti Totali'}
-            </CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{filteredProducts.length}</div>
-            <p className="text-xs text-muted-foreground">
-              {activeProducts} {t('active') || 'attivi'}, {inactiveProducts} {t('inactive') || 'inattivi'}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              {t('catalogValue') || 'Valore Catalogo'}
-            </CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">CHF {totalValue.toFixed(2)}</div>
-            <p className="text-xs text-muted-foreground">
-              {t('averagePrice') || 'Prezzo medio'}: CHF {filteredProducts.length > 0 ? (totalValue / filteredProducts.length).toFixed(2) : '0.00'}
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              {t('planLimit') || 'Limite Piano'}
-            </CardTitle>
-            <Package className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {subscription?.plan?.max_products ? `${filteredProducts.length}/${subscription.plan.max_products}` : '∞'}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {subscription?.plan?.name || 'Free'} Plan
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Search */}
-      <div className="flex items-center gap-4">
-        <Input
-          placeholder={t('searchPlaceholder') || 'Cerca per nome, SKU, categoria...'}
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="max-w-md"
-        />
-      </div>
-
-      {/* Products Table */}
+      {/* Main Content Card */}
       <Card>
-        <CardHeader>
-          <CardTitle>
-            {showArchived ? (t('archivedProducts') || 'Prodotti Archiviati') : (t('yourProducts') || 'I Tuoi Prodotti')}
+        <CardHeader className="pb-3 md:pb-4">
+          <div className="flex flex-col gap-4">
+            {/* Tabs and Search Row */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <Tabs value={showArchived ? 'archived' : 'active'} onValueChange={(v) => setShowArchived(v === 'archived')} className="w-full sm:w-auto">
+                <TabsList className="grid w-full sm:w-auto grid-cols-2">
+                  <TabsTrigger value="active" className="text-xs md:text-sm">
+                    <Package className="h-4 w-4 mr-2" />
+                    {tTabs('active')}
+                  </TabsTrigger>
+                  <TabsTrigger value="archived" className="text-xs md:text-sm">
+                    <Archive className="h-4 w-4 mr-2" />
+                    {tTabs('archived')}
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+
+              {/* Export Buttons */}
+              {!showArchived && filteredProducts.length > 0 && (
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={() => handleExport('csv')} className="flex-1 sm:flex-none">
+                    <Download className="h-4 w-4 mr-2" />
+                    <span className="hidden sm:inline">CSV</span>
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => handleExport('excel')} className="flex-1 sm:flex-none">
+                    <Download className="h-4 w-4 mr-2" />
+                    <span className="hidden sm:inline">Excel</span>
+                  </Button>
+                </div>
+              )}
+            </div>
+
+            {/* Search Bar */}
+            {!showArchived && (
+              <Input
+                placeholder={t('searchPlaceholder') || 'Cerca per nome, SKU, categoria...'}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="max-w-full sm:max-w-sm"
+              />
+            )}
+          </div>
+
+          <CardTitle className="mt-4 text-lg md:text-xl">
+            {showArchived ? t('archivedProducts') : t('yourProducts')}
           </CardTitle>
-          <CardDescription>
-            {showArchived
-              ? (t('archivedDescription') || 'Prodotti eliminati che possono essere ripristinati')
-              : (t('tableDescription') || 'Visualizza e gestisci il tuo catalogo prodotti')}
+          <CardDescription className="text-xs md:text-sm">
+            {showArchived ? t('archivedDescription') : t('tableDescription')}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {filteredProducts.length === 0 ? (
-            <div className="text-center py-12">
-              <Package className="mx-auto h-12 w-12 text-muted-foreground" />
-              <h3 className="mt-4 text-lg font-semibold">
-                {showArchived
-                  ? (t('noArchivedProducts') || 'Nessun prodotto archiviato')
-                  : (t('noProducts') || 'Nessun prodotto')}
+          {loading ? (
+            <div className="text-center py-8 md:py-12 text-muted-foreground">
+              {tCommon('loading')}...
+            </div>
+          ) : filteredProducts.length === 0 ? (
+            <div className="text-center py-8 md:py-12">
+              <Package className="h-12 w-12 md:h-16 md:w-16 mx-auto text-muted-foreground mb-4" />
+              <h3 className="text-base md:text-lg font-semibold mb-2">
+                {showArchived ? t('noArchivedProducts') : t('noProducts')}
               </h3>
-              <p className="mt-2 text-sm text-muted-foreground">
-                {showArchived
-                  ? (t('noArchivedDescription') || 'Non hai prodotti archiviati.')
-                  : (t('noProductsDescription') || 'Inizia creando il tuo primo prodotto.')}
+              <p className="text-sm text-muted-foreground mb-4">
+                {showArchived ? t('noArchivedDescription') : t('noProductsDescription')}
               </p>
               {!showArchived && (
-                <Button onClick={handleAddNew} className="mt-4">
-                  <Plus className="mr-2 h-4 w-4" />
-                  {t('createFirst') || 'Crea il tuo primo prodotto'}
+                <Button onClick={handleAddNew}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  {t('createFirst')}
                 </Button>
               )}
             </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t('name') || 'Nome'}</TableHead>
-                  <TableHead>{t('sku') || 'SKU'}</TableHead>
-                  <TableHead>{t('category') || 'Categoria'}</TableHead>
-                  <TableHead className="text-right">{t('price') || 'Prezzo'}</TableHead>
-                  <TableHead>{t('inventory') || 'Inventario'}</TableHead>
-                  <TableHead>{t('status') || 'Stato'}</TableHead>
-                  <TableHead className="text-right">{tCommon('actions') || 'Azioni'}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredProducts.map((product) => (
-                  <TableRow key={product.id}>
-                    <TableCell className="font-medium">
-                      {product.name}
-                      {product.description && (
-                        <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
-                          {product.description}
-                        </p>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <code className="text-xs bg-muted px-1.5 py-0.5 rounded">
-                        {product.sku || '-'}
-                      </code>
-                    </TableCell>
-                    <TableCell>
-                      {product.category && (
-                        <Badge variant="outline">{product.category}</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right font-mono">
-                      CHF {Number(product.unit_price).toFixed(2)}
-                    </TableCell>
-                    <TableCell>
-                      {product.track_inventory ? (
-                        <div className="text-sm">
-                          <span className={product.stock_quantity <= product.low_stock_threshold ? 'text-destructive font-medium' : ''}>
-                            {product.stock_quantity}
-                          </span>
-                          {product.stock_quantity <= product.low_stock_threshold && (
-                            <Badge variant="destructive" className="ml-2 text-xs">
-                              {t('lowStock') || 'Scorta bassa'}
-                            </Badge>
+            <div className="overflow-x-auto -mx-4 sm:mx-0">
+              <div className="inline-block min-w-full align-middle">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-xs md:text-sm">{t('sku') || 'SKU'}</TableHead>
+                      <TableHead className="text-xs md:text-sm">{t('name')}</TableHead>
+                      <TableHead className="hidden md:table-cell text-xs md:text-sm">{t('category')}</TableHead>
+                      <TableHead className="text-right text-xs md:text-sm">{t('price')}</TableHead>
+                      <TableHead className="hidden sm:table-cell text-right text-xs md:text-sm">{t('stock') || 'Stock'}</TableHead>
+                      <TableHead className="text-xs md:text-sm">{t('status')}</TableHead>
+                      <TableHead className="text-right text-xs md:text-sm">{tCommon('actions')}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredProducts.map((product) => (
+                      <TableRow key={product.id}>
+                        <TableCell className="font-mono text-xs md:text-sm">{product.sku || '-'}</TableCell>
+                        <TableCell className="font-medium text-xs md:text-sm">
+                          {product.name}
+                          {product.description && (
+                            <p className="text-xs text-muted-foreground truncate max-w-[200px] sm:max-w-[300px]">
+                              {product.description}
+                            </p>
                           )}
-                        </div>
-                      ) : (
-                        <span className="text-muted-foreground text-sm">
-                          {t('notTracked') || 'Non tracciato'}
-                        </span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={product.is_active ? 'default' : 'secondary'}>
-                        {product.is_active ? (t('active') || 'Attivo') : (t('inactive') || 'Inattivo')}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        {showArchived ? (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleRestore(product.id)}
-                            title={t('restore') || 'Ripristina'}
-                          >
-                            <ArchiveRestore className="h-4 w-4" />
-                          </Button>
-                        ) : (
-                          <>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => router.push(`/${locale}/dashboard/products/${product.id}`)}
-                              title={t('edit') || 'Modifica'}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => {
-                                setProductToDelete(product.id)
-                                setDeleteDialogOpen(true)
-                              }}
-                              title={t('delete') || 'Elimina'}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell text-xs md:text-sm">{product.category || '-'}</TableCell>
+                        <TableCell className="text-right text-xs md:text-sm">
+                          CHF {Number(product.unit_price).toLocaleString('it-CH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </TableCell>
+                        <TableCell className="hidden sm:table-cell text-right text-xs md:text-sm">
+                          {product.track_inventory ? (
+                            <span className={product.stock_quantity && product.stock_quantity <= (product.low_stock_threshold || 10) ? 'text-destructive font-medium' : ''}>
+                              {product.stock_quantity || 0}
+                            </span>
+                          ) : (
+                            <span className="text-muted-foreground text-xs">{t('notTracked')}</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={product.is_active ? 'default' : 'secondary'} className="text-xs">
+                            {product.is_active ? t('active') : t('inactive')}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            {showArchived ? (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleRestore(product.id)}
+                                title={t('restore')}
+                              >
+                                <ArchiveRestore className="h-4 w-4" />
+                              </Button>
+                            ) : (
+                              <>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => router.push(`/${locale}/dashboard/products/${product.id}`)}
+                                  title={t('edit')}
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => {
+                                    setProductToDelete(product.id)
+                                    setDeleteDialogOpen(true)
+                                  }}
+                                  title={t('delete')}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
           )}
         </CardContent>
       </Card>
@@ -401,8 +435,8 @@ export default function ProductsPage() {
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={() => productToDelete && handleDelete(productToDelete)}
-        title={t('deleteDialogTitle') || 'Eliminare questo prodotto?'}
-        description={t('deleteDialogDescription') || 'Il prodotto sarà archiviato e potrà essere ripristinato in seguito.'}
+        title={t('deleteDialogTitle')}
+        description={t('deleteDialogDescription')}
         isDeleting={isDeleting}
       />
 
@@ -418,4 +452,3 @@ export default function ProductsPage() {
     </div>
   )
 }
-
