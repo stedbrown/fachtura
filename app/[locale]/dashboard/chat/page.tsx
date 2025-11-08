@@ -65,10 +65,7 @@ export default function ChatPage() {
           {/* Messages Area */}
           <ScrollArea className="flex-1 p-4">
             <div className="space-y-4">
-              {messages.map((message) => {
-                // Debug: log message structure
-                console.log('Message:', message)
-                return (
+              {messages.map((message) => (
                   <div
                     key={message.id}
                     className={cn(
@@ -133,8 +130,7 @@ export default function ChatPage() {
                       </div>
                     </div>
                   </div>
-                )
-              })}
+              ))}
 
               {/* Loading indicator */}
               {isLoading && (
