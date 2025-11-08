@@ -18,7 +18,7 @@ export default function ChatPage() {
 
   const { messages, sendMessage, status, error } = useChat()
 
-  const isLoading = status === 'streaming' || status === 'awaiting-response'
+  const isLoading = status === 'submitted'
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
