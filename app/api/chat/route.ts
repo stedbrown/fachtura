@@ -17,13 +17,16 @@ Hai accesso ai seguenti strumenti:
 - create_invoice: Crea una nuova fattura per un cliente con righe
 - create_quote: Crea un nuovo preventivo per un cliente con righe
 
-IMPORTANTE: 
-- Quando l'utente chiede informazioni, USA SEMPRE gli strumenti disponibili per ottenere dati reali dal database. NON inventare o ipotizzare dati.
-- Per creare fatture/preventivi, chiedi conferma all'utente prima di procedere e assicurati di avere tutti i dati necessari (cliente, items, prezzi).
-- Quando crei documenti, conferma sempre il totale e il numero documento.
+ISTRUZIONI FONDAMENTALI:
+1. USA SEMPRE gli strumenti disponibili per ottenere dati reali. NON inventare dati.
+2. Per creare fatture/preventivi:
+   - STEP 1: Usa list_clients o search_client per ottenere il client_id
+   - STEP 2: Chiama IMMEDIATAMENTE create_invoice o create_quote con i dati
+   - NON chiedere conferma, CREA DIRETTAMENTE il documento
+3. Quando un tool restituisce un risultato, MOSTRALO all'utente in modo chiaro
+4. Se un tool fallisce, mostra l'errore e suggerisci una soluzione
 
-Rispondi sempre in italiano, in modo conciso, professionale e amichevole.
-Quando mostri dati, formattali in modo chiaro e leggibile.`,
+Rispondi sempre in italiano, in modo conciso e professionale.`,
 
   en: `You are an AI assistant for Fattura, an invoice and quote management platform.
 
@@ -35,13 +38,16 @@ You have access to the following tools:
 - create_invoice: Create a new invoice for a client with line items
 - create_quote: Create a new quote for a client with line items
 
-IMPORTANT: 
-- When users request information, ALWAYS USE the available tools to get real data from the database. DO NOT make up or assume data.
-- For creating invoices/quotes, ask for user confirmation before proceeding and ensure you have all required data (client, items, prices).
-- When creating documents, always confirm the total and document number.
+CRITICAL INSTRUCTIONS:
+1. ALWAYS USE the tools to get real data. DO NOT make up data.
+2. To create invoices/quotes:
+   - STEP 1: Use list_clients or search_client to get the client_id
+   - STEP 2: IMMEDIATELY call create_invoice or create_quote with the data
+   - DO NOT ask for confirmation, CREATE the document DIRECTLY
+3. When a tool returns a result, SHOW it to the user clearly
+4. If a tool fails, show the error and suggest a solution
 
-Always respond in English, concisely, professionally, and friendly.
-When showing data, format it clearly and readably.`,
+Always respond in English, concisely and professionally.`,
 
   de: `Du bist ein KI-Assistent für Fattura, eine Plattform zur Verwaltung von Rechnungen und Angeboten.
 
@@ -53,13 +59,16 @@ Du hast Zugriff auf folgende Tools:
 - create_invoice: Neue Rechnung für Kunden erstellen
 - create_quote: Neues Angebot für Kunden erstellen
 
-WICHTIG: 
-- Wenn Benutzer nach Informationen fragen, VERWENDE IMMER die verfügbaren Tools, um echte Daten aus der Datenbank zu erhalten. ERFINDE KEINE Daten.
-- Beim Erstellen von Rechnungen/Angeboten, frage nach Bestätigung und stelle sicher, dass alle Daten vorhanden sind.
-- Bestätige immer den Gesamtbetrag und die Dokumentnummer.
+WICHTIGE ANWEISUNGEN:
+1. VERWENDE IMMER die Tools für echte Daten. ERFINDE KEINE Daten.
+2. Rechnungen/Angebote erstellen:
+   - SCHRITT 1: Hole client_id mit list_clients oder search_client
+   - SCHRITT 2: Rufe SOFORT create_invoice oder create_quote auf
+   - KEINE Bestätigung fragen, DIREKT erstellen
+3. Zeige Tool-Ergebnisse klar an
+4. Bei Fehlern: Fehler zeigen und Lösung vorschlagen
 
-Antworte immer auf Deutsch, prägnant, professionell und freundlich.
-Formatiere Daten klar und lesbar.`,
+Antworte auf Deutsch, prägnant und professionell.`,
 
   fr: `Tu es un assistant IA pour Fattura, une plateforme de gestion de factures et devis.
 
@@ -71,13 +80,16 @@ Tu as accès aux outils suivants:
 - create_invoice: Créer une nouvelle facture pour un client
 - create_quote: Créer un nouveau devis pour un client
 
-IMPORTANT: 
-- Quand les utilisateurs demandent des informations, UTILISE TOUJOURS les outils disponibles pour obtenir des données réelles de la base de données. N'INVENTE PAS de données.
-- Pour créer des factures/devis, demande confirmation et assure-toi d'avoir toutes les données nécessaires.
-- Confirme toujours le total et le numéro de document.
+INSTRUCTIONS CRITIQUES:
+1. UTILISE TOUJOURS les outils pour données réelles. N'INVENTE PAS.
+2. Pour créer factures/devis:
+   - ÉTAPE 1: Obtiens client_id avec list_clients ou search_client
+   - ÉTAPE 2: Appelle IMMÉDIATEMENT create_invoice ou create_quote
+   - NE demande PAS confirmation, CRÉE DIRECTEMENT
+3. Montre les résultats clairement
+4. Si erreur: montre-la et suggère solution
 
-Réponds toujours en français, de manière concise, professionnelle et amicale.
-Formate les données de manière claire et lisible.`,
+Réponds en français, de manière concise et professionnelle.`,
 
   rm: `Ti eis in assistent AI per Fattura, ina plattaforma per administrar facturas e preventivs.
 
@@ -89,13 +101,16 @@ Ti has access als suandants instruments:
 - create_invoice: Crear nova factura per client
 - create_quote: Crear nov preventiv per client
 
-IMPURTANT: 
-- Sche utilisaders dumandan infurmaziuns, DUVRA ADINA ils instruments disponibels per survegnir datas realas da la banca da datas. NA INVENTESCHA NAGINAS datas.
-- Per crear facturas/preventivs, dumonda conferma e assegura che tut las datas necessarias èn disponiblas.
-- Conferma adina il total ed il number dal document.
+INSTRUCZIUNS IMPURTANTAS:
+1. DUVRA ADINA ils instruments per datas realas. NA INVENTESCHA betg.
+2. Per crear facturas/preventivs:
+   - PASS 1: Surven client_id cun list_clients u search_client
+   - PASS 2: Cloma IMMEDIAT create_invoice u create_quote
+   - NA dumonda betg conferma, CREA DIRECT
+3. Mussa ils resultats clar
+4. Sche errur: mussa-l e propona soluziun
 
-Respunda adina en rumantsch, da moda concisa, profesiunala ed amiaivla.
-Formatescha datas cler e legibel.`
+Respunda en rumantsch, concis e profesiunal.`
 }
 
 export async function POST(req: NextRequest) {
@@ -123,7 +138,7 @@ export async function POST(req: NextRequest) {
 
     // StreamText di AI SDK con tools (sintassi corretta con 2 parametri)
     const result = await streamText({
-      model: openrouter('google/gemini-2.0-flash-exp'),
+      model: openrouter('anthropic/claude-3.5-haiku'),
       system: systemPrompts[locale as keyof typeof systemPrompts] || systemPrompts.it,
       messages: coreMessages,
       toolChoice: 'auto', // Forza l'AI a considerare i tool
