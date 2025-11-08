@@ -86,8 +86,8 @@ export default function ProductsPage() {
     const limitsCheck = await checkLimits('product')
     if (!limitsCheck.allowed) {
       setUpgradeDialogParams({
-        currentCount: limitsCheck.currentCount || 0,
-        maxCount: limitsCheck.maxCount || 0,
+        currentCount: limitsCheck.current_count || 0,
+        maxCount: limitsCheck.max_count || 0,
         planName: subscription?.plan?.name || 'Free'
       })
       setShowUpgradeDialog(true)
