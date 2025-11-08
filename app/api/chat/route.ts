@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
 
     // StreamText di AI SDK con tools (sintassi corretta con 2 parametri)
     const result = await streamText({
-      model: openrouter('google/gemini-2.0-flash-exp:free'),
+      model: openrouter('google/gemini-2.0-flash-exp'),
       system: systemPrompts[locale as keyof typeof systemPrompts] || systemPrompts.it,
       messages: coreMessages,
       tools: {
