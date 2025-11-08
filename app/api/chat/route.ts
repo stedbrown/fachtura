@@ -128,9 +128,7 @@ export async function POST(req: NextRequest) {
       messages: coreMessages,
       temperature: 0.7, // Più conversazionale
       toolChoice: 'auto', // AI decide quando usare i tool (can be 'none', 'auto', or specific tool)
-      // Parallel tool calls: allow AI to call multiple tools simultaneously
-      // This improves efficiency for complex queries
-      experimental_continueSteps: true, // Allow multi-step reasoning
+      // Note: AI SDK v5 handles multi-step reasoning and parallel tool calls automatically
       tools: {
         // Tool 1: Lista clienti
         list_clients: tool({
