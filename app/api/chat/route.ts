@@ -221,8 +221,7 @@ export async function POST(req: NextRequest) {
             return stats
           }
         })
-      },
-      maxSteps: 5
+      }
     })
 
     // Metodo per useChat hook con headers espliciti
