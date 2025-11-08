@@ -16,18 +16,7 @@ export default function ChatPage() {
   const t = useTranslations('chat')
   const [inputValue, setInputValue] = useState('')
 
-  const { messages, sendMessage, status, error } = useChat({
-    fetch: async (input, init) => {
-      const body = JSON.parse(init?.body as string || '{}')
-      return fetch(input, {
-        ...init,
-        body: JSON.stringify({
-          ...body,
-          locale
-        })
-      })
-    }
-  })
+  const { messages, sendMessage, status, error } = useChat()
 
   const isLoading = status === 'streaming' || status === 'awaiting-response'
 

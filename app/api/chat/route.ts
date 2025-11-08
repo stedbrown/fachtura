@@ -65,7 +65,10 @@ Formatescha datas cler e legibel.`
 
 export async function POST(req: NextRequest) {
   try {
-    const { messages = [] } = await req.json()
+    const body = await req.json()
+    const { messages = [] } = body
+    // Estrai locale dai metadata del messaggio o dal body
+    const locale = body.data?.locale || body.locale || 'it'
 
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
