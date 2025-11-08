@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { NextRequest } from 'next/server'
 import { z } from 'zod'
 
-export const runtime = 'edge'
+export const runtime = 'nodejs'
 
 const systemPrompts = {
   it: `Sei l'assistente AI di Fattura. NON SEI UN API. Sei un assistente CONVERSAZIONALE.
