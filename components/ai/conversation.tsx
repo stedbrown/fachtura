@@ -25,12 +25,14 @@ export function Conversation({
   )
 }
 
-interface ConversationContentProps extends React.HTMLAttributes<HTMLDivElement> {}
+interface ConversationContentProps {
+  children: React.ReactNode
+  className?: string
+}
 
 export function ConversationContent({ 
   className, 
-  children, 
-  ...props 
+  children
 }: ConversationContentProps) {
   const scrollRef = React.useRef<HTMLDivElement>(null)
   const [shouldAutoScroll, setShouldAutoScroll] = React.useState(true)
@@ -64,7 +66,6 @@ export function ConversationContent({
     <ScrollArea 
       ref={scrollRef}
       className={cn('flex-1 px-4', className)}
-      {...props}
     >
       <div className="max-w-4xl mx-auto py-4 space-y-2">
         {children}
