@@ -152,12 +152,7 @@ export default function ChatPage() {
             </div>
           ) : (
             <div className="space-y-6">
-              {messages.map((message) => {
-                // Debug: log message structure
-                if (message.role === 'assistant') {
-                  console.log('Assistant message:', message)
-                }
-                return (
+              {messages.map((message) => (
                   <div
                     key={message.id}
                     className={cn(
@@ -212,8 +207,7 @@ export default function ChatPage() {
                     </div>
                   )}
                 </div>
-                )
-              })}
+              ))}
 
               {/* Loading indicator */}
               {isLoading && (

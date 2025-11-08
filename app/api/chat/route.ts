@@ -89,8 +89,6 @@ export async function POST(req: NextRequest) {
     // Converti i messaggi UI in formato modello (gestisce parts automaticamente)
     const coreMessages = convertToCoreMessages(messages)
 
-    console.log(`[Chat API] User: ${user.id}, Locale: ${locale}, Messages: ${messages.length}`)
-
     // StreamText di AI SDK con tools (sintassi corretta con 2 parametri)
     const result = await streamText({
       model: openrouter('openai/gpt-4o-mini'),
@@ -242,7 +240,6 @@ export async function POST(req: NextRequest) {
             notes: z.string().optional().describe('Optional notes for the invoice')
           }),
           execute: async (input, options) => {
-            console.log('[create_invoice] Tool called with input:', JSON.stringify(input))
             const { client_id, items, notes } = input
 
             // Verifica limiti abbonamento
@@ -314,7 +311,7 @@ export async function POST(req: NextRequest) {
               quantity: item.quantity,
               unit_price: item.unit_price,
               tax_rate: item.tax_rate || 8.1,
-              total: item.quantity * item.unit_price * (1 + (item.tax_rate || 8.1) / 100)
+              line_total: item.quantity * item.unit_price * (1 + (item.tax_rate || 8.1) / 100)
             }))
 
             const { error: itemsError } = await supabase
@@ -327,15 +324,13 @@ export async function POST(req: NextRequest) {
               return { error: `Errore aggiunta items: ${itemsError.message}` }
             }
 
-            const response = {
+            return {
               success: true,
               invoice_id: invoice.id,
               invoice_number: invoiceNumber,
               total: total,
               message: `Fattura ${invoiceNumber} creata con successo! Totale: CHF ${total.toFixed(2)}`
             }
-            console.log('[create_invoice] Success:', JSON.stringify(response))
-            return response
           }
         }),
 
@@ -430,7 +425,7 @@ export async function POST(req: NextRequest) {
               quantity: item.quantity,
               unit_price: item.unit_price,
               tax_rate: item.tax_rate || 8.1,
-              total: item.quantity * item.unit_price * (1 + (item.tax_rate || 8.1) / 100)
+              line_total: item.quantity * item.unit_price * (1 + (item.tax_rate || 8.1) / 100)
             }))
 
             const { error: itemsError } = await supabase
