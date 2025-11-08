@@ -153,22 +153,28 @@ export default function ChatPage() {
                 <MessageContent>
                   {message.parts?.map((part, index) => {
                     // Render text parts
-                    if (part.type === 'text' && part.text) {
+                    if (part.type === 'text' && 'text' in part) {
                       return <Response key={index}>{part.text}</Response>
                     }
                     
-                    // Render tool calls
+                    // Render tool calls - proper type narrowing for AI SDK v2
                     if (part.type && part.type.startsWith('tool-')) {
                       const toolName = part.type.replace('tool-', '')
-                      const output = part.output as any
+                      
+                      // Type guard for tool parts with result
+                      const toolOutput = 'result' in part ? part.result : undefined
+                      const toolState = 'state' in part ? part.state : 'output-available'
+                      const toolError = toolOutput && typeof toolOutput === 'object' && 'error' in toolOutput 
+                        ? (toolOutput as any).error 
+                        : undefined
                       
                       return (
                         <Tool
                           key={index}
                           name={toolName}
-                          status={part.state as any}
-                          result={output}
-                          error={output?.error}
+                          status={toolState as any}
+                          result={toolOutput}
+                          error={toolError}
                         />
                       )
                     }
