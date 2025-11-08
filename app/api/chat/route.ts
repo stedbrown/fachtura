@@ -84,8 +84,11 @@ export async function POST(req: NextRequest) {
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
+      console.error('[AUTH] Error or no user:', authError)
       return new Response('Unauthorized', { status: 401 })
     }
+    
+    console.log(`[AUTH] User authenticated: ${user.id} (${user.email})`)
 
     const openrouter = createOpenRouter({
       apiKey: process.env.OPENROUTER_API_KEY!,
@@ -94,9 +97,11 @@ export async function POST(req: NextRequest) {
     // Converti i messaggi UI in formato modello (gestisce parts automaticamente)
     const coreMessages = convertToCoreMessages(messages)
 
-    console.log(`Messages: ${messages.length}, Core: ${coreMessages.length}, Locale: ${locale}`)
+    console.log(`[CHAT] Messages: ${messages.length}, Core: ${coreMessages.length}, Locale: ${locale}`)
+    console.log(`[CHAT] Last message:`, coreMessages[coreMessages.length - 1])
 
     // StreamText di AI SDK con tools (sintassi corretta con 2 parametri)
+    console.log('[CHAT] Calling streamText with 4 tools: list_clients, search_client, get_subscription_status, get_invoice_stats')
     const result = await streamText({
       model: openrouter('anthropic/claude-3.5-haiku'),
       system: systemPrompts[locale as keyof typeof systemPrompts] || systemPrompts.it,
@@ -110,13 +115,21 @@ export async function POST(req: NextRequest) {
           }),
           execute: async (input, options) => {
             const { limit } = input
-            const { data: clients } = await supabase
+            console.log(`[list_clients] START - user.id: ${user.id}, limit: ${limit}`)
+            
+            const { data: clients, error } = await supabase
               .from('clients')
               .select('id, name, email, phone, address, city, zip_code, country, created_at')
               .eq('user_id', user.id)
               .is('deleted_at', null)
               .order('created_at', { ascending: false })
               .limit(limit)
+            
+            if (error) {
+              console.error('[list_clients] ERROR:', error)
+            }
+            
+            console.log(`[list_clients] RESULT - Found ${clients?.length || 0} clients:`, clients)
             
             return { clients: clients || [], count: clients?.length || 0 }
           }
@@ -130,13 +143,21 @@ export async function POST(req: NextRequest) {
           }),
           execute: async (input, options) => {
             const { name } = input
-            const { data: client } = await supabase
+            console.log(`[search_client] START - Searching for: "${name}"`)
+            
+            const { data: client, error } = await supabase
               .from('clients')
               .select('id, name, email, phone, address, city, zip_code, country')
               .eq('user_id', user.id)
               .is('deleted_at', null)
               .ilike('name', `%${name}%`)
               .single()
+            
+            if (error) {
+              console.error('[search_client] ERROR:', error)
+            }
+            
+            console.log(`[search_client] RESULT:`, client || 'Not found')
             
             return client || { error: 'Client not found' }
           }
