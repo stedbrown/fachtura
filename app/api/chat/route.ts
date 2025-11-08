@@ -707,9 +707,9 @@ export async function POST(req: NextRequest) {
           }
         }),
 
-        // Tool 12: Aggiorna status fattura
+        // Tool 12: Aggiorna status fattura (singola)
         update_invoice_status: tool({
-          description: 'Update invoice status: draft → issued → paid → overdue. Use this when user confirms payment or changes invoice state.',
+          description: 'Update SINGLE invoice status: draft → issued → paid → overdue. For MULTIPLE invoices, use batch_update_invoice_status instead!',
           inputSchema: z.object({
             invoice_id: z.string().uuid().describe('Invoice UUID'),
             status: z.enum(['draft', 'issued', 'paid', 'overdue']).describe('New status')
@@ -1091,7 +1091,153 @@ export async function POST(req: NextRequest) {
           }
         }),
 
-        // Tool 21: Fatture scadute
+        // Tool 21: Aggiorna status fatture in BATCH
+        batch_update_invoice_status: tool({
+          description: 'Update MULTIPLE invoices status at once. Use this when user wants to update many invoices (e.g., "mark all draft invoices as paid"). CRITICAL: First call list_invoices to get IDs, then update them!',
+          inputSchema: z.object({
+            filter: z.object({
+              status: z.enum(['draft', 'issued', 'paid', 'overdue', 'all']).optional().describe('Filter invoices by current status'),
+              invoice_numbers: z.array(z.string()).optional().describe('Specific invoice numbers to update')
+            }).optional().describe('Filter criteria to select invoices'),
+            new_status: z.enum(['draft', 'issued', 'paid', 'overdue']).describe('New status to set')
+          }),
+          execute: async (input, options) => {
+            const { filter, new_status } = input
+
+            // Build query
+            let query = supabase
+              .from('invoices')
+              .select('id, invoice_number, status')
+              .eq('user_id', user.id)
+              .is('deleted_at', null)
+
+            if (filter?.status && filter.status !== 'all') {
+              query = query.eq('status', filter.status)
+            }
+
+            if (filter?.invoice_numbers && filter.invoice_numbers.length > 0) {
+              query = query.in('invoice_number', filter.invoice_numbers)
+            }
+
+            // Get invoices to update
+            const { data: invoices, error: fetchError } = await query
+
+            if (fetchError) {
+              return { error: `Errore ricerca fatture: ${fetchError.message}` }
+            }
+
+            if (!invoices || invoices.length === 0) {
+              return { 
+                error: 'Nessuna fattura trovata con i criteri specificati',
+                filter_used: filter,
+                message: `❌ Nessuna fattura trovata${filter?.status ? ` con status "${filter.status}"` : ''}${filter?.invoice_numbers ? ` nei numeri specificati` : ''}`
+              }
+            }
+
+            // Update all invoices
+            const invoiceIds = invoices.map(inv => inv.id)
+            const { data: updated, error: updateError } = await supabase
+              .from('invoices')
+              .update({
+                status: new_status,
+                updated_at: new Date().toISOString()
+              })
+              .in('id', invoiceIds)
+              .select('invoice_number')
+
+            if (updateError) {
+              return { error: `Errore aggiornamento: ${updateError.message}` }
+            }
+
+            const statusEmoji = {
+              draft: '📝',
+              issued: '📤',
+              paid: '✅',
+              overdue: '⚠️'
+            }
+
+            return {
+              success: true,
+              updated_count: updated?.length || 0,
+              invoice_numbers: updated?.map(inv => inv.invoice_number) || [],
+              new_status,
+              message: `${statusEmoji[new_status]} Aggiornate ${updated?.length || 0} fatture come "${new_status}"!\n\nFatture: ${updated?.map(inv => inv.invoice_number).join(', ')}`
+            }
+          }
+        }),
+
+        // Tool 22: Aggiorna status preventivi in BATCH
+        batch_update_quote_status: tool({
+          description: 'Update MULTIPLE quotes status at once. Use when user wants to update many quotes.',
+          inputSchema: z.object({
+            filter: z.object({
+              status: z.enum(['draft', 'sent', 'accepted', 'rejected', 'all']).optional().describe('Filter quotes by current status'),
+              quote_numbers: z.array(z.string()).optional().describe('Specific quote numbers to update')
+            }).optional().describe('Filter criteria'),
+            new_status: z.enum(['draft', 'sent', 'accepted', 'rejected']).describe('New status to set')
+          }),
+          execute: async (input, options) => {
+            const { filter, new_status } = input
+
+            let query = supabase
+              .from('quotes')
+              .select('id, quote_number, status')
+              .eq('user_id', user.id)
+              .is('deleted_at', null)
+
+            if (filter?.status && filter.status !== 'all') {
+              query = query.eq('status', filter.status)
+            }
+
+            if (filter?.quote_numbers && filter.quote_numbers.length > 0) {
+              query = query.in('quote_number', filter.quote_numbers)
+            }
+
+            const { data: quotes, error: fetchError } = await query
+
+            if (fetchError) {
+              return { error: `Errore ricerca preventivi: ${fetchError.message}` }
+            }
+
+            if (!quotes || quotes.length === 0) {
+              return { 
+                error: 'Nessun preventivo trovato con i criteri specificati',
+                message: `❌ Nessun preventivo trovato${filter?.status ? ` con status "${filter.status}"` : ''}`
+              }
+            }
+
+            const quoteIds = quotes.map(q => q.id)
+            const { data: updated, error: updateError } = await supabase
+              .from('quotes')
+              .update({
+                status: new_status,
+                updated_at: new Date().toISOString()
+              })
+              .in('id', quoteIds)
+              .select('quote_number')
+
+            if (updateError) {
+              return { error: `Errore aggiornamento: ${updateError.message}` }
+            }
+
+            const statusEmoji = {
+              draft: '📝',
+              sent: '📤',
+              accepted: '✅',
+              rejected: '❌'
+            }
+
+            return {
+              success: true,
+              updated_count: updated?.length || 0,
+              quote_numbers: updated?.map(q => q.quote_number) || [],
+              new_status,
+              message: `${statusEmoji[new_status]} Aggiornati ${updated?.length || 0} preventivi come "${new_status}"!\n\nPreventivi: ${updated?.map(q => q.quote_number).join(', ')}`
+            }
+          }
+        }),
+
+        // Tool 23: Fatture scadute
         get_overdue_invoices: tool({
           description: 'Get all overdue invoices (status = overdue OR due_date < today)',
           inputSchema: z.object({
@@ -1129,7 +1275,7 @@ export async function POST(req: NextRequest) {
           }
         }),
 
-        // Tool 22: Duplica fattura
+        // Tool 24: Duplica fattura
         duplicate_invoice: tool({
           description: 'Duplicate an existing invoice with all items (useful for recurring invoices)',
           inputSchema: z.object({
@@ -1238,7 +1384,7 @@ export async function POST(req: NextRequest) {
           }
         }),
 
-        // Tool 23: Riepilogo entrate
+        // Tool 25: Riepilogo entrate
         get_revenue_summary: tool({
           description: 'Get revenue summary for a specific period (month, year, all time)',
           inputSchema: z.object({
@@ -1288,7 +1434,7 @@ export async function POST(req: NextRequest) {
 
         // ==================== FASE 3: NOTIFICHE & ANALYTICS ====================
 
-        // Tool 24: Lista notifiche
+        // Tool 26: Lista notifiche
         list_notifications: tool({
           description: 'Get user notifications with optional filter for unread only',
           inputSchema: z.object({
@@ -1322,7 +1468,7 @@ export async function POST(req: NextRequest) {
           }
         }),
 
-        // Tool 25: Segna notifica come letta
+        // Tool 27: Segna notifica come letta
         mark_notification_read: tool({
           description: 'Mark a notification as read',
           inputSchema: z.object({
@@ -1350,7 +1496,7 @@ export async function POST(req: NextRequest) {
           }
         }),
 
-        // Tool 26: Top clienti per fatturato
+        // Tool 28: Top clienti per fatturato
         get_top_clients: tool({
           description: 'Get top clients by total revenue (paid invoices)',
           inputSchema: z.object({
@@ -1414,7 +1560,7 @@ export async function POST(req: NextRequest) {
 
         // ==================== FASE 4: UTILITY & RICERCA ====================
 
-        // Tool 27: Pagamenti in arrivo
+        // Tool 29: Pagamenti in arrivo
         get_upcoming_payments: tool({
           description: 'Get upcoming invoice payments (issued invoices with due dates in near future)',
           inputSchema: z.object({
@@ -1457,7 +1603,7 @@ export async function POST(req: NextRequest) {
           }
         }),
 
-        // Tool 28: Aggiorna impostazioni azienda
+        // Tool 30: Aggiorna impostazioni azienda
         update_company_settings: tool({
           description: 'Update company settings (name, address, VAT, IBAN, etc.)',
           inputSchema: z.object({
@@ -1503,7 +1649,7 @@ export async function POST(req: NextRequest) {
           }
         }),
 
-        // Tool 29: Cerca fatture per testo
+        // Tool 31: Cerca fatture per testo
         search_invoices: tool({
           description: 'Search invoices by invoice number, client name, or notes content',
           inputSchema: z.object({
@@ -1540,7 +1686,7 @@ export async function POST(req: NextRequest) {
           }
         }),
 
-        // Tool 30: Cerca preventivi per testo
+        // Tool 32: Cerca preventivi per testo
         search_quotes: tool({
           description: 'Search quotes by quote number, client name, or notes content',
           inputSchema: z.object({
