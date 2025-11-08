@@ -1,8 +1,9 @@
-import { streamText, convertToCoreMessages, tool } from 'ai'
+import { streamText, convertToCoreMessages } from 'ai'
 import { createOpenRouter } from '@openrouter/ai-sdk-provider'
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest } from 'next/server'
-import { z } from 'zod'
+// import { z } from 'zod' // Temporaneo - tool commentati
+// import { tool } from 'ai' // Temporaneo
 
 export const runtime = 'edge'
 
@@ -86,12 +87,12 @@ export async function POST(req: NextRequest) {
 
     console.log(`Messages: ${messages.length}, Core: ${coreMessages.length}, Locale: ${locale}`)
 
-    // StreamText di AI SDK con tools
+    // StreamText di AI SDK senza tools (temporaneo per debug)
     const result = await streamText({
       model: openrouter('mistralai/mistral-7b-instruct'),
       system: systemPrompts[locale as keyof typeof systemPrompts] || systemPrompts.it,
       messages: coreMessages,
-      tools: {
+      /* tools: {
         // Tool 1: Lista clienti
         list_clients: tool({
           description: 'Get a list of all active clients for the user',
@@ -219,7 +220,7 @@ export async function POST(req: NextRequest) {
           }
         })
       },
-      maxSteps: 5
+      maxSteps: 5 */
     })
 
     // Metodo per useChat hook con headers espliciti
