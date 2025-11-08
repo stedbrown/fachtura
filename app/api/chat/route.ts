@@ -91,7 +91,6 @@ export async function POST(req: NextRequest) {
       model: openrouter('mistralai/mistral-7b-instruct'),
       system: systemPrompts[locale as keyof typeof systemPrompts] || systemPrompts.it,
       messages: coreMessages,
-      maxTokens: 2048,
       tools: {
         // Tool 1: Lista clienti
         list_clients: tool({
