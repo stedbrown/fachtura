@@ -45,19 +45,25 @@ export function ConversationContent({
     }
   }, [children, shouldAutoScroll])
 
-  // Detect manual scrolling to disable auto-scroll
-  const handleScroll = React.useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    const target = e.target as HTMLDivElement
-    const isAtBottom = 
-      Math.abs(target.scrollHeight - target.scrollTop - target.clientHeight) < 10
-    setShouldAutoScroll(isAtBottom)
+  // Setup scroll listener on viewport
+  React.useEffect(() => {
+    const scrollElement = scrollRef.current?.querySelector('[data-radix-scroll-area-viewport]')
+    if (!scrollElement) return
+
+    const handleScroll = () => {
+      const isAtBottom = 
+        Math.abs(scrollElement.scrollHeight - scrollElement.scrollTop - scrollElement.clientHeight) < 10
+      setShouldAutoScroll(isAtBottom)
+    }
+
+    scrollElement.addEventListener('scroll', handleScroll)
+    return () => scrollElement.removeEventListener('scroll', handleScroll)
   }, [])
 
   return (
     <ScrollArea 
       ref={scrollRef}
       className={cn('flex-1 px-4', className)}
-      onScroll={handleScroll}
       {...props}
     >
       <div className="max-w-4xl mx-auto py-4 space-y-2">
