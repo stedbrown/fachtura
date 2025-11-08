@@ -7,43 +7,103 @@ import { z } from 'zod'
 export const runtime = 'edge'
 
 const systemPrompts = {
-  it: `Sei l'assistente AI di Fattura. Rispondi SEMPRE all'utente con testo conversazionale.
+  it: `Sei l'assistente AI di Fattura. Hai 9 strumenti per aiutare l'utente.
 
-QUANDO USI I TOOL:
+REGOLA FONDAMENTALE: Rispondi SEMPRE con testo conversazionale, mai solo JSON.
 
-1. list_clients → Mostra lista numerata con nome, email, città
-   Esempio: "Ecco i tuoi 3 clienti:
-   1. Mario Rossi (mario@email.com) - Milano
-   2. Luigi Verdi (luigi@email.com) - Roma
-   ..."
+GUIDA PER OGNI TOOL:
 
-2. get_subscription_status → Riassumi piano e limiti in modo chiaro
-   Esempio: "Sei sul piano Free:
-   • Clienti: 1/3 utilizzati
-   • Fatture: 0/5 questo mese
-   • Preventivi: 0/5 questo mese"
+1. **list_clients** → Lista numerata
+   "Ecco i tuoi 3 clienti:
+   1. 📧 Mario Rossi (mario@email.com) - Milano, CH
+   2. 📧 Luigi Verdi - Roma, IT"
 
-3. get_invoice_stats → Mostra statistiche leggibili
-   Esempio: "Statistiche fatture (ultimo mese):
-   • Totale: 5 fatture per CHF 2,450.00
-   • Pagate: 3 • Emesse: 1 • Bozze: 1"
+2. **search_client** → Usa quando cercano un cliente specifico per nome
 
-4. create_invoice/create_quote → MOSTRA il campo "message" dal tool
-   (contiene già numero, totale e link cliccabile)
+3. **get_client_details** → Storico completo di un cliente
+   "📋 Cliente: Mario Rossi
+   📍 Via Roma 10, Milano - 📞 +41 79 123 4567
+   
+   Storico:
+   • 3 fatture (2 pagate, 1 emessa) - Totale: CHF 5,200
+   • 2 preventivi (1 accettato, 1 inviato)"
 
-IMPORTANTE: Rispondi sempre in italiano, con emoji ✅ ❌ 📊 quando opportuno, e formatta i numeri (es: CHF 1,081.00).`,
+4. **get_subscription_status** → Piano corrente
+   "📦 Piano Free:
+   ✅ Clienti: 1/3
+   ✅ Fatture: 0/5 questo mese
+   ✅ Preventivi: 0/5 questo mese"
 
-  en: `AI for Fattura. 6 tools.
+5. **list_invoices** → Elenco fatture con filtro status
+   "📄 Fatture (ultimi 10):
+   1. INV-0003 - CHF 648.60 (Pagata) - Emanuele - 08/11/2025
+   2. INV-0002 - CHF 1,081.00 (Emessa) - Mario - 05/11/2025"
 
-KEY RULE: When tool output has "message" field, SHOW THAT TEXT to user (includes links!).
+6. **get_invoice_stats** → Statistiche periodo
+   "📊 Statistiche fatture (ultimo mese):
+   • Totale: 5 fatture per CHF 12,450.00
+   • 💰 Pagate: 3 • 📤 Emesse: 1 • ✏️ Bozze: 1"
 
-Respond in English.`,
+7. **get_company_settings** → Info azienda configurata
+   "🏢 La tua azienda:
+   Nome: Acme SA
+   Indirizzo: Via Test 1, 6900 Lugano
+   P.IVA: CHE-123.456.789 IVA"
 
-  de: `KI für Fattura. 6 Tools. Wenn Output "message" hat, ZEIGE ES (mit Links!).`,
+8. **create_invoice** → MOSTRA il campo "message" dal tool
+   (contiene numero, totale e link diretto)
 
-  fr: `IA Fattura. 6 outils. Si output a "message", MONTRE-LE (avec liens!).`,
+9. **create_quote** → MOSTRA il campo "message" dal tool
+   (contiene numero, totale, validità e link)
 
-  rm: `AI Fattura. 6 instruments. Sche output ha "message", MUSSA-L (cun links!).`
+IMPORTANTE:
+• Usa emoji ✅❌📊📄💰🏢📧📞 per chiarezza
+• Formatta numeri: CHF 1,081.00
+• Date: gg/mm/aaaa
+• Quando crei fatture/preventivi, USA IL CAMPO "message" dal tool (ha già tutto formattato)`,
+
+  en: `AI for Fattura. 9 tools available.
+
+KEY RULE: Always respond with conversational text, never just JSON.
+
+When using tools, format output nicely:
+- list_clients → numbered list with name, email, city
+- get_client_details → full client info + history
+- list_invoices → formatted invoice list
+- get_invoice_stats → statistics with emoji 📊💰
+- create_invoice/create_quote → SHOW the "message" field (has link!)
+
+Use emoji for clarity. Format numbers as CHF 1,081.00. Respond in English.`,
+
+  de: `KI für Fattura. 9 Tools verfügbar.
+
+REGEL: Immer mit konversationalem Text antworten, nie nur JSON.
+
+Tools formatieren:
+- list_clients → nummerierte Liste
+- get_client_details → vollständige Info + Historie
+- create_invoice/create_quote → "message" Feld ZEIGEN (hat Link!)
+
+Emoji verwenden 📊💰. Zahlen: CHF 1,081.00. Auf Deutsch antworten.`,
+
+  fr: `IA Fattura. 9 outils disponibles.
+
+RÈGLE: Toujours répondre avec texte conversationnel, jamais JSON seul.
+
+Outils:
+- list_clients → liste numérotée
+- get_client_details → info complète + historique
+- create_invoice/create_quote → MONTRER champ "message" (a le lien!)
+
+Emoji 📊💰. Nombres: CHF 1,081.00. Répondre en français.`,
+
+  rm: `AI Fattura. 9 instruments disponibels.
+
+REGLA: Adina respunder cun text conversaziunal.
+
+create_invoice/create_quote → MUSSA "message" (ha link!).
+
+Emoji 📊💰. Nummers: CHF 1,081.00. Romontsch.`
 }
 
 export async function POST(req: NextRequest) {
@@ -163,7 +223,89 @@ export async function POST(req: NextRequest) {
           }
         }),
 
-        // Tool 4: Statistiche fatture
+        // Tool 4: Dettagli cliente completi
+        get_client_details: tool({
+          description: 'Get complete details of a specific client including their invoices and quotes history',
+          inputSchema: z.object({
+            client_id: z.string().uuid().describe('The UUID of the client')
+          }),
+          execute: async (input, options) => {
+            const { client_id } = input
+            
+            // Get client info
+            const { data: client } = await supabase
+              .from('clients')
+              .select('*')
+              .eq('id', client_id)
+              .eq('user_id', user.id)
+              .is('deleted_at', null)
+              .single()
+            
+            if (!client) {
+              return { error: 'Cliente non trovato' }
+            }
+            
+            // Get client's invoices
+            const { data: invoices } = await supabase
+              .from('invoices')
+              .select('id, invoice_number, date, status, total')
+              .eq('client_id', client_id)
+              .is('deleted_at', null)
+              .order('date', { ascending: false })
+              .limit(10)
+            
+            // Get client's quotes
+            const { data: quotes } = await supabase
+              .from('quotes')
+              .select('id, quote_number, date, status, total')
+              .eq('client_id', client_id)
+              .is('deleted_at', null)
+              .order('date', { ascending: false })
+              .limit(10)
+            
+            return {
+              client,
+              invoices: invoices || [],
+              quotes: quotes || [],
+              total_invoices: invoices?.length || 0,
+              total_quotes: quotes?.length || 0
+            }
+          }
+        }),
+
+        // Tool 5: Lista fatture
+        list_invoices: tool({
+          description: 'Get list of invoices with optional filters by status or date range',
+          inputSchema: z.object({
+            status: z.enum(['draft', 'issued', 'paid', 'overdue', 'all']).optional().default('all').describe('Filter by invoice status'),
+            limit: z.coerce.number().optional().default(10).describe('Maximum number of invoices to return')
+          }),
+          execute: async (input, options) => {
+            const { status, limit } = input
+            
+            let query = supabase
+              .from('invoices')
+              .select('id, invoice_number, client_id, clients(name), date, due_date, status, total, created_at')
+              .eq('user_id', user.id)
+              .is('deleted_at', null)
+              .order('date', { ascending: false })
+              .limit(limit)
+            
+            if (status !== 'all') {
+              query = query.eq('status', status)
+            }
+            
+            const { data: invoices } = await query
+            
+            return {
+              invoices: invoices || [],
+              count: invoices?.length || 0,
+              filter: status
+            }
+          }
+        }),
+
+        // Tool 6: Statistiche fatture
         get_invoice_stats: tool({
           description: 'Get statistics about invoices (total count, by status, by period)',
           inputSchema: z.object({
@@ -204,7 +346,29 @@ export async function POST(req: NextRequest) {
           }
         }),
 
-        // Tool 5: Crea fattura
+        // Tool 7: Impostazioni azienda
+        get_company_settings: tool({
+          description: 'Get company settings and configuration (company name, address, VAT, IBAN, etc)',
+          inputSchema: z.object({}),
+          execute: async (input, options) => {
+            const { data: settings } = await supabase
+              .from('company_settings')
+              .select('*')
+              .eq('user_id', user.id)
+              .single()
+            
+            if (!settings) {
+              return { 
+                error: 'Impostazioni azienda non configurate',
+                message: 'Le impostazioni azienda non sono ancora configurate. Vai su Impostazioni per completare il profilo aziendale.'
+              }
+            }
+            
+            return { settings }
+          }
+        }),
+
+        // Tool 8: Crea fattura
         create_invoice: tool({
           description: 'ALWAYS USE THIS TOOL when user asks to create an invoice or fattura. Creates a new invoice for a client with line items and saves it to the database. Returns the invoice ID and confirmation.',
           inputSchema: z.object({
@@ -315,7 +479,7 @@ export async function POST(req: NextRequest) {
           }
         }),
 
-        // Tool 6: Crea preventivo
+        // Tool 9: Crea preventivo
         create_quote: tool({
           description: 'Create a new quote for a client with items. Returns the quote ID and PDF download link.',
           inputSchema: z.object({
