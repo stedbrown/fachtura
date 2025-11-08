@@ -84,9 +84,6 @@ export async function POST(req: NextRequest) {
     // Converti i messaggi UI in formato modello (gestisce parts automaticamente)
     const coreMessages = convertToCoreMessages(messages)
 
-    // Estrai locale dai metadata del primo messaggio user, default 'it'
-    const locale = messages.find((m: any) => m.role === 'user' && m.metadata?.locale)?.metadata?.locale || 'it'
-
     console.log(`Messages: ${messages.length}, Core: ${coreMessages.length}, Locale: ${locale}`)
 
     // StreamText di AI SDK con tools
