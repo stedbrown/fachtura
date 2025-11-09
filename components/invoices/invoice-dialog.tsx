@@ -249,7 +249,7 @@ export function InvoiceDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[1400px] max-h-[90vh] overflow-y-auto w-[95vw]">
+      <DialogContent className="max-w-[1800px] max-h-[92vh] overflow-y-auto w-[98vw]">
         <DialogHeader>
           <DialogTitle className="text-xl md:text-2xl">
             {invoice ? t('editInvoice') : t('form.title')}
