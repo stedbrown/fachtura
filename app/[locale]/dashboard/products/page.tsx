@@ -21,7 +21,6 @@ import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 import { useSubscription } from '@/hooks/use-subscription'
 import { SubscriptionUpgradeDialog } from '@/components/subscription-upgrade-dialog'
-import { Input } from '@/components/ui/input'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { exportFormattedToCSV, exportFormattedToExcel, formatCurrencyForExport } from '@/lib/export-utils'
 
@@ -40,7 +39,6 @@ export default function ProductsPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [productToDelete, setProductToDelete] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false)
   const [upgradeDialogParams, setUpgradeDialogParams] = useState({
     currentCount: 0,
@@ -141,7 +139,7 @@ export default function ProductsPage() {
   }
 
   function handleExport(format: 'csv' | 'excel') {
-    const dataToExport = filteredProducts.map(product => ({
+    const dataToExport = products.map(product => ({
       [t('sku') || 'SKU']: product.sku || '',
       [t('name') || 'Nome']: product.name,
       [t('category') || 'Categoria']: product.category || '',
@@ -162,18 +160,6 @@ export default function ProductsPage() {
     toast.success(tCommon('exportSuccess') || 'Export completato con successo')
   }
 
-  const filteredProducts = useMemo(() => {
-    return products.filter(product => {
-      if (!searchQuery) return true
-      const search = searchQuery.toLowerCase()
-      return (
-        product.name.toLowerCase().includes(search) ||
-        product.sku?.toLowerCase().includes(search) ||
-        product.category?.toLowerCase().includes(search) ||
-        product.description?.toLowerCase().includes(search)
-      )
-    })
-  }, [products, searchQuery])
 
   return (
     <div className="space-y-4 md:space-y-6">
@@ -195,7 +181,7 @@ export default function ProductsPage() {
       <Card>
         <CardHeader className="pb-3 md:pb-4">
           <div className="flex flex-col gap-4">
-            {/* Tabs and Search Row */}
+            {/* Tabs and Export Row */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <Tabs value={showArchived ? 'archived' : 'active'} onValueChange={(v) => setShowArchived(v === 'archived')} className="w-full sm:w-auto">
                 <TabsList className="grid w-full sm:w-auto grid-cols-2">
@@ -211,7 +197,7 @@ export default function ProductsPage() {
               </Tabs>
 
               {/* Export Buttons */}
-              {!showArchived && filteredProducts.length > 0 && (
+              {!showArchived && products.length > 0 && (
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm" onClick={() => handleExport('csv')} className="flex-1 sm:flex-none">
                     <Download className="h-4 w-4 mr-2" />
@@ -224,16 +210,6 @@ export default function ProductsPage() {
                 </div>
               )}
             </div>
-
-            {/* Search Bar */}
-            {!showArchived && (
-              <Input
-                placeholder={t('searchPlaceholder') || 'Cerca per nome, SKU, categoria...'}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="max-w-full sm:max-w-sm"
-              />
-            )}
           </div>
 
           <CardTitle className="mt-4 text-lg md:text-xl">
@@ -248,7 +224,7 @@ export default function ProductsPage() {
             <div className="text-center py-8 md:py-12 text-muted-foreground">
               {tCommon('loading')}...
             </div>
-          ) : filteredProducts.length === 0 ? (
+          ) : products.length === 0 ? (
             <div className="text-center py-8 md:py-12">
               <Package className="h-12 w-12 md:h-16 md:w-16 mx-auto text-muted-foreground mb-4" />
               <h3 className="text-base md:text-lg font-semibold mb-2">
@@ -280,7 +256,7 @@ export default function ProductsPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredProducts.map((product) => (
+                    {products.map((product) => (
                       <TableRow key={product.id}>
                         <TableCell className="font-mono text-xs md:text-sm">{product.sku || '-'}</TableCell>
                         <TableCell className="font-medium text-xs md:text-sm">

@@ -23,7 +23,6 @@ import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 import { useSubscription } from '@/hooks/use-subscription'
 import { SubscriptionUpgradeDialog } from '@/components/subscription-upgrade-dialog'
-import { Input } from '@/components/ui/input'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { exportFormattedToCSV, exportFormattedToExcel, formatDateForExport, formatCurrencyForExport } from '@/lib/export-utils'
 
@@ -66,7 +65,6 @@ export default function OrdersPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [orderToDelete, setOrderToDelete] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
-  const [searchQuery, setSearchQuery] = useState('')
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false)
   const [upgradeDialogParams, setUpgradeDialogParams] = useState({
     currentCount: 0,
@@ -168,7 +166,7 @@ export default function OrdersPage() {
   }
 
   function handleExport(format: 'csv' | 'excel') {
-    const dataToExport = filteredOrders.map(order => ({
+    const dataToExport = orders.map(order => ({
       [t('orderNumber') || 'Numero Ordine']: order.order_number,
       [t('client') || 'Cliente']: order.client?.name || '',
       [t('orderDate') || 'Data']: formatDateForExport(order.date),
@@ -188,17 +186,6 @@ export default function OrdersPage() {
     toast.success(tCommon('exportSuccess') || 'Export completato con successo')
   }
 
-  const filteredOrders = useMemo(() => {
-    return orders.filter(order => {
-      if (!searchQuery) return true
-      const search = searchQuery.toLowerCase()
-      return (
-        order.order_number.toLowerCase().includes(search) ||
-        order.client?.name.toLowerCase().includes(search) ||
-        order.notes?.toLowerCase().includes(search)
-      )
-    })
-  }, [orders, searchQuery])
 
   const dateLocale = localeMap[locale] || it
 
@@ -222,7 +209,7 @@ export default function OrdersPage() {
       <Card>
         <CardHeader className="pb-3 md:pb-4">
           <div className="flex flex-col gap-4">
-            {/* Tabs and Search Row */}
+            {/* Tabs and Export Row */}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <Tabs value={showArchived ? 'archived' : 'active'} onValueChange={(v) => setShowArchived(v === 'archived')} className="w-full sm:w-auto">
                 <TabsList className="grid w-full sm:w-auto grid-cols-2">
@@ -238,7 +225,7 @@ export default function OrdersPage() {
               </Tabs>
 
               {/* Export Buttons */}
-              {!showArchived && filteredOrders.length > 0 && (
+              {!showArchived && orders.length > 0 && (
                 <div className="flex gap-2">
                   <Button variant="outline" size="sm" onClick={() => handleExport('csv')} className="flex-1 sm:flex-none">
                     <Download className="h-4 w-4 mr-2" />
@@ -251,16 +238,6 @@ export default function OrdersPage() {
                 </div>
               )}
             </div>
-
-            {/* Search Bar */}
-            {!showArchived && (
-              <Input
-                placeholder={t('searchPlaceholder') || 'Cerca per numero ordine, cliente...'}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="max-w-full sm:max-w-sm"
-              />
-            )}
           </div>
 
           <CardTitle className="mt-4 text-lg md:text-xl">
@@ -275,7 +252,7 @@ export default function OrdersPage() {
             <div className="text-center py-8 md:py-12 text-muted-foreground">
               {tCommon('loading')}...
             </div>
-          ) : filteredOrders.length === 0 ? (
+          ) : orders.length === 0 ? (
             <div className="text-center py-8 md:py-12">
               <ShoppingCart className="h-12 w-12 md:h-16 md:w-16 mx-auto text-muted-foreground mb-4" />
               <h3 className="text-base md:text-lg font-semibold mb-2">
@@ -307,7 +284,7 @@ export default function OrdersPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredOrders.map((order) => (
+                    {orders.map((order) => (
                       <TableRow key={order.id}>
                         <TableCell className="font-medium text-xs md:text-sm">{order.order_number}</TableCell>
                         <TableCell className="text-xs md:text-sm">{order.client?.name || '-'}</TableCell>
