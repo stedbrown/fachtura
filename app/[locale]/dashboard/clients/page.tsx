@@ -357,80 +357,93 @@ export default function ClientsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 md:space-y-6">
+      {/* Header */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold">{t('title')}</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">{t('title')}</h1>
+          <p className="text-sm md:text-base text-muted-foreground mt-1">
             {t('subtitle')}
           </p>
         </div>
         <div className="flex gap-2">
           <ImportClientsDialog onSuccess={loadClients} />
-          <Button onClick={handleCreate}>
+          <Button onClick={handleCreate} size="default" className="flex-1 sm:flex-initial">
             <Plus className="mr-2 h-4 w-4" />
             {t('newClient')}
           </Button>
         </div>
       </div>
 
-      <Tabs value={showArchived ? 'archived' : 'active'} onValueChange={(value) => setShowArchived(value === 'archived')}>
-        <TabsList>
-          <TabsTrigger value="active">{tTabs('active')}</TabsTrigger>
-          <TabsTrigger value="archived">
-            <Archive className="mr-2 h-4 w-4" />
-            {tTabs('archived')}
-          </TabsTrigger>
-        </TabsList>
-      </Tabs>
-
-      {/* Filters and Export */}
-      <ClientFilters
-        filters={filters}
-        onFiltersChange={setFilters}
-        onExport={handleExport}
-      />
-
+      {/* Main Content Card */}
       <Card>
-        <CardHeader>
-          <CardTitle>{showArchived ? t('archivedTitle') : t('listTitle')}</CardTitle>
-          <CardDescription>
+        <CardHeader className="pb-3 md:pb-4">
+          <div className="flex flex-col gap-4">
+            {/* Tabs and Filters Row */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <Tabs value={showArchived ? 'archived' : 'active'} onValueChange={(value) => setShowArchived(value === 'archived')} className="w-full sm:w-auto">
+                <TabsList className="grid w-full sm:w-auto grid-cols-2">
+                  <TabsTrigger value="active" className="text-xs md:text-sm">
+                    {tTabs('active')}
+                  </TabsTrigger>
+                  <TabsTrigger value="archived" className="text-xs md:text-sm">
+                    <Archive className="h-4 w-4 mr-2" />
+                    {tTabs('archived')}
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+
+              {/* Filters */}
+              <ClientFilters
+                filters={filters}
+                onFiltersChange={setFilters}
+                onExport={handleExport}
+              />
+            </div>
+          </div>
+
+          <CardTitle className="mt-4 text-lg md:text-xl">
+            {showArchived ? t('archivedTitle') : t('listTitle')}
+          </CardTitle>
+          <CardDescription className="text-xs md:text-sm">
             {showArchived ? t('archivedDescription') : t('listDescription')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           {loading ? (
-            <p className="text-center py-8 text-muted-foreground">
-              {tCommon('loading')}
-            </p>
+            <div className="text-center py-8 md:py-12 text-muted-foreground">
+              {tCommon('loading')}...
+            </div>
           ) : filteredClients.length === 0 ? (
-            <p className="text-center py-8 text-muted-foreground">
+            <div className="text-center py-8 md:py-12 text-muted-foreground">
               {clients.length === 0 ? t('noClients') : tCommon('noResults')}
-            </p>
+            </div>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t('fields.name')}</TableHead>
-                  <TableHead>{t('fields.email')}</TableHead>
-                  <TableHead>{t('fields.phone')}</TableHead>
-                  <TableHead>{t('fields.city')}</TableHead>
-                  <TableHead className="text-right">{tCommon('actions')}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <div className="overflow-x-auto -mx-4 sm:mx-0">
+              <div className="inline-block min-w-full align-middle">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-xs md:text-sm">{t('fields.name')}</TableHead>
+                      <TableHead className="hidden md:table-cell text-xs md:text-sm">{t('fields.email')}</TableHead>
+                      <TableHead className="hidden lg:table-cell text-xs md:text-sm">{t('fields.phone')}</TableHead>
+                      <TableHead className="hidden md:table-cell text-xs md:text-sm">{t('fields.city')}</TableHead>
+                      <TableHead className="text-right text-xs md:text-sm">{tCommon('actions')}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
                 {filteredClients.map((client) => (
                   <TableRow 
                     key={client.id}
                     className="cursor-pointer hover:bg-muted/50"
                     onClick={() => handleRowClick(client.id)}
                   >
-                    <TableCell className="font-medium">
+                    <TableCell className="font-medium text-xs md:text-sm">
                       {client.name}
                     </TableCell>
-                    <TableCell>{client.email || '-'}</TableCell>
-                    <TableCell>{client.phone || '-'}</TableCell>
-                    <TableCell>{client.city || '-'}</TableCell>
+                    <TableCell className="hidden md:table-cell text-xs md:text-sm">{client.email || '-'}</TableCell>
+                    <TableCell className="hidden lg:table-cell text-xs md:text-sm">{client.phone || '-'}</TableCell>
+                    <TableCell className="hidden md:table-cell text-xs md:text-sm">{client.city || '-'}</TableCell>
                     <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
                       <div className="flex justify-end gap-2">
                         {!showArchived && (
@@ -477,8 +490,10 @@ export default function ClientsPage() {
                     </TableCell>
                   </TableRow>
                 ))}
-              </TableBody>
-            </Table>
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
           )}
         </CardContent>
       </Card>
