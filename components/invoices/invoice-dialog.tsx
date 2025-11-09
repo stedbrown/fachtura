@@ -153,6 +153,19 @@ export function InvoiceDialog({
       return
     }
 
+    // Validate items
+    const invalidItems = items.filter(item => 
+      !item.description?.trim() || 
+      item.quantity <= 0 || 
+      item.unit_price < 0 || 
+      item.tax_rate < 0
+    )
+
+    if (invalidItems.length > 0) {
+      toast.error('Compila tutti i campi degli articoli correttamente')
+      return
+    }
+
     setLoading(true)
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -203,7 +216,7 @@ export function InvoiceDialog({
       onSuccess()
     } catch (error: any) {
       console.error('Error creating invoice:', error)
-      toast.error(t('createError'))
+      toast.error(error?.message || t('createError'))
     } finally {
       setLoading(false)
     }
@@ -213,7 +226,7 @@ export function InvoiceDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-[1400px] max-h-[90vh] overflow-y-auto w-[95vw]">
         <DialogHeader>
           <DialogTitle className="text-xl md:text-2xl">
             {invoice ? t('editInvoice') : t('form.title')}
@@ -232,25 +245,42 @@ export function InvoiceDialog({
               {t('form.generalInfo')}
             </h3>
 
-            <div className="space-y-2">
-              <Label htmlFor="client" className="text-sm font-medium">
-                {t('fields.client')} <span className="text-red-500">*</span>
-              </Label>
-              <Select value={clientId} onValueChange={setClientId}>
-                <SelectTrigger className="h-10">
-                  <SelectValue placeholder={t('form.selectClient')} />
-                </SelectTrigger>
-                <SelectContent>
-                  {clients.map((client) => (
-                    <SelectItem key={client.id} value={client.id}>
-                      {client.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="client" className="text-sm font-medium">
+                  {t('fields.client')} <span className="text-red-500">*</span>
+                </Label>
+                <Select value={clientId} onValueChange={setClientId}>
+                  <SelectTrigger className="h-10">
+                    <SelectValue placeholder={t('form.selectClient')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {clients.map((client) => (
+                      <SelectItem key={client.id} value={client.id}>
+                        {client.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="status" className="text-sm font-medium">{tCommon('status')}</Label>
+                <Select value={status} onValueChange={(v: any) => setStatus(v)}>
+                  <SelectTrigger className="h-10">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {['draft', 'issued', 'paid', 'overdue'].map((s) => (
+                      <SelectItem key={s} value={s}>
+                        {tStatus(s as any)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="date" className="text-sm font-medium">{t('fields.date')}</Label>
                 <Input
@@ -270,21 +300,6 @@ export function InvoiceDialog({
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}
                 />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="status" className="text-sm font-medium">{tCommon('status')}</Label>
-                <Select value={status} onValueChange={(v: any) => setStatus(v)}>
-                  <SelectTrigger className="h-10">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {['draft', 'issued', 'paid', 'overdue'].map((s) => (
-                      <SelectItem key={s} value={s}>
-                        {tStatus(s as any)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
               </div>
             </div>
           </div>
