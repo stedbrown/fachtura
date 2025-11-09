@@ -48,6 +48,18 @@ export function SupplierDialog({
   } = useForm<SupplierInput>({
     resolver: zodResolver(supplierSchema),
     defaultValues: {
+      name: '',
+      contact_person: '',
+      email: '',
+      phone: '',
+      address: '',
+      city: '',
+      postal_code: '',
+      country: '',
+      vat_number: '',
+      website: '',
+      payment_terms: '',
+      notes: '',
       is_active: true,
     }
   })

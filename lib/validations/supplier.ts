@@ -13,7 +13,7 @@ export const supplierSchema = z.object({
   website: z.string().url('URL non valido').optional().or(z.literal('')),
   payment_terms: z.string().optional(),
   notes: z.string().optional(),
-  is_active: z.boolean().default(true),
+  is_active: z.boolean().optional(),
 })
 
 export type SupplierInput = z.infer<typeof supplierSchema>
