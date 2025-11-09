@@ -15,7 +15,7 @@ export function calculateInvoiceTotals(items: InvoiceItemInput[]) {
 
   return {
     subtotal: Number(subtotal.toFixed(2)),
-    taxAmount: Number(taxAmount.toFixed(2)),
+    totalTax: Number(taxAmount.toFixed(2)),
     total: Number(total.toFixed(2)),
   }
 }

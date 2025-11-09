@@ -157,7 +157,7 @@ export function QuoteDialog({
     }
 
     try {
-      const quoteNumber = await generateQuoteNumber(user.id)
+      const quoteNumber = generateQuoteNumber()
       const totals = calculateQuoteTotals(items)
 
       const { data: quoteData, error: quoteError } = await supabase

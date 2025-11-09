@@ -157,7 +157,7 @@ export function InvoiceDialog({
     }
 
     try {
-      const invoiceNumber = await generateInvoiceNumber(user.id)
+      const invoiceNumber = generateInvoiceNumber()
       const totals = calculateInvoiceTotals(items)
 
       const { data: invoiceData, error: invoiceError } = await supabase

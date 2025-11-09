@@ -25,7 +25,7 @@ export function calculateQuoteTotals(items: QuoteItemInput[]) {
 
   return {
     subtotal: Number(subtotal.toFixed(2)),
-    taxAmount: Number(taxAmount.toFixed(2)),
+    totalTax: Number(taxAmount.toFixed(2)),
     total: Number(total.toFixed(2)),
   }
 }
