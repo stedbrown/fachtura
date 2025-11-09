@@ -24,7 +24,8 @@ import {
 } from '@/components/ui/dialog'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Trash2, Package } from 'lucide-react'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Plus, Trash2, Package, Edit3 } from 'lucide-react'
 import type { QuoteWithClient, Client, Product } from '@/lib/types/database'
 import type { QuoteItemInput } from '@/lib/validations/quote'
 import { calculateQuoteTotals, generateQuoteNumber } from '@/lib/utils/quote-utils'
@@ -380,79 +381,134 @@ export function QuoteDialog({
                     </div>
                   </CardHeader>
                   <CardContent className="space-y-3 px-4 sm:px-6 pb-4">
-                    {/* Fill from Catalog */}
-                    {products.length > 0 && (
-                      <div className="space-y-1.5 p-3 bg-muted/30 rounded-lg border border-border/50">
-                        <Label className="text-xs font-medium flex items-center gap-1.5">
-                          <Package className="h-3.5 w-3.5" />
-                          {t('form.fillFromCatalog')} <span className="text-muted-foreground font-normal">(opzionale)</span>
-                        </Label>
-                        <Select onValueChange={(v) => fillFromProduct(index, v)}>
-                          <SelectTrigger className="h-9 text-sm">
-                            <SelectValue placeholder="Seleziona un prodotto dal catalogo" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {products.map((product) => (
-                              <SelectItem key={product.id} value={product.id}>
-                                <div className="flex items-center justify-between w-full gap-3">
-                                  <span>{product.name}</span>
-                                  <span className="text-muted-foreground">CHF {product.unit_price.toFixed(2)}</span>
+                    <Tabs defaultValue="manual" className="w-full">
+                      <TabsList className="grid w-full grid-cols-2 h-9">
+                        <TabsTrigger value="manual" className="text-xs">
+                          <Edit3 className="h-3 w-3 mr-1.5" />
+                          Inserimento Manuale
+                        </TabsTrigger>
+                        {products.length > 0 && (
+                          <TabsTrigger value="catalog" className="text-xs">
+                            <Package className="h-3 w-3 mr-1.5" />
+                            Dal Catalogo
+                          </TabsTrigger>
+                        )}
+                      </TabsList>
+
+                      <TabsContent value="manual" className="space-y-3 mt-3">
+                        <div className="space-y-1.5">
+                          <Label className="text-xs font-medium">
+                            {t('form.description')} <span className="text-red-500">*</span>
+                          </Label>
+                          <Textarea
+                            value={item.description}
+                            onChange={(e) => updateItem(index, 'description', e.target.value)}
+                            className="resize-none text-sm min-h-[60px]"
+                            rows={2}
+                            placeholder="Es: Sviluppo sito web, Consulenza, Servizio..."
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-3">
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-medium">
+                              {t('form.quantity')} <span className="text-red-500">*</span>
+                            </Label>
+                            <Input
+                              type="number"
+                              min="0.01"
+                              step="0.01"
+                              className="h-9 text-sm"
+                              value={item.quantity}
+                              onChange={(e) => updateItem(index, 'quantity', parseFloat(e.target.value) || 1)}
+                              placeholder="1"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-medium">
+                              {t('form.unitPrice')} (CHF) <span className="text-red-500">*</span>
+                            </Label>
+                            <Input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              className="h-9 text-sm"
+                              value={item.unit_price}
+                              onChange={(e) => updateItem(index, 'unit_price', parseFloat(e.target.value) || 0)}
+                              placeholder="0.00"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-medium">
+                              {t('form.taxRate')} (%)
+                            </Label>
+                            <Input
+                              type="number"
+                              min="0"
+                              max="100"
+                              step="0.1"
+                              className="h-9 text-sm"
+                              value={item.tax_rate}
+                              onChange={(e) => updateItem(index, 'tax_rate', parseFloat(e.target.value) || 0)}
+                              placeholder="8.1"
+                            />
+                          </div>
+                        </div>
+                      </TabsContent>
+
+                      {products.length > 0 && (
+                        <TabsContent value="catalog" className="space-y-3 mt-3">
+                          <div className="space-y-1.5">
+                            <Label className="text-xs font-medium">
+                              Seleziona un prodotto
+                            </Label>
+                            <Select onValueChange={(v) => fillFromProduct(index, v)}>
+                              <SelectTrigger className="h-10 text-sm">
+                                <SelectValue placeholder="Cerca nel tuo catalogo prodotti..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {products.map((product) => (
+                                  <SelectItem key={product.id} value={product.id}>
+                                    <div className="flex items-center justify-between w-full gap-3">
+                                      <span className="font-medium">{product.name}</span>
+                                      <span className="text-muted-foreground text-xs">CHF {product.unit_price.toFixed(2)}</span>
+                                    </div>
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <p className="text-xs text-muted-foreground">
+                              Il prodotto selezionato compilerà automaticamente tutti i campi
+                            </p>
+                          </div>
+
+                          {/* Show filled fields preview */}
+                          {item.description && (
+                            <div className="space-y-2 p-3 bg-muted/50 rounded-lg border">
+                              <p className="text-xs font-medium">Anteprima:</p>
+                              <div className="grid grid-cols-2 gap-2 text-xs">
+                                <div>
+                                  <span className="text-muted-foreground">Descrizione:</span>
+                                  <p className="font-medium truncate">{item.description}</p>
                                 </div>
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <p className="text-xs text-muted-foreground">Oppure compila manualmente i campi sotto</p>
-                      </div>
-                    )}
-
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-medium text-muted-foreground">{t('form.description')}</Label>
-                      <Textarea
-                        value={item.description}
-                        onChange={(e) => updateItem(index, 'description', e.target.value)}
-                        className="resize-none text-sm min-h-[60px]"
-                        rows={2}
-                        placeholder="Descrizione del servizio o prodotto..."
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-3">
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-medium text-muted-foreground">{t('form.quantity')}</Label>
-                        <Input
-                          type="number"
-                          min="0.01"
-                          step="0.01"
-                          className="h-9 text-sm"
-                          value={item.quantity}
-                          onChange={(e) => updateItem(index, 'quantity', parseFloat(e.target.value) || 1)}
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-medium text-muted-foreground">{t('form.unitPrice')} (CHF)</Label>
-                        <Input
-                          type="number"
-                          min="0"
-                          step="0.01"
-                          className="h-9 text-sm"
-                          value={item.unit_price}
-                          onChange={(e) => updateItem(index, 'unit_price', parseFloat(e.target.value) || 0)}
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-medium text-muted-foreground">{t('form.taxRate')} (%)</Label>
-                        <Input
-                          type="number"
-                          min="0"
-                          max="100"
-                          step="0.1"
-                          className="h-9 text-sm"
-                          value={item.tax_rate}
-                          onChange={(e) => updateItem(index, 'tax_rate', parseFloat(e.target.value) || 0)}
-                        />
-                      </div>
-                    </div>
+                                <div>
+                                  <span className="text-muted-foreground">Prezzo:</span>
+                                  <p className="font-medium">CHF {item.unit_price.toFixed(2)}</p>
+                                </div>
+                                <div>
+                                  <span className="text-muted-foreground">Quantità:</span>
+                                  <p className="font-medium">{item.quantity}</p>
+                                </div>
+                                <div>
+                                  <span className="text-muted-foreground">IVA:</span>
+                                  <p className="font-medium">{item.tax_rate}%</p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </TabsContent>
+                      )}
+                    </Tabs>
                   </CardContent>
                 </Card>
               ))}
