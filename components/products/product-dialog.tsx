@@ -48,9 +48,15 @@ export function ProductDialog({
   } = useForm<ProductFormInput>({
     resolver: zodResolver(productFormSchema),
     defaultValues: {
-      is_active: true,
-      track_inventory: false,
+      name: '',
+      description: '',
+      category: '',
+      unit_price: 0,
       tax_rate: 8.1,
+      track_inventory: false,
+      stock_quantity: 0,
+      low_stock_threshold: 10,
+      is_active: true,
     }
   })
 
