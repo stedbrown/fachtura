@@ -342,8 +342,26 @@
       "saving": "Saving...",
       "createButton": "Create Quote",
       "errorCreating": "Error creating the quote",
-      "errorSelectClient": "Please select a client"
-    }
+      "errorSelectClient": "Please select a client",
+      "items": "Items",
+      "addItem": "Add Item",
+      "item": "Item",
+      "fillFromCatalog": "Fill from Catalog",
+      "selectProduct": "Select product",
+      "description": "Description",
+      "quantity": "Quantity",
+      "unitPrice": "Unit Price",
+      "taxRate": "VAT",
+      "subtotal": "Subtotal",
+      "tax": "VAT",
+      "total": "Total",
+      "notesPlaceholder": "Notes visible to client",
+      "create": "Create Quote"
+    },
+    "createSuccess": "Quote created successfully",
+    "createError": "Error creating quote",
+    "updateSuccess": "Quote updated successfully",
+    "updateError": "Error updating quote"
   },
   "invoices": {
     "title": "Invoices",
@@ -399,8 +417,26 @@
       "saving": "Saving...",
       "createButton": "Create Invoice",
       "errorCreating": "Error creating the invoice",
-      "errorSelectClient": "Please select a client"
-    }
+      "errorSelectClient": "Please select a client",
+      "items": "Items",
+      "addItem": "Add Item",
+      "item": "Item",
+      "fillFromCatalog": "Fill from Catalog",
+      "selectProduct": "Select product",
+      "description": "Description",
+      "quantity": "Quantity",
+      "unitPrice": "Unit Price",
+      "taxRate": "VAT",
+      "subtotal": "Subtotal",
+      "tax": "VAT",
+      "total": "Total",
+      "notesPlaceholder": "Notes visible to client",
+      "create": "Create Invoice"
+    },
+    "createSuccess": "Invoice created successfully",
+    "createError": "Error creating invoice",
+    "updateSuccess": "Invoice updated successfully",
+    "updateError": "Error updating invoice"
   },
   "settings": {
     "title": "Settings",

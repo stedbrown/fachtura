@@ -346,8 +346,26 @@
       "saving": "Salvataggio...",
       "createButton": "Crea Preventivo",
       "errorCreating": "Errore durante la creazione del preventivo",
-      "errorSelectClient": "Seleziona un cliente"
-    }
+      "errorSelectClient": "Seleziona un cliente",
+      "items": "Articoli",
+      "addItem": "Aggiungi Articolo",
+      "item": "Articolo",
+      "fillFromCatalog": "Compila dal Catalogo",
+      "selectProduct": "Seleziona prodotto",
+      "description": "Descrizione",
+      "quantity": "Quantità",
+      "unitPrice": "Prezzo Unitario",
+      "taxRate": "IVA",
+      "subtotal": "Subtotale",
+      "tax": "IVA",
+      "total": "Totale",
+      "notesPlaceholder": "Note visibili al cliente",
+      "create": "Crea Preventivo"
+    },
+    "createSuccess": "Preventivo creato con successo",
+    "createError": "Errore nella creazione del preventivo",
+    "updateSuccess": "Preventivo aggiornato con successo",
+    "updateError": "Errore nell'aggiornamento del preventivo"
   },
   "invoices": {
     "title": "Fatture",
@@ -403,8 +421,26 @@
       "saving": "Salvataggio...",
       "createButton": "Crea Fattura",
       "errorCreating": "Errore durante la creazione della fattura",
-      "errorSelectClient": "Seleziona un cliente"
-    }
+      "errorSelectClient": "Seleziona un cliente",
+      "items": "Articoli",
+      "addItem": "Aggiungi Articolo",
+      "item": "Articolo",
+      "fillFromCatalog": "Compila dal Catalogo",
+      "selectProduct": "Seleziona prodotto",
+      "description": "Descrizione",
+      "quantity": "Quantità",
+      "unitPrice": "Prezzo Unitario",
+      "taxRate": "IVA",
+      "subtotal": "Subtotale",
+      "tax": "IVA",
+      "total": "Totale",
+      "notesPlaceholder": "Note visibili al cliente",
+      "create": "Crea Fattura"
+    },
+    "createSuccess": "Fattura creata con successo",
+    "createError": "Errore nella creazione della fattura",
+    "updateSuccess": "Fattura aggiornata con successo",
+    "updateError": "Errore nell'aggiornamento della fattura"
   },
   "settings": {
     "title": "Impostazioni",
