@@ -175,24 +175,6 @@ export default function ProductsPage() {
     })
   }, [products, searchQuery])
 
-  // Calculate statistics
-  const stats = useMemo(() => {
-    const activeProducts = products.filter(p => !p.deleted_at && p.is_active)
-    const totalValue = activeProducts.reduce((sum, p) => sum + Number(p.unit_price), 0)
-    const avgPrice = activeProducts.length > 0 ? totalValue / activeProducts.length : 0
-    const lowStockCount = activeProducts.filter(p => 
-      p.track_inventory && (p.stock_quantity || 0) <= (p.low_stock_threshold || 10)
-    ).length
-
-    return {
-      total: activeProducts.length,
-      catalogValue: totalValue,
-      averagePrice: avgPrice,
-      lowStock: lowStockCount,
-      maxAllowed: subscription?.plan?.max_products
-    }
-  }, [products, subscription])
-
   return (
     <div className="space-y-4 md:space-y-6">
       {/* Header */}
@@ -208,63 +190,6 @@ export default function ProductsPage() {
           {t('addNew')}
         </Button>
       </div>
-
-      {/* Statistics Cards */}
-      {!showArchived && (
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardDescription className="text-xs md:text-sm">{t('totalProducts')}</CardDescription>
-              <CardTitle className="text-2xl md:text-3xl">{stats.total}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-xs md:text-sm text-muted-foreground">
-                {t('planLimit')}: {stats.maxAllowed ? stats.maxAllowed.toLocaleString() : '∞'}
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardDescription className="text-xs md:text-sm">{t('catalogValue')}</CardDescription>
-              <CardTitle className="text-2xl md:text-3xl">
-                CHF {stats.catalogValue.toLocaleString('it-CH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-xs md:text-sm text-muted-foreground">
-                {t('totalValue') || 'Valore totale catalogo'}
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardDescription className="text-xs md:text-sm">{t('averagePrice')}</CardDescription>
-              <CardTitle className="text-2xl md:text-3xl">
-                CHF {stats.averagePrice.toLocaleString('it-CH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-xs md:text-sm text-muted-foreground">
-                {t('avgPerProduct') || 'Media per prodotto'}
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardDescription className="text-xs md:text-sm">{t('lowStockItems') || 'Scorte Basse'}</CardDescription>
-              <CardTitle className="text-2xl md:text-3xl text-destructive">{stats.lowStock}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-xs md:text-sm text-muted-foreground">
-                {t('requiresAttention') || 'Richiedono attenzione'}
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      )}
 
       {/* Main Content Card */}
       <Card>

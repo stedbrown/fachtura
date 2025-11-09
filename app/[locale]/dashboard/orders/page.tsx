@@ -200,22 +200,6 @@ export default function OrdersPage() {
     })
   }, [orders, searchQuery])
 
-  // Calculate statistics
-  const stats = useMemo(() => {
-    const activeOrders = orders.filter(o => !o.deleted_at)
-    const totalValue = activeOrders.reduce((sum, o) => sum + Number(o.total), 0)
-    const pendingOrders = activeOrders.filter(o => ['draft', 'confirmed', 'processing'].includes(o.status))
-    const deliveredOrders = activeOrders.filter(o => o.status === 'delivered')
-
-    return {
-      total: activeOrders.length,
-      ordersValue: totalValue,
-      pending: pendingOrders.length,
-      delivered: deliveredOrders.length,
-      maxAllowed: subscription?.plan?.max_orders
-    }
-  }, [orders, subscription])
-
   const dateLocale = localeMap[locale] || it
 
   return (
@@ -233,61 +217,6 @@ export default function OrdersPage() {
           {t('addNew')}
         </Button>
       </div>
-
-      {/* Statistics Cards */}
-      {!showArchived && (
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardDescription className="text-xs md:text-sm">{t('totalOrders')}</CardDescription>
-              <CardTitle className="text-2xl md:text-3xl">{stats.total}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-xs md:text-sm text-muted-foreground">
-                {t('planLimit')}: {stats.maxAllowed ? stats.maxAllowed.toLocaleString() + '/mese' : '∞'}
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardDescription className="text-xs md:text-sm">{t('ordersValue')}</CardDescription>
-              <CardTitle className="text-2xl md:text-3xl">
-                CHF {stats.ordersValue.toLocaleString('it-CH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-xs md:text-sm text-muted-foreground">
-                {t('totalValue') || 'Valore totale ordini'}
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardDescription className="text-xs md:text-sm">{t('pendingOrders') || 'In Corso'}</CardDescription>
-              <CardTitle className="text-2xl md:text-3xl text-blue-600">{stats.pending}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-xs md:text-sm text-muted-foreground">
-                {t('awaitingDelivery') || 'In attesa di consegna'}
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardDescription className="text-xs md:text-sm">{t('deliveredOrders') || 'Consegnati'}</CardDescription>
-              <CardTitle className="text-2xl md:text-3xl text-green-600">{stats.delivered}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-xs md:text-sm text-muted-foreground">
-                {t('completed') || 'Completati'}
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      )}
 
       {/* Main Content Card */}
       <Card>
@@ -372,7 +301,7 @@ export default function OrdersPage() {
                       <TableHead className="text-xs md:text-sm">{t('client')}</TableHead>
                       <TableHead className="hidden md:table-cell text-xs md:text-sm">{t('orderDate')}</TableHead>
                       <TableHead className="hidden lg:table-cell text-xs md:text-sm">{t('deliveryDate')}</TableHead>
-                      <TableHead className="text-xs md:text-sm">{t('status')}</TableHead>
+                      <TableHead className="text-xs md:text-sm">{tCommon('status')}</TableHead>
                       <TableHead className="text-right text-xs md:text-sm">{t('totalAmount')}</TableHead>
                       <TableHead className="text-right text-xs md:text-sm">{tCommon('actions')}</TableHead>
                     </TableRow>
