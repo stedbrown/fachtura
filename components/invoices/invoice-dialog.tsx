@@ -116,7 +116,7 @@ export function InvoiceDialog({
   }
 
   const addItem = () => {
-    setItems([...items, { description: '', quantity: 1, unit_price: 0, tax_rate: 8.1 }])
+    setItems([...items, { description: '', quantity: 1, unit_price: 0, tax_rate: 8.1, product_id: undefined }])
   }
 
   const removeItem = (index: number) => {
@@ -154,15 +154,32 @@ export function InvoiceDialog({
     }
 
     // Validate items
-    const invalidItems = items.filter(item => 
-      !item.description?.trim() || 
-      item.quantity <= 0 || 
-      item.unit_price <= 0 || 
-      item.tax_rate < 0
-    )
+    if (items.length === 0) {
+      toast.error('Aggiungi almeno un articolo alla fattura')
+      return
+    }
 
-    if (invalidItems.length > 0) {
-      toast.error('Compila tutti i campi degli articoli correttamente (descrizione, quantità > 0, prezzo > 0)')
+    const emptyDescriptions = items.filter(item => !item.description?.trim())
+    if (emptyDescriptions.length > 0) {
+      toast.error('Compila la descrizione per tutti gli articoli')
+      return
+    }
+
+    const invalidQuantity = items.filter(item => item.quantity <= 0)
+    if (invalidQuantity.length > 0) {
+      toast.error('La quantità deve essere maggiore di 0 per tutti gli articoli')
+      return
+    }
+
+    const invalidPrice = items.filter(item => item.unit_price <= 0)
+    if (invalidPrice.length > 0) {
+      toast.error('Il prezzo unitario deve essere maggiore di 0 per tutti gli articoli')
+      return
+    }
+
+    const invalidTax = items.filter(item => item.tax_rate < 0)
+    if (invalidTax.length > 0) {
+      toast.error('L\'IVA non può essere negativa')
       return
     }
 
@@ -359,14 +376,14 @@ export function InvoiceDialog({
                   <CardContent className="space-y-3 px-4 sm:px-6 pb-4">
                     {/* Fill from Catalog */}
                     {products.length > 0 && (
-                      <div className="space-y-1.5">
-                        <Label className="text-xs font-medium flex items-center gap-1.5 text-muted-foreground">
+                      <div className="space-y-1.5 p-3 bg-muted/30 rounded-lg border border-border/50">
+                        <Label className="text-xs font-medium flex items-center gap-1.5">
                           <Package className="h-3.5 w-3.5" />
-                          {t('form.fillFromCatalog')}
+                          {t('form.fillFromCatalog')} <span className="text-muted-foreground font-normal">(opzionale)</span>
                         </Label>
                         <Select onValueChange={(v) => fillFromProduct(index, v)}>
                           <SelectTrigger className="h-9 text-sm">
-                            <SelectValue placeholder={t('form.selectProduct')} />
+                            <SelectValue placeholder="Seleziona un prodotto dal catalogo" />
                           </SelectTrigger>
                           <SelectContent>
                             {products.map((product) => (
@@ -379,6 +396,7 @@ export function InvoiceDialog({
                             ))}
                           </SelectContent>
                         </Select>
+                        <p className="text-xs text-muted-foreground">Oppure compila manualmente i campi sotto</p>
                       </div>
                     )}
 
