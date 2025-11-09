@@ -9,10 +9,10 @@ export const orderItemSchema = z.object({
 })
 
 export const orderSchema = z.object({
-  client_id: z.string().min(1, 'Cliente richiesto'),
+  supplier_id: z.string().min(1, 'Fornitore richiesto'),
   date: z.string(),
   expected_delivery_date: z.string().optional(),
-  status: z.enum(['draft', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled']).default('draft'),
+  status: z.enum(['draft', 'ordered', 'partial', 'received', 'cancelled']).default('draft'),
   items: z.array(orderItemSchema).min(1, 'Almeno un articolo richiesto'),
   notes: z.string().optional(),
   internal_notes: z.string().optional(),

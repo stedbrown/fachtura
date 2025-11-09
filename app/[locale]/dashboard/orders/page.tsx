@@ -16,7 +16,7 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Plus, Edit, Trash2, Archive, ArchiveRestore, ShoppingCart, Download } from 'lucide-react'
 import { DeleteDialog } from '@/components/delete-dialog'
-import type { OrderWithClient } from '@/lib/types/database'
+import type { OrderWithSupplier } from '@/lib/types/database'
 import { format } from 'date-fns'
 import { it, de, fr, enUS, type Locale } from 'date-fns/locale'
 import { useTranslations } from 'next-intl'
@@ -36,11 +36,10 @@ const localeMap: Record<string, Locale> = {
 
 function getOrderStatusVariant(status: string): 'default' | 'secondary' | 'destructive' | 'outline' {
   switch (status) {
-    case 'delivered':
+    case 'received':
       return 'default' // Green
-    case 'confirmed':
-    case 'processing':
-    case 'shipped':
+    case 'ordered':
+    case 'partial':
       return 'outline' // Blue
     case 'cancelled':
       return 'destructive' // Red
@@ -59,7 +58,7 @@ export default function OrdersPage() {
   const tStatus = useTranslations('orders.status')
   
   const { subscription, checkLimits } = useSubscription()
-  const [orders, setOrders] = useState<OrderWithClient[]>([])
+  const [orders, setOrders] = useState<OrderWithSupplier[]>([])
   const [loading, setLoading] = useState(true)
   const [showArchived, setShowArchived] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
@@ -89,7 +88,7 @@ export default function OrdersPage() {
       .from('orders')
       .select(`
         *,
-        client:clients(*)
+        supplier:suppliers(*)
       `)
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
@@ -168,7 +167,7 @@ export default function OrdersPage() {
   function handleExport(format: 'csv' | 'excel') {
     const dataToExport = orders.map(order => ({
       [t('orderNumber') || 'Numero Ordine']: order.order_number,
-      [t('client') || 'Cliente']: order.client?.name || '',
+      [t('supplier') || 'Fornitore']: order.supplier?.name || '',
       [t('orderDate') || 'Data']: formatDateForExport(order.date),
       [t('deliveryDate') || 'Consegna']: order.expected_delivery_date ? formatDateForExport(order.expected_delivery_date) : '',
       [t('status') || 'Stato']: tStatus(order.status) || order.status,
@@ -275,7 +274,7 @@ export default function OrdersPage() {
                   <TableHeader>
                     <TableRow>
                       <TableHead className="text-xs md:text-sm">{t('orderNumber')}</TableHead>
-                      <TableHead className="text-xs md:text-sm">{t('client')}</TableHead>
+                      <TableHead className="text-xs md:text-sm">{t('supplier')}</TableHead>
                       <TableHead className="hidden md:table-cell text-xs md:text-sm">{t('orderDate')}</TableHead>
                       <TableHead className="hidden lg:table-cell text-xs md:text-sm">{t('deliveryDate')}</TableHead>
                       <TableHead className="text-xs md:text-sm">{tCommon('status')}</TableHead>
@@ -287,7 +286,7 @@ export default function OrdersPage() {
                     {orders.map((order) => (
                       <TableRow key={order.id}>
                         <TableCell className="font-medium text-xs md:text-sm">{order.order_number}</TableCell>
-                        <TableCell className="text-xs md:text-sm">{order.client?.name || '-'}</TableCell>
+                        <TableCell className="text-xs md:text-sm">{order.supplier?.name || '-'}</TableCell>
                         <TableCell className="hidden md:table-cell text-xs md:text-sm">
                           {format(new Date(order.date), 'dd MMM yyyy', { locale: dateLocale })}
                         </TableCell>

@@ -401,7 +401,7 @@ export interface Database {
         Row: {
           id: string
           user_id: string
-          client_id: string
+          supplier_id: string
           order_number: string
           date: string
           expected_delivery_date: string | null
@@ -418,7 +418,7 @@ export interface Database {
         Insert: {
           id?: string
           user_id: string
-          client_id: string
+          supplier_id: string
           order_number: string
           date?: string
           expected_delivery_date?: string | null
@@ -435,7 +435,7 @@ export interface Database {
         Update: {
           id?: string
           user_id?: string
-          client_id?: string
+          supplier_id?: string
           order_number?: string
           date?: string
           expected_delivery_date?: string | null
@@ -445,6 +445,68 @@ export interface Database {
           total?: number
           notes?: string | null
           internal_notes?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+          deleted_at?: string | null
+        }
+      }
+      suppliers: {
+        Row: {
+          id: string
+          user_id: string
+          name: string
+          contact_person: string | null
+          email: string | null
+          phone: string | null
+          address: string | null
+          city: string | null
+          postal_code: string | null
+          country: string | null
+          vat_number: string | null
+          website: string | null
+          payment_terms: string | null
+          notes: string | null
+          is_active: boolean
+          created_at: string | null
+          updated_at: string | null
+          deleted_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          name: string
+          contact_person?: string | null
+          email?: string | null
+          phone?: string | null
+          address?: string | null
+          city?: string | null
+          postal_code?: string | null
+          country?: string | null
+          vat_number?: string | null
+          website?: string | null
+          payment_terms?: string | null
+          notes?: string | null
+          is_active?: boolean
+          created_at?: string | null
+          updated_at?: string | null
+          deleted_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          name?: string
+          contact_person?: string | null
+          email?: string | null
+          phone?: string | null
+          address?: string | null
+          city?: string | null
+          postal_code?: string | null
+          country?: string | null
+          vat_number?: string | null
+          website?: string | null
+          payment_terms?: string | null
+          notes?: string | null
+          is_active?: boolean
           created_at?: string | null
           updated_at?: string | null
           deleted_at?: string | null
@@ -702,6 +764,10 @@ export type QuoteWithClient = Quote & {
   client: Client
 }
 
-export type OrderWithClient = Order & {
-  client: Client
+export type OrderWithSupplier = Order & {
+  supplier: Supplier
 }
+
+export type Supplier = Database['public']['Tables']['suppliers']['Row']
+export type SupplierInsert = Database['public']['Tables']['suppliers']['Insert']
+export type SupplierUpdate = Database['public']['Tables']['suppliers']['Update']

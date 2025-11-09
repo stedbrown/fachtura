@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/select'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Plus, Trash2, ArrowLeft } from 'lucide-react'
-import type { Client, Product } from '@/lib/types/database'
+import type { Supplier, Product } from '@/lib/types/database'
 import type { OrderItemInput } from '@/lib/validations/order'
 import { calculateOrderTotals, generateOrderNumber } from '@/lib/utils/order-utils'
 import { toast } from 'sonner'
@@ -30,13 +30,13 @@ export default function NewOrderPage() {
   const tCommon = useTranslations('common')
   const tStatus = useTranslations('orders.status')
 
-  const [clients, setClients] = useState<Client[]>([])
+  const [suppliers, setSuppliers] = useState<Supplier[]>([])
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(false)
-  const [clientId, setClientId] = useState('')
+  const [supplierId, setSupplierId] = useState('')
   const [date, setDate] = useState(new Date().toISOString().split('T')[0])
   const [deliveryDate, setDeliveryDate] = useState('')
-  const [status, setStatus] = useState<'draft' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled'>('draft')
+  const [status, setStatus] = useState<'draft' | 'ordered' | 'partial' | 'received' | 'cancelled'>('draft')
   const [notes, setNotes] = useState('')
   const [internalNotes, setInternalNotes] = useState('')
   const [items, setItems] = useState<OrderItemInput[]>([
@@ -44,23 +44,24 @@ export default function NewOrderPage() {
   ])
 
   useEffect(() => {
-    loadClients()
+    loadSuppliers()
     loadProducts()
   }, [])
 
-  const loadClients = async () => {
+  const loadSuppliers = async () => {
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
     const { data } = await supabase
-      .from('clients')
+      .from('suppliers')
       .select('*')
       .eq('user_id', user.id)
+      .eq('is_active', true)
       .is('deleted_at', null)
       .order('name')
 
-    if (data) setClients(data)
+    if (data) setSuppliers(data)
   }
 
   const loadProducts = async () => {
@@ -128,7 +129,7 @@ export default function NewOrderPage() {
         .from('orders')
         .insert({
           user_id: user.id,
-          client_id: clientId,
+          supplier_id: supplierId,
           order_number: orderNumber,
           date,
           expected_delivery_date: deliveryDate || null,
@@ -200,17 +201,17 @@ export default function NewOrderPage() {
           <CardContent className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="client_id">
-                  {t('client') || 'Cliente'} <span className="text-destructive">*</span>
+                <Label htmlFor="supplier_id">
+                  {t('supplier') || 'Fornitore'} <span className="text-destructive">*</span>
                 </Label>
-                <Select value={clientId} onValueChange={setClientId} required>
+                <Select value={supplierId} onValueChange={setSupplierId} required>
                   <SelectTrigger>
-                    <SelectValue placeholder={t('selectClient') || 'Seleziona Cliente'} />
+                    <SelectValue placeholder={t('selectSupplier') || 'Seleziona Fornitore'} />
                   </SelectTrigger>
                   <SelectContent>
-                    {clients.map((client) => (
-                      <SelectItem key={client.id} value={client.id}>
-                        {client.name}
+                    {suppliers.map((supplier) => (
+                      <SelectItem key={supplier.id} value={supplier.id}>
+                        {supplier.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -224,7 +225,7 @@ export default function NewOrderPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {['draft', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'].map((s) => (
+                    {['draft', 'ordered', 'partial', 'received', 'cancelled'].map((s) => (
                       <SelectItem key={s} value={s}>
                         {tStatus(s as any)}
                       </SelectItem>

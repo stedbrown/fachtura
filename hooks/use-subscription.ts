@@ -15,6 +15,7 @@ export interface SubscriptionPlan {
   max_quotes: number | null;
   max_products: number | null;
   max_orders: number | null;
+  max_suppliers: number | null;
   features: string[];
   is_active: boolean;
 }
@@ -113,7 +114,7 @@ export function useSubscription() {
     fetchSubscription();
   }, []);
 
-  const checkLimits = async (resourceType: 'invoice' | 'quote' | 'client' | 'product' | 'order'): Promise<UsageLimits> => {
+  const checkLimits = async (resourceType: 'invoice' | 'quote' | 'client' | 'product' | 'order' | 'supplier'): Promise<UsageLimits> => {
     try {
       const response = await fetch('/api/subscription/check-limits', {
         method: 'POST',

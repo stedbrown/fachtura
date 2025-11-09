@@ -14,6 +14,7 @@ import {
   Sparkles,
   Package,
   ShoppingCart,
+  Truck,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -72,6 +73,11 @@ export function AppSidebar() {
       title: t('orders'),
       url: `/${locale}/dashboard/orders`,
       icon: ShoppingCart,
+    },
+    {
+      title: t('suppliers'),
+      url: `/${locale}/dashboard/suppliers`,
+      icon: Truck,
     },
     {
       title: t('assistant'),
