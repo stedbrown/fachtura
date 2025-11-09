@@ -214,7 +214,7 @@ export function InvoiceDialog({
           status,
           notes: notes || null,
           subtotal: totals.subtotal,
-          total_tax: totals.totalTax,
+          tax_amount: totals.totalTax,
           total: totals.total,
         })
         .select()
