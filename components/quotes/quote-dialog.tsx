@@ -134,10 +134,16 @@ export function QuoteDialog({
   const fillFromProduct = (index: number, productId: string) => {
     const product = products.find(p => p.id === productId)
     if (product) {
-      updateItem(index, 'description', product.name)
-      updateItem(index, 'unit_price', product.unit_price)
-      updateItem(index, 'tax_rate', product.tax_rate)
-      updateItem(index, 'product_id', product.id)
+      const newItems = [...items]
+      newItems[index] = {
+        ...newItems[index],
+        description: product.name,
+        unit_price: product.unit_price,
+        tax_rate: product.tax_rate,
+        product_id: product.id
+      }
+      setItems(newItems)
+      console.log('Filled from product:', product.name, newItems[index])
     }
   }
 
