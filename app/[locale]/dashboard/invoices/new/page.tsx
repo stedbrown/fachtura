@@ -430,39 +430,6 @@ export default function NewInvoicePage() {
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            {products.length > 0 && (
-              <div className="space-y-3 p-4 bg-muted/30 border border-dashed rounded-lg">
-                <div className="flex items-center gap-2">
-                  <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <Plus className="h-4 w-4 text-primary" />
-                  </div>
-                  <div className="flex-1">
-                    <Label htmlFor="add_product" className="text-sm font-semibold">
-                      {tProducts('addFromCatalog') || 'Aggiungi dal Catalogo'}
-                    </Label>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      {tProducts('addFromCatalogHint') || 'Aggiungi rapidamente prodotti dal tuo catalogo'}
-                    </p>
-                  </div>
-                </div>
-                <Select onValueChange={addProductItem}>
-                  <SelectTrigger className="h-10">
-                    <SelectValue placeholder={tProducts('selectProduct') || 'Seleziona Prodotto'} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {products.map((product) => (
-                      <SelectItem key={product.id} value={product.id}>
-                        <div className="flex items-center justify-between w-full">
-                          <span>{product.name}</span>
-                          <span className="text-muted-foreground ml-4">CHF {Number(product.unit_price).toFixed(2)}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
-
             {items.map((item, index) => (
               <div
                 key={index}
@@ -602,7 +569,7 @@ export default function NewInvoicePage() {
             type="button"
             variant="outline"
             onClick={() => router.push(`/${locale}/dashboard/invoices`)}
-            className="w-full sm:w-auto"
+            className="w-full sm:w-auto sm:min-w-[120px]"
           >
             {tCommon('cancel')}
           </Button>
@@ -610,7 +577,7 @@ export default function NewInvoicePage() {
             type="submit" 
             disabled={loading || !hasRequiredFields}
             title={!hasRequiredFields ? 'Configura prima i dati aziendali nelle impostazioni' : ''}
-            className="w-full sm:flex-1"
+            className="w-full sm:w-auto sm:min-w-[180px]"
           >
             {loading ? t('form.saving') : t('form.createButton')}
           </Button>
