@@ -342,8 +342,26 @@
       "saving": "Speichern...",
       "createButton": "Angebot erstellen",
       "errorCreating": "Fehler beim Erstellen des Angebots",
-      "errorSelectClient": "Bitte einen Kunden auswählen"
-    }
+      "errorSelectClient": "Bitte einen Kunden auswählen",
+      "items": "Artikel",
+      "addItem": "Artikel hinzufügen",
+      "item": "Artikel",
+      "fillFromCatalog": "Aus Katalog ausfüllen",
+      "selectProduct": "Produkt auswählen",
+      "description": "Beschreibung",
+      "quantity": "Menge",
+      "unitPrice": "Einzelpreis",
+      "taxRate": "MwSt",
+      "subtotal": "Zwischensumme",
+      "tax": "MwSt",
+      "total": "Gesamt",
+      "notesPlaceholder": "Für den Kunden sichtbare Notizen",
+      "create": "Angebot erstellen"
+    },
+    "createSuccess": "Angebot erfolgreich erstellt",
+    "createError": "Fehler beim Erstellen des Angebots",
+    "updateSuccess": "Angebot erfolgreich aktualisiert",
+    "updateError": "Fehler beim Aktualisieren des Angebots"
   },
   "invoices": {
     "title": "Rechnungen",
@@ -399,8 +417,26 @@
       "saving": "Speichern...",
       "createButton": "Rechnung erstellen",
       "errorCreating": "Fehler beim Erstellen der Rechnung",
-      "errorSelectClient": "Bitte einen Kunden auswählen"
-    }
+      "errorSelectClient": "Bitte einen Kunden auswählen",
+      "items": "Artikel",
+      "addItem": "Artikel hinzufügen",
+      "item": "Artikel",
+      "fillFromCatalog": "Aus Katalog ausfüllen",
+      "selectProduct": "Produkt auswählen",
+      "description": "Beschreibung",
+      "quantity": "Menge",
+      "unitPrice": "Einzelpreis",
+      "taxRate": "MwSt",
+      "subtotal": "Zwischensumme",
+      "tax": "MwSt",
+      "total": "Gesamt",
+      "notesPlaceholder": "Für den Kunden sichtbare Notizen",
+      "create": "Rechnung erstellen"
+    },
+    "createSuccess": "Rechnung erfolgreich erstellt",
+    "createError": "Fehler beim Erstellen der Rechnung",
+    "updateSuccess": "Rechnung erfolgreich aktualisiert",
+    "updateError": "Fehler beim Aktualisieren der Rechnung"
   },
   "settings": {
     "title": "Einstellungen",

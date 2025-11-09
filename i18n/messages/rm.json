@@ -342,8 +342,26 @@
       "saving": "Memorisar...",
       "createButton": "Crear preventiv",
       "errorCreating": "Errur cun crear il preventiv",
-      "errorSelectClient": "Per plaschair selecziunar in client"
-    }
+      "errorSelectClient": "Per plaschair selecziunar in client",
+      "items": "Artitgels",
+      "addItem": "Agiuntar artitgel",
+      "item": "Artitgel",
+      "fillFromCatalog": "Cumplenir dal catalog",
+      "selectProduct": "Selecziunar product",
+      "description": "Descripziun",
+      "quantity": "Quantitad",
+      "unitPrice": "Pretsch unitar",
+      "taxRate": "TPV",
+      "subtotal": "Subtotal",
+      "tax": "TPV",
+      "total": "Total",
+      "notesPlaceholder": "Notizias visiblas per il client",
+      "create": "Crear preventiv"
+    },
+    "createSuccess": "Preventiv creà cun success",
+    "createError": "Errur cun crear il preventiv",
+    "updateSuccess": "Preventiv actualisà cun success",
+    "updateError": "Errur cun actualisar il preventiv"
   },
   "invoices": {
     "title": "Facturas",
@@ -399,8 +417,26 @@
       "saving": "Memorisar...",
       "createButton": "Crear factura",
       "errorCreating": "Errur cun crear la factura",
-      "errorSelectClient": "Per plaschair selecziunar in client"
-    }
+      "errorSelectClient": "Per plaschair selecziunar in client",
+      "items": "Artitgels",
+      "addItem": "Agiuntar artitgel",
+      "item": "Artitgel",
+      "fillFromCatalog": "Cumplenir dal catalog",
+      "selectProduct": "Selecziunar product",
+      "description": "Descripziun",
+      "quantity": "Quantitad",
+      "unitPrice": "Pretsch unitar",
+      "taxRate": "TPV",
+      "subtotal": "Subtotal",
+      "tax": "TPV",
+      "total": "Total",
+      "notesPlaceholder": "Notizias visiblas per il client",
+      "create": "Crear factura"
+    },
+    "createSuccess": "Factura creada cun success",
+    "createError": "Errur cun crear la factura",
+    "updateSuccess": "Factura actualisada cun success",
+    "updateError": "Errur cun actualisar la factura"
   },
   "settings": {
     "title": "Parameters",

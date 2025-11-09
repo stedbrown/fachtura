@@ -342,8 +342,26 @@
       "saving": "Enregistrement...",
       "createButton": "Créer le devis",
       "errorCreating": "Erreur lors de la création du devis",
-      "errorSelectClient": "Veuillez sélectionner un client"
-    }
+      "errorSelectClient": "Veuillez sélectionner un client",
+      "items": "Articles",
+      "addItem": "Ajouter un article",
+      "item": "Article",
+      "fillFromCatalog": "Remplir depuis le catalogue",
+      "selectProduct": "Sélectionner un produit",
+      "description": "Description",
+      "quantity": "Quantité",
+      "unitPrice": "Prix unitaire",
+      "taxRate": "TVA",
+      "subtotal": "Sous-total",
+      "tax": "TVA",
+      "total": "Total",
+      "notesPlaceholder": "Notes visibles par le client",
+      "create": "Créer le devis"
+    },
+    "createSuccess": "Devis créé avec succès",
+    "createError": "Erreur lors de la création du devis",
+    "updateSuccess": "Devis mis à jour avec succès",
+    "updateError": "Erreur lors de la mise à jour du devis"
   },
   "invoices": {
     "title": "Factures",
@@ -399,8 +417,26 @@
       "saving": "Enregistrement...",
       "createButton": "Créer la facture",
       "errorCreating": "Erreur lors de la création de la facture",
-      "errorSelectClient": "Veuillez sélectionner un client"
-    }
+      "errorSelectClient": "Veuillez sélectionner un client",
+      "items": "Articles",
+      "addItem": "Ajouter un article",
+      "item": "Article",
+      "fillFromCatalog": "Remplir depuis le catalogue",
+      "selectProduct": "Sélectionner un produit",
+      "description": "Description",
+      "quantity": "Quantité",
+      "unitPrice": "Prix unitaire",
+      "taxRate": "TVA",
+      "subtotal": "Sous-total",
+      "tax": "TVA",
+      "total": "Total",
+      "notesPlaceholder": "Notes visibles par le client",
+      "create": "Créer la facture"
+    },
+    "createSuccess": "Facture créée avec succès",
+    "createError": "Erreur lors de la création de la facture",
+    "updateSuccess": "Facture mise à jour avec succès",
+    "updateError": "Erreur lors de la mise à jour de la facture"
   },
   "settings": {
     "title": "Paramètres",
