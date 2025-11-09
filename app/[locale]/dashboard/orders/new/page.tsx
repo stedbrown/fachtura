@@ -218,7 +218,7 @@ export default function NewOrderPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="status">{t('status') || 'Stato'}</Label>
+                <Label htmlFor="status">{tCommon('status') || 'Stato'}</Label>
                 <Select value={status} onValueChange={(v: any) => setStatus(v)}>
                   <SelectTrigger>
                     <SelectValue />
