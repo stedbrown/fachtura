@@ -157,12 +157,12 @@ export function QuoteDialog({
     const invalidItems = items.filter(item => 
       !item.description?.trim() || 
       item.quantity <= 0 || 
-      item.unit_price < 0 || 
+      item.unit_price <= 0 || 
       item.tax_rate < 0
     )
 
     if (invalidItems.length > 0) {
-      toast.error('Compila tutti i campi degli articoli correttamente')
+      toast.error('Compila tutti i campi degli articoli correttamente (descrizione, quantità > 0, prezzo > 0)')
       return
     }
 
@@ -209,7 +209,13 @@ export function QuoteDialog({
         line_total: item.quantity * item.unit_price * (1 + item.tax_rate / 100),
       }))
 
-      await supabase.from('quote_items').insert(itemsToInsert)
+      console.log('Inserting quote items:', itemsToInsert)
+      const { error: itemsError } = await supabase.from('quote_items').insert(itemsToInsert)
+      
+      if (itemsError) {
+        console.error('Error inserting quote items:', itemsError)
+        throw new Error(`Errore inserimento articoli: ${itemsError.message}`)
+      }
 
       toast.success(t('createSuccess') || 'Preventivo creato con successo')
       onOpenChange(false)
