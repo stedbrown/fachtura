@@ -166,15 +166,16 @@ export default function EditProductPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="sku">{t('sku') || 'SKU/Codice'} <span className="text-xs text-muted-foreground">({t('optional') || 'opzionale'})</span></Label>
+                <Label htmlFor="sku">{t('sku') || 'SKU/Codice'}</Label>
                 <Input
                   id="sku"
                   value={formData.sku}
-                  onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                  placeholder={t('skuPlaceholder') || 'es. PRD-202501-001'}
+                  readOnly
+                  disabled
+                  className="bg-muted cursor-not-allowed"
                 />
                 <p className="text-xs text-muted-foreground">
-                  {t('skuInfo') || 'Lo SKU identifica univocamente il prodotto nel tuo catalogo'}
+                  ℹ️ {t('skuReadonly') || 'Lo SKU è stato generato automaticamente e non può essere modificato'}
                 </p>
               </div>
             </div>

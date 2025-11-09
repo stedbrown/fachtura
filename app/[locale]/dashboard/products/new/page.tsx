@@ -22,10 +22,9 @@ export default function NewProductPage() {
   const tCommon = useTranslations('common')
   const [loading, setLoading] = useState(false)
 
-  const [formData, setFormData] = useState<ProductInput>({
+  const [formData, setFormData] = useState<Omit<ProductInput, 'sku'>>({
     name: '',
     description: '',
-    sku: '',
     category: '',
     unit_price: 0,
     tax_rate: 8.1,
@@ -116,20 +115,11 @@ export default function NewProductPage() {
                   placeholder={t('namePlaceholder') || 'es. Consulenza IT'}
                 />
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="sku">{t('sku') || 'SKU/Codice'} <span className="text-xs text-muted-foreground">({t('optional') || 'opzionale'})</span></Label>
-                <Input
-                  id="sku"
-                  value={formData.sku}
-                  onChange={(e) => setFormData({ ...formData, sku: e.target.value })}
-                  placeholder={t('skuPlaceholder') || 'Lascia vuoto per generazione automatica (es. PRD-202501-001)'}
-                />
-                <p className="text-xs text-muted-foreground">
-                  {t('skuAutoGenerate') || 'Se lasciato vuoto, verrà generato automaticamente'}
-                </p>
-              </div>
             </div>
+
+            <p className="text-xs text-muted-foreground bg-muted/30 p-3 rounded-md border">
+              ℹ️ {t('skuAutoInfo') || 'Lo SKU verrà generato automaticamente al salvataggio (formato: PRD-YYYYMM-NNN)'}
+            </p>
 
             <div className="space-y-2">
               <Label htmlFor="description">{t('description') || 'Descrizione'}</Label>
