@@ -126,7 +126,7 @@ export function ProductDialog({
                 <Label htmlFor="sku" className="text-sm font-medium">SKU/Codice</Label>
                 <Input
                   id="sku"
-                  value={product.sku}
+                  value={product.sku || ''}
                   readOnly
                   disabled
                   className="h-10 bg-muted cursor-not-allowed"
