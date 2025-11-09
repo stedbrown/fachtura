@@ -26,6 +26,7 @@ import { exportFormattedToCSV, exportFormattedToExcel, formatDateForExport, form
 import { toast } from 'sonner'
 import { useSubscription } from '@/hooks/use-subscription'
 import { SubscriptionUpgradeDialog } from '@/components/subscription-upgrade-dialog'
+import { InvoiceDialog } from '@/components/invoices/invoice-dialog'
 
 const localeMap: Record<string, Locale> = {
   it: it,
@@ -74,6 +75,7 @@ export default function InvoicesPage() {
     maxCount: 0,
     planName: 'Free'
   })
+  const [invoiceDialogOpen, setInvoiceDialogOpen] = useState(false)
 
   // Initialize filters from URL params
   useEffect(() => {
@@ -192,8 +194,8 @@ export default function InvoicesPage() {
       })
     }
     
-    // Naviga alla pagina di creazione
-    router.push(`/${locale}/dashboard/invoices/new`)
+    // Apri il dialog di creazione
+    setInvoiceDialogOpen(true)
   }
 
   // Filter invoices based on active filters
@@ -571,6 +573,16 @@ export default function InvoicesPage() {
         currentCount={upgradeDialogParams.currentCount}
         maxCount={upgradeDialogParams.maxCount}
         planName={upgradeDialogParams.planName}
+      />
+
+      {/* Invoice Dialog */}
+      <InvoiceDialog
+        open={invoiceDialogOpen}
+        onOpenChange={setInvoiceDialogOpen}
+        onSuccess={() => {
+          setInvoiceDialogOpen(false)
+          updateOverdueInvoicesAndLoad()
+        }}
       />
     </div>
   )

@@ -26,6 +26,7 @@ import { exportFormattedToCSV, exportFormattedToExcel, formatDateForExport, form
 import { toast } from 'sonner'
 import { useSubscription } from '@/hooks/use-subscription'
 import { SubscriptionUpgradeDialog } from '@/components/subscription-upgrade-dialog'
+import { QuoteDialog } from '@/components/quotes/quote-dialog'
 
 const localeMap: Record<string, Locale> = {
   it: it,
@@ -73,6 +74,7 @@ export default function QuotesPage() {
     maxCount: 0,
     planName: 'Free'
   })
+  const [quoteDialogOpen, setQuoteDialogOpen] = useState(false)
 
   useEffect(() => {
     loadQuotes()
@@ -170,8 +172,8 @@ export default function QuotesPage() {
       })
     }
     
-    // Naviga alla pagina di creazione
-    router.push(`/${locale}/dashboard/quotes/new`)
+    // Apri il dialog di creazione
+    setQuoteDialogOpen(true)
   }
 
   // Filter quotes based on active filters
@@ -540,6 +542,16 @@ export default function QuotesPage() {
         currentCount={upgradeDialogParams.currentCount}
         maxCount={upgradeDialogParams.maxCount}
         planName={upgradeDialogParams.planName}
+      />
+
+      {/* Quote Dialog */}
+      <QuoteDialog
+        open={quoteDialogOpen}
+        onOpenChange={setQuoteDialogOpen}
+        onSuccess={() => {
+          setQuoteDialogOpen(false)
+          loadQuotes()
+        }}
       />
     </div>
   )

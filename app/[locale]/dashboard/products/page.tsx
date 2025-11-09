@@ -23,6 +23,8 @@ import { useSubscription } from '@/hooks/use-subscription'
 import { SubscriptionUpgradeDialog } from '@/components/subscription-upgrade-dialog'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { exportFormattedToCSV, exportFormattedToExcel, formatCurrencyForExport } from '@/lib/export-utils'
+import { ProductDialog } from '@/components/products/product-dialog'
+import type { ProductFormInput } from '@/lib/validations/product'
 
 export default function ProductsPage() {
   const router = useRouter()
@@ -45,6 +47,11 @@ export default function ProductsPage() {
     maxCount: 0,
     planName: 'Free'
   })
+  
+  // Dialog state
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+  const [dialogLoading, setDialogLoading] = useState(false)
 
   useEffect(() => {
     loadProducts()
@@ -95,7 +102,77 @@ export default function ProductsPage() {
       return
     }
 
-    router.push(`/${locale}/dashboard/products/new`)
+    setSelectedProduct(null)
+    setDialogOpen(true)
+  }
+
+  function handleEdit(product: Product) {
+    setSelectedProduct(product)
+    setDialogOpen(true)
+  }
+
+  async function handleDialogSubmit(data: ProductFormInput) {
+    setDialogLoading(true)
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    if (!user) {
+      toast.error(tCommon('error') || 'Errore')
+      setDialogLoading(false)
+      return
+    }
+
+    try {
+      if (selectedProduct) {
+        // Update existing product
+        const { error } = await supabase
+          .from('products')
+          .update({
+            name: data.name,
+            description: data.description,
+            category: data.category,
+            unit_price: data.unit_price,
+            tax_rate: data.tax_rate ?? 8.1,
+            track_inventory: data.track_inventory ?? false,
+            stock_quantity: data.stock_quantity ?? 0,
+            low_stock_threshold: data.low_stock_threshold ?? 10,
+            is_active: data.is_active ?? true,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', selectedProduct.id)
+
+        if (error) throw error
+        toast.success(t('updateSuccess') || 'Prodotto aggiornato con successo')
+      } else {
+        // Create new product
+        const { error } = await supabase
+          .from('products')
+          .insert({
+            user_id: user.id,
+            name: data.name,
+            description: data.description,
+            category: data.category,
+            unit_price: data.unit_price,
+            tax_rate: data.tax_rate ?? 8.1,
+            track_inventory: data.track_inventory ?? false,
+            stock_quantity: data.stock_quantity ?? 0,
+            low_stock_threshold: data.low_stock_threshold ?? 10,
+            is_active: data.is_active ?? true,
+          })
+
+        if (error) throw error
+        toast.success(t('createSuccess') || 'Prodotto creato con successo')
+      }
+
+      setDialogOpen(false)
+      setSelectedProduct(null)
+      loadProducts()
+    } catch (error: any) {
+      console.error('Error saving product:', error)
+      toast.error(selectedProduct ? t('updateError') : t('createError'))
+    } finally {
+      setDialogLoading(false)
+    }
   }
 
   async function handleDelete(id: string) {
@@ -301,7 +378,7 @@ export default function ProductsPage() {
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  onClick={() => router.push(`/${locale}/dashboard/products/${product.id}`)}
+                                  onClick={() => handleEdit(product)}
                                   title={t('edit')}
                                 >
                                   <Edit className="h-4 w-4" />
@@ -349,6 +426,15 @@ export default function ProductsPage() {
         currentCount={upgradeDialogParams.currentCount}
         maxCount={upgradeDialogParams.maxCount}
         planName={upgradeDialogParams.planName}
+      />
+
+      {/* Product Dialog */}
+      <ProductDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        onSubmit={handleDialogSubmit}
+        product={selectedProduct}
+        loading={dialogLoading}
       />
     </div>
   )

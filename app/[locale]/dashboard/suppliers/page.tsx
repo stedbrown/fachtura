@@ -21,6 +21,8 @@ import { toast } from 'sonner'
 import { useSubscription } from '@/hooks/use-subscription'
 import { SubscriptionUpgradeDialog } from '@/components/subscription-upgrade-dialog'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { SupplierDialog } from '@/components/suppliers/supplier-dialog'
+import type { SupplierInput } from '@/lib/validations/supplier'
 
 export default function SuppliersPage() {
   const router = useRouter()
@@ -43,6 +45,11 @@ export default function SuppliersPage() {
     maxCount: 0,
     planName: 'Free'
   })
+  
+  // Dialog state
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null)
+  const [dialogLoading, setDialogLoading] = useState(false)
 
   useEffect(() => {
     loadSuppliers()
@@ -92,11 +99,85 @@ export default function SuppliersPage() {
       return
     }
 
-    router.push(`/${locale}/dashboard/suppliers/new`)
+    setSelectedSupplier(null)
+    setDialogOpen(true)
   }
 
-  function handleEdit(supplierId: string) {
-    router.push(`/${locale}/dashboard/suppliers/${supplierId}`)
+  function handleEdit(supplier: Supplier) {
+    setSelectedSupplier(supplier)
+    setDialogOpen(true)
+  }
+
+  async function handleDialogSubmit(data: SupplierInput) {
+    setDialogLoading(true)
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    if (!user) {
+      toast.error(tCommon('error') || 'Errore')
+      setDialogLoading(false)
+      return
+    }
+
+    try {
+      if (selectedSupplier) {
+        // Update existing supplier
+        const { error } = await supabase
+          .from('suppliers')
+          .update({
+            name: data.name,
+            contact_person: data.contact_person,
+            email: data.email,
+            phone: data.phone,
+            address: data.address,
+            city: data.city,
+            postal_code: data.postal_code,
+            country: data.country,
+            vat_number: data.vat_number,
+            website: data.website,
+            payment_terms: data.payment_terms,
+            notes: data.notes,
+            is_active: data.is_active ?? true,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', selectedSupplier.id)
+
+        if (error) throw error
+        toast.success(t('updateSuccess') || 'Fornitore aggiornato con successo')
+      } else {
+        // Create new supplier
+        const { error } = await supabase
+          .from('suppliers')
+          .insert({
+            user_id: user.id,
+            name: data.name,
+            contact_person: data.contact_person,
+            email: data.email,
+            phone: data.phone,
+            address: data.address,
+            city: data.city,
+            postal_code: data.postal_code,
+            country: data.country,
+            vat_number: data.vat_number,
+            website: data.website,
+            payment_terms: data.payment_terms,
+            notes: data.notes,
+            is_active: data.is_active ?? true,
+          })
+
+        if (error) throw error
+        toast.success(t('createSuccess') || 'Fornitore creato con successo')
+      }
+
+      setDialogOpen(false)
+      setSelectedSupplier(null)
+      loadSuppliers()
+    } catch (error: any) {
+      console.error('Error saving supplier:', error)
+      toast.error(selectedSupplier ? t('updateError') : t('createError'))
+    } finally {
+      setDialogLoading(false)
+    }
   }
 
   function confirmDelete(supplierId: string) {
@@ -162,9 +243,9 @@ export default function SuppliersPage() {
     }
   }
 
-  function handleRowClick(supplierId: string) {
+  function handleRowClick(supplier: Supplier) {
     if (!showArchived) {
-      router.push(`/${locale}/dashboard/suppliers/${supplierId}`)
+      handleEdit(supplier)
     }
   }
 
@@ -236,7 +317,7 @@ export default function SuppliersPage() {
                       <TableRow 
                         key={supplier.id}
                         className="cursor-pointer hover:bg-muted/50"
-                        onClick={() => handleRowClick(supplier.id)}
+                        onClick={() => handleRowClick(supplier)}
                       >
                         <TableCell className="font-medium text-xs md:text-sm">
                           {supplier.name}
@@ -251,7 +332,7 @@ export default function SuppliersPage() {
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  onClick={() => handleEdit(supplier.id)}
+                                  onClick={() => handleEdit(supplier)}
                                   title={tCommon('edit')}
                                 >
                                   <Pencil className="h-4 w-4" />
@@ -314,6 +395,15 @@ export default function SuppliersPage() {
         currentCount={upgradeDialogParams.currentCount}
         maxCount={upgradeDialogParams.maxCount}
         planName={upgradeDialogParams.planName}
+      />
+
+      {/* Supplier Dialog */}
+      <SupplierDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        onSubmit={handleDialogSubmit}
+        supplier={selectedSupplier}
+        loading={dialogLoading}
       />
     </div>
   )
