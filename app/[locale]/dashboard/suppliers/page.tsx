@@ -304,7 +304,7 @@ export default function SuppliersPage() {
         onConfirm={handleDelete}
         title={t('deleteTitle') || 'Elimina Fornitore'}
         description={t('deleteDescription') || 'Sei sicuro di voler archiviare questo fornitore?'}
-        loading={isDeleting}
+        isDeleting={isDeleting}
       />
 
       <SubscriptionUpgradeDialog
