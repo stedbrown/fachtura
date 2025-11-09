@@ -3,7 +3,7 @@
 import { useEffect } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
-import { productSchema, type ProductInput } from '@/lib/validations/product'
+import { productFormSchema, type ProductFormInput } from '@/lib/validations/product'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -23,7 +23,7 @@ import { useTranslations } from 'next-intl'
 interface ProductDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onSubmit: (data: Omit<ProductInput, 'sku'>) => Promise<void>
+  onSubmit: (data: ProductFormInput) => Promise<void>
   product?: Product | null
   loading: boolean
 }
@@ -45,8 +45,8 @@ export function ProductDialog({
     reset,
     watch,
     setValue,
-  } = useForm<Omit<ProductInput, 'sku'>>({
-    resolver: zodResolver(productSchema.omit({ sku: true })),
+  } = useForm<ProductFormInput>({
+    resolver: zodResolver(productFormSchema),
     defaultValues: {
       is_active: true,
       track_inventory: false,
@@ -84,7 +84,7 @@ export function ProductDialog({
     }
   }, [product, reset])
 
-  const handleFormSubmit = async (data: Omit<ProductInput, 'sku'>) => {
+  const handleFormSubmit = async (data: ProductFormInput) => {
     await onSubmit(data)
     reset()
   }
