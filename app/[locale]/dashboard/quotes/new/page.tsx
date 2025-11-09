@@ -557,7 +557,7 @@ export default function NewQuotePage() {
           </CardContent>
         </Card>
 
-        <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4 border-t">
+        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-4 border-t">
           <Button
             type="button"
             variant="outline"
