@@ -124,7 +124,7 @@ export function QuoteDialog({
     }
   }
 
-  const updateItem = (index: number, field: keyof InvoiceItemInput, value: any) => {
+  const updateItem = (index: number, field: keyof QuoteItemInput, value: any) => {
     const newItems = [...items]
     newItems[index] = { ...newItems[index], [field]: value }
     setItems(newItems)
