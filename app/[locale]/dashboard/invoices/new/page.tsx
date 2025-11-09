@@ -331,10 +331,11 @@ export default function NewInvoicePage() {
   const totals = calculateInvoiceTotals(items)
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">{t('form.title')}</h1>
-        <p className="text-muted-foreground">
+    <div className="space-y-4 md:space-y-6 pb-8">
+      {/* Header */}
+      <div className="flex flex-col gap-2">
+        <h1 className="text-2xl md:text-3xl font-bold tracking-tight">{t('form.title')}</h1>
+        <p className="text-sm md:text-base text-muted-foreground">
           {t('form.subtitle')}
         </p>
       </div>
@@ -342,16 +343,18 @@ export default function NewInvoicePage() {
       {/* Alert for missing company settings */}
       <SetupAlert />
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
         <Card>
-          <CardHeader>
-            <CardTitle>{t('form.generalInfo')}</CardTitle>
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg md:text-xl">{t('form.generalInfo')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="client">{t('fields.client')} *</Label>
+              <Label htmlFor="client" className="text-sm font-medium">
+                {t('fields.client')} <span className="text-red-500">*</span>
+              </Label>
               <Select value={clientId} onValueChange={setClientId}>
-                <SelectTrigger>
+                <SelectTrigger className="h-10">
                   <SelectValue placeholder={t('form.selectClient')} />
                 </SelectTrigger>
                 <SelectContent>
@@ -363,30 +366,34 @@ export default function NewInvoicePage() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="date">{t('fields.date')}</Label>
+                <Label htmlFor="date" className="text-sm font-medium">{t('fields.date')}</Label>
                 <Input
                   id="date"
                   type="date"
+                  className="h-10"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="dueDate">{t('fields.dueDate')}</Label>
+                <Label htmlFor="dueDate" className="text-sm font-medium">{t('fields.dueDate')}</Label>
                 <Input
                   id="dueDate"
                   type="date"
+                  className="h-10"
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}
                 />
               </div>
             </div>
+
             <div className="space-y-2">
-              <Label htmlFor="status">{tCommon('status')}</Label>
+              <Label htmlFor="status" className="text-sm font-medium">{tCommon('status')}</Label>
               <Select value={status} onValueChange={(value: any) => setStatus(value)}>
-                <SelectTrigger>
+                <SelectTrigger className="h-10">
                   <SelectValue placeholder={t('form.selectStatus')} />
                 </SelectTrigger>
                 <SelectContent>
@@ -397,71 +404,100 @@ export default function NewInvoicePage() {
                 </SelectContent>
               </Select>
             </div>
+
             <div className="space-y-2">
-              <Label htmlFor="notes">{tCommon('notes')}</Label>
+              <Label htmlFor="notes" className="text-sm font-medium">{tCommon('notes')}</Label>
               <Textarea
                 id="notes"
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={3}
+                className="resize-none"
+                placeholder="Note aggiuntive sulla fattura..."
               />
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>{t('fields.items')}</CardTitle>
-            <Button type="button" variant="outline" size="sm" onClick={addItem}>
-              <Plus className="mr-2 h-4 w-4" />
-              {t('fields.addItem')}
-            </Button>
+          <CardHeader className="pb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <CardTitle className="text-lg md:text-xl">{t('fields.items')}</CardTitle>
+              <Button type="button" variant="outline" size="sm" onClick={addItem} className="w-full sm:w-auto">
+                <Plus className="mr-2 h-4 w-4" />
+                {t('fields.addItem')}
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
             {products.length > 0 && (
-              <div className="space-y-2 p-4 bg-muted/50 rounded-lg">
-                <Label htmlFor="add_product">{tProducts('addFromCatalog') || 'Aggiungi dal Catalogo'}</Label>
+              <div className="space-y-3 p-4 bg-muted/30 border border-dashed rounded-lg">
+                <div className="flex items-center gap-2">
+                  <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <Plus className="h-4 w-4 text-primary" />
+                  </div>
+                  <div className="flex-1">
+                    <Label htmlFor="add_product" className="text-sm font-semibold">
+                      {tProducts('addFromCatalog') || 'Aggiungi dal Catalogo'}
+                    </Label>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {tProducts('addFromCatalogHint') || 'Aggiungi rapidamente prodotti dal tuo catalogo'}
+                    </p>
+                  </div>
+                </div>
                 <Select onValueChange={addProductItem}>
-                  <SelectTrigger>
+                  <SelectTrigger className="h-10">
                     <SelectValue placeholder={tProducts('selectProduct') || 'Seleziona Prodotto'} />
                   </SelectTrigger>
                   <SelectContent>
                     {products.map((product) => (
                       <SelectItem key={product.id} value={product.id}>
-                        {product.name} - CHF {Number(product.unit_price).toFixed(2)}
+                        <div className="flex items-center justify-between w-full">
+                          <span>{product.name}</span>
+                          <span className="text-muted-foreground ml-4">CHF {Number(product.unit_price).toFixed(2)}</span>
+                        </div>
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-muted-foreground">
-                  {tProducts('addFromCatalogHint') || 'Aggiungi rapidamente prodotti dal tuo catalogo oppure inserisci manualmente'}
-                </p>
               </div>
             )}
 
             {items.map((item, index) => (
               <div
                 key={index}
-                className="p-4 border rounded-lg space-y-4 relative"
+                className="p-4 md:p-5 border-2 rounded-lg space-y-4 relative bg-card hover:border-primary/30 transition-colors"
               >
                 {items.length > 1 && (
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="absolute top-2 right-2"
+                    className="absolute top-2 right-2 h-8 w-8 hover:bg-red-50 hover:text-red-600"
                     onClick={() => removeItem(index)}
                   >
-                    <Trash2 className="h-4 w-4 text-red-600" />
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 )}
                 
+                {/* Header Item */}
+                <div className="flex items-center gap-2 pr-10">
+                  <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 text-sm font-semibold">
+                    {index + 1}
+                  </div>
+                  <h4 className="text-sm font-semibold text-muted-foreground">
+                    Articolo #{index + 1}
+                  </h4>
+                </div>
+
                 {products.length > 0 && (
-                  <div className="space-y-2">
-                    <Label>{tProducts('fillFromCatalog') || 'Compila dal Catalogo (opzionale)'}</Label>
+                  <div className="space-y-2 p-3 bg-muted/20 rounded-md border">
+                    <Label className="text-xs font-medium text-muted-foreground">
+                      {tProducts('fillFromCatalog') || 'Compila dal Catalogo (opzionale)'}
+                    </Label>
                     <Select onValueChange={(productId) => fillFromProduct(index, productId)}>
-                      <SelectTrigger>
-                        <SelectValue placeholder={tProducts('selectProductToFill') || 'Seleziona per compilare automaticamente'} />
+                      <SelectTrigger className="h-9 text-sm">
+                        <SelectValue placeholder={tProducts('selectProductToFill') || 'Seleziona per compilare'} />
                       </SelectTrigger>
                       <SelectContent>
                         {products.map((product) => (
@@ -475,7 +511,7 @@ export default function NewInvoicePage() {
                 )}
 
                 <div className="space-y-2">
-                  <Label>{t('fields.description')}</Label>
+                  <Label className="text-sm font-medium">{t('fields.description')}</Label>
                   <Textarea
                     value={item.description}
                     onChange={(e) =>
@@ -483,15 +519,18 @@ export default function NewInvoicePage() {
                     }
                     placeholder={t('form.itemDescription')}
                     rows={2}
+                    className="resize-none"
                   />
                 </div>
-                <div className="grid grid-cols-3 gap-4">
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="space-y-2">
-                    <Label>{t('fields.quantity')}</Label>
+                    <Label className="text-sm font-medium">{t('fields.quantity')}</Label>
                     <Input
                       type="number"
                       step="0.01"
                       min="0.01"
+                      className="h-10"
                       value={item.quantity}
                       onChange={(e) =>
                         updateItem(index, 'quantity', parseFloat(e.target.value) || 0)
@@ -499,11 +538,12 @@ export default function NewInvoicePage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>{t('fields.unitPrice')} (CHF)</Label>
+                    <Label className="text-sm font-medium">{t('fields.unitPrice')} (CHF)</Label>
                     <Input
                       type="number"
                       step="0.01"
                       min="0"
+                      className="h-10"
                       value={item.unit_price}
                       onChange={(e) =>
                         updateItem(index, 'unit_price', parseFloat(e.target.value) || 0)
@@ -511,12 +551,13 @@ export default function NewInvoicePage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>{t('fields.taxRate')} (%)</Label>
+                    <Label className="text-sm font-medium">{t('fields.taxRate')} (%)</Label>
                     <Input
                       type="number"
                       step="0.1"
                       min="0"
                       max="100"
+                      className="h-10"
                       value={item.tax_rate}
                       onChange={(e) =>
                         updateItem(index, 'tax_rate', parseFloat(e.target.value) || 0)
@@ -524,14 +565,11 @@ export default function NewInvoicePage() {
                     />
                   </div>
                 </div>
-                <div className="text-right">
-                  <span className="text-sm text-muted-foreground">
-                    {t('fields.lineTotal')}: CHF{' '}
-                    {(
-                      item.quantity *
-                      item.unit_price *
-                      (1 + item.tax_rate / 100)
-                    ).toFixed(2)}
+
+                <div className="flex justify-between items-center pt-3 border-t">
+                  <span className="text-sm font-medium text-muted-foreground">{t('fields.lineTotal')}:</span>
+                  <span className="text-lg font-bold">
+                    CHF {(item.quantity * item.unit_price * (1 + item.tax_rate / 100)).toFixed(2)}
                   </span>
                 </div>
               </div>
@@ -539,31 +577,32 @@ export default function NewInvoicePage() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('form.totals')}</CardTitle>
+        <Card className="border-2">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg md:text-xl">{t('form.totals')}</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="flex justify-between">
-              <span>{tCommon('subtotal')}:</span>
-              <span>CHF {totals.subtotal.toFixed(2)}</span>
+          <CardContent className="space-y-3">
+            <div className="flex justify-between items-center py-2 border-b">
+              <span className="text-sm md:text-base text-muted-foreground">{tCommon('subtotal')}:</span>
+              <span className="text-sm md:text-base font-medium">CHF {totals.subtotal.toFixed(2)}</span>
             </div>
-            <div className="flex justify-between">
-              <span>{tCommon('tax')}:</span>
-              <span>CHF {totals.taxAmount.toFixed(2)}</span>
+            <div className="flex justify-between items-center py-2 border-b">
+              <span className="text-sm md:text-base text-muted-foreground">{tCommon('tax')}:</span>
+              <span className="text-sm md:text-base font-medium">CHF {totals.taxAmount.toFixed(2)}</span>
             </div>
-            <div className="flex justify-between text-lg font-bold">
-              <span>{tCommon('total')}:</span>
-              <span>CHF {totals.total.toFixed(2)}</span>
+            <div className="flex justify-between items-center py-3 bg-primary/5 -mx-6 px-6 rounded-b-lg">
+              <span className="text-base md:text-lg font-bold">{tCommon('total')}:</span>
+              <span className="text-xl md:text-2xl font-bold text-primary">CHF {totals.total.toFixed(2)}</span>
             </div>
           </CardContent>
         </Card>
 
-        <div className="flex gap-4">
+        <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4 border-t">
           <Button
             type="button"
             variant="outline"
             onClick={() => router.push(`/${locale}/dashboard/invoices`)}
+            className="w-full sm:w-auto"
           >
             {tCommon('cancel')}
           </Button>
@@ -571,6 +610,7 @@ export default function NewInvoicePage() {
             type="submit" 
             disabled={loading || !hasRequiredFields}
             title={!hasRequiredFields ? 'Configura prima i dati aziendali nelle impostazioni' : ''}
+            className="w-full sm:flex-1"
           >
             {loading ? t('form.saving') : t('form.createButton')}
           </Button>
