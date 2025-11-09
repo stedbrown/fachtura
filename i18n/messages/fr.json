@@ -207,6 +207,8 @@
     "clients": "Clients",
     "quotes": "Devis",
     "invoices": "Factures",
+    "products": "Produits",
+    "orders": "Commandes",
     "assistant": "Assistant IA",
     "subscription": "Abonnement",
     "profile": "Profil",

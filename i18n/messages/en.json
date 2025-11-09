@@ -207,6 +207,8 @@
     "clients": "Clients",
     "quotes": "Quotes",
     "invoices": "Invoices",
+    "products": "Products",
+    "orders": "Orders",
     "assistant": "AI Assistant",
     "subscription": "Subscription",
     "profile": "Profile",
