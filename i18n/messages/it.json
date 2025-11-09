@@ -800,7 +800,18 @@
     "deleteDialogDescription": "Il prodotto sarà archiviato e potrà essere ripristinato in seguito.",
     "addFromCatalogHint": "Aggiungi rapidamente prodotti dal tuo catalogo oppure inserisci manualmente",
     "fillFromCatalog": "Compila dal Catalogo (opzionale)",
-    "selectProductToFill": "Seleziona per compilare automaticamente"
+    "selectProductToFill": "Seleziona per compilare automaticamente",
+    "fields": {
+      "name": "Nome Prodotto",
+      "description": "Descrizione",
+      "category": "Categoria",
+      "unitPrice": "Prezzo Unitario (CHF)",
+      "taxRate": "Aliquota IVA (%)",
+      "trackInventory": "Traccia Inventario",
+      "stockQuantity": "Quantità in Magazzino",
+      "lowStockThreshold": "Soglia Scorta Minima",
+      "isActive": "Prodotto Attivo"
+    }
   },
   "orders": {
     "title": "Ordini Fornitori",

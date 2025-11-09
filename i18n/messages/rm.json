@@ -793,7 +793,18 @@
     "deleteDialogDescription": "Il product vegn archivà e po vegnir restaurà pli tard.",
     "addFromCatalogHint": "Agiuntescha products svelt da tes catalog u endatescha manualamain",
     "fillFromCatalog": "Emplenir dal catalog (opziunal)",
-    "selectProductToFill": "Selecziunar per emplenir automaticamain"
+    "selectProductToFill": "Selecziunar per emplenir automaticamain",
+    "fields": {
+      "name": "Num dal product",
+      "description": "Descripziun",
+      "category": "Categoria",
+      "unitPrice": "Pretsch per unitad (CHF)",
+      "taxRate": "Tschient d'impostas (%)",
+      "trackInventory": "Survegliar l'inventari",
+      "stockQuantity": "Quantitad en magazin",
+      "lowStockThreshold": "Limita da rezerva minimala",
+      "isActive": "Product activ"
+    }
   },
   "orders": {
     "title": "Ordinaziuns",

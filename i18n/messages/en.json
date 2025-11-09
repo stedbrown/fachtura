@@ -793,7 +793,18 @@
     "deleteDialogDescription": "The product will be archived and can be restored later.",
     "addFromCatalogHint": "Quickly add products from your catalog or enter manually",
     "fillFromCatalog": "Fill from Catalog (optional)",
-    "selectProductToFill": "Select to automatically fill"
+    "selectProductToFill": "Select to automatically fill",
+    "fields": {
+      "name": "Product Name",
+      "description": "Description",
+      "category": "Category",
+      "unitPrice": "Unit Price (CHF)",
+      "taxRate": "Tax Rate (%)",
+      "trackInventory": "Track Inventory",
+      "stockQuantity": "Stock Quantity",
+      "lowStockThreshold": "Low Stock Threshold",
+      "isActive": "Active Product"
+    }
   },
   "orders": {
     "title": "Orders",

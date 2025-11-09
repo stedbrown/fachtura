@@ -793,7 +793,18 @@
     "deleteDialogDescription": "Das Produkt wird archiviert und kann später wiederhergestellt werden.",
     "addFromCatalogHint": "Produkte schnell aus Ihrem Katalog hinzufügen oder manuell eingeben",
     "fillFromCatalog": "Aus Katalog ausfüllen (optional)",
-    "selectProductToFill": "Zum automatischen Ausfüllen auswählen"
+    "selectProductToFill": "Zum automatischen Ausfüllen auswählen",
+    "fields": {
+      "name": "Produktname",
+      "description": "Beschreibung",
+      "category": "Kategorie",
+      "unitPrice": "Stückpreis (CHF)",
+      "taxRate": "Steuersatz (%)",
+      "trackInventory": "Inventar verfolgen",
+      "stockQuantity": "Lagerbestand",
+      "lowStockThreshold": "Mindestbestandsgrenze",
+      "isActive": "Produkt aktiv"
+    }
   },
   "orders": {
     "title": "Bestellungen",
