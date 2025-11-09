@@ -23,6 +23,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { Plus, Trash2, Package } from 'lucide-react'
 import type { QuoteWithClient, Client, Product } from '@/lib/types/database'
 import type { QuoteItemInput } from '@/lib/validations/quote'
@@ -138,6 +139,12 @@ export function QuoteDialog({
       updateItem(index, 'tax_rate', product.tax_rate)
       updateItem(index, 'product_id', product.id)
     }
+  }
+
+  const calculateLineTotal = (item: QuoteItemInput) => {
+    const subtotal = item.quantity * item.unit_price
+    const tax = subtotal * (item.tax_rate / 100)
+    return subtotal + tax
   }
 
   const handleSubmit = async () => {
@@ -297,88 +304,105 @@ export function QuoteDialog({
               </Button>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3">
               {items.map((item, index) => (
-                <Card key={index} className="relative">
-                  <CardHeader className="pb-3">
+                <Card key={index} className="relative border-border/60 bg-card/50 backdrop-blur-sm">
+                  <CardHeader className="pb-3 pt-4 px-4 sm:px-6">
                     <div className="flex items-center justify-between">
-                      <CardTitle className="text-sm font-medium">
-                        {t('form.item')} #{index + 1}
-                      </CardTitle>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="text-xs font-semibold">
+                          #{index + 1}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground hidden sm:inline">
+                          {t('form.item')}
+                        </span>
+                        {calculateLineTotal(item) > 0 && (
+                          <Badge variant="secondary" className="ml-2 text-xs font-medium">
+                            CHF {calculateLineTotal(item).toFixed(2)}
+                          </Badge>
+                        )}
+                      </div>
                       {items.length > 1 && (
                         <Button
                           type="button"
                           variant="ghost"
-                          size="icon"
+                          size="sm"
+                          className="h-8 w-8 p-0 hover:bg-destructive/10"
                           onClick={() => removeItem(index)}
                         >
-                          <Trash2 className="h-4 w-4 text-destructive" />
+                          <Trash2 className="h-3.5 w-3.5 text-destructive" />
                         </Button>
                       )}
                     </div>
                   </CardHeader>
-                  <CardContent className="space-y-4">
+                  <CardContent className="space-y-3 px-4 sm:px-6 pb-4">
                     {/* Fill from Catalog */}
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium flex items-center gap-2">
-                        <Package className="h-4 w-4" />
-                        {t('form.fillFromCatalog')}
-                      </Label>
-                      <Select onValueChange={(v) => fillFromProduct(index, v)}>
-                        <SelectTrigger className="h-10">
-                          <SelectValue placeholder={t('form.selectProduct')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {products.map((product) => (
-                            <SelectItem key={product.id} value={product.id}>
-                              {product.name} - CHF {product.unit_price.toFixed(2)}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                    {products.length > 0 && (
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-medium flex items-center gap-1.5 text-muted-foreground">
+                          <Package className="h-3.5 w-3.5" />
+                          {t('form.fillFromCatalog')}
+                        </Label>
+                        <Select onValueChange={(v) => fillFromProduct(index, v)}>
+                          <SelectTrigger className="h-9 text-sm">
+                            <SelectValue placeholder={t('form.selectProduct')} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {products.map((product) => (
+                              <SelectItem key={product.id} value={product.id}>
+                                <div className="flex items-center justify-between w-full gap-3">
+                                  <span>{product.name}</span>
+                                  <span className="text-muted-foreground">CHF {product.unit_price.toFixed(2)}</span>
+                                </div>
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    )}
 
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium">{t('form.description')}</Label>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs font-medium text-muted-foreground">{t('form.description')}</Label>
                       <Textarea
                         value={item.description}
                         onChange={(e) => updateItem(index, 'description', e.target.value)}
-                        className="resize-none"
+                        className="resize-none text-sm min-h-[60px]"
                         rows={2}
+                        placeholder="Descrizione del servizio o prodotto..."
                       />
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                      <div className="space-y-2">
-                        <Label className="text-sm font-medium">{t('form.quantity')}</Label>
+                    <div className="grid grid-cols-3 gap-3">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-medium text-muted-foreground">{t('form.quantity')}</Label>
                         <Input
                           type="number"
-                          min="1"
-                          step="1"
-                          className="h-10"
+                          min="0.01"
+                          step="0.01"
+                          className="h-9 text-sm"
                           value={item.quantity}
                           onChange={(e) => updateItem(index, 'quantity', parseFloat(e.target.value) || 1)}
                         />
                       </div>
-                      <div className="space-y-2">
-                        <Label className="text-sm font-medium">{t('form.unitPrice')} (CHF)</Label>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-medium text-muted-foreground">{t('form.unitPrice')} (CHF)</Label>
                         <Input
                           type="number"
                           min="0"
                           step="0.01"
-                          className="h-10"
+                          className="h-9 text-sm"
                           value={item.unit_price}
                           onChange={(e) => updateItem(index, 'unit_price', parseFloat(e.target.value) || 0)}
                         />
                       </div>
-                      <div className="space-y-2">
-                        <Label className="text-sm font-medium">{t('form.taxRate')} (%)</Label>
+                      <div className="space-y-1.5">
+                        <Label className="text-xs font-medium text-muted-foreground">{t('form.taxRate')} (%)</Label>
                         <Input
                           type="number"
                           min="0"
                           max="100"
                           step="0.1"
-                          className="h-10"
+                          className="h-9 text-sm"
                           value={item.tax_rate}
                           onChange={(e) => updateItem(index, 'tax_rate', parseFloat(e.target.value) || 0)}
                         />
@@ -391,46 +415,38 @@ export function QuoteDialog({
           </div>
 
           {/* Separator */}
-          <div className="border-t pt-4"></div>
+          <div className="border-t"></div>
 
           {/* Totals Section */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-              {tCommon('totals')}
-            </h3>
-            <Card>
-              <CardContent className="pt-6">
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span>{t('form.subtotal')}</span>
-                    <span className="font-medium">CHF {totals.subtotal.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span>{t('form.tax')}</span>
-                    <span className="font-medium">CHF {totals.totalTax.toFixed(2)}</span>
-                  </div>
-                  <div className="border-t pt-2 flex justify-between text-base font-semibold">
-                    <span>{t('form.total')}</span>
-                    <span>CHF {totals.total.toFixed(2)}</span>
-                  </div>
+          <Card className="border-primary/20 bg-primary/5">
+            <CardContent className="pt-5 pb-5">
+              <div className="space-y-3">
+                <div className="flex justify-between text-sm items-center">
+                  <span className="text-muted-foreground">{t('form.subtotal')}</span>
+                  <span className="font-semibold text-base">CHF {totals.subtotal.toFixed(2)}</span>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Separator */}
-          <div className="border-t pt-4"></div>
+                <div className="flex justify-between text-sm items-center">
+                  <span className="text-muted-foreground">{t('form.tax')}</span>
+                  <span className="font-semibold text-base">CHF {totals.totalTax.toFixed(2)}</span>
+                </div>
+                <div className="border-t border-primary/20 pt-3 flex justify-between items-center">
+                  <span className="text-base font-bold">{t('form.total')}</span>
+                  <span className="text-2xl font-bold text-primary">CHF {totals.total.toFixed(2)}</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Notes Section */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+          <div className="space-y-2">
+            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
               {tCommon('notes')}
-            </h3>
+            </Label>
             <Textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
-              className="resize-none"
+              className="resize-none text-sm"
               placeholder={t('form.notesPlaceholder')}
             />
           </div>
