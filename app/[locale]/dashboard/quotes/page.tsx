@@ -539,7 +539,7 @@ export default function QuotesPage() {
                         locale: localeMap[locale] || enUS,
                       })}
                     </TableCell>
-                    <TableCell className={getColumnClass('total', 'text-right font-medium text-xs md:text-sm')}>CHF {quote.total.toFixed(2)}</TableCell>
+                    <TableCell className={getColumnClass('total', 'text-right font-medium text-xs md:text-sm tabular-nums')}>CHF {quote.total.toFixed(2)}</TableCell>
                     <TableCell className={getColumnClass('status', 'text-xs md:text-sm')}>
                       <Badge variant={getQuoteStatusVariant(quote.status)} className="text-xs">
                         {t(`status.${quote.status}`)}

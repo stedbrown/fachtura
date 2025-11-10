@@ -422,10 +422,10 @@ export default function ProductsPage() {
                           )}
                         </TableCell>
                         <TableCell className={getColumnClass('category', 'hidden md:table-cell text-xs md:text-sm')}>{product.category || '-'}</TableCell>
-                        <TableCell className={getColumnClass('price', 'text-right text-xs md:text-sm')}>
+                        <TableCell className={getColumnClass('price', 'text-right text-xs md:text-sm tabular-nums')}>
                           CHF {Number(product.unit_price).toLocaleString('it-CH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </TableCell>
-                        <TableCell className={getColumnClass('stock', 'hidden sm:table-cell text-right text-xs md:text-sm')}>
+                        <TableCell className={getColumnClass('stock', 'hidden sm:table-cell text-right text-xs md:text-sm tabular-nums')}>
                           {product.track_inventory ? (
                             <span className={product.stock_quantity && product.stock_quantity <= (product.low_stock_threshold || 10) ? 'text-destructive font-medium' : ''}>
                               {product.stock_quantity || 0}

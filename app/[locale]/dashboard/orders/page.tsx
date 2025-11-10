@@ -380,7 +380,7 @@ export default function OrdersPage() {
                             {tStatus(order.status)}
                           </Badge>
                         </TableCell>
-                        <TableCell className={getColumnClass('total', 'text-right font-medium text-xs md:text-sm')}>
+                        <TableCell className={getColumnClass('total', 'text-right font-medium text-xs md:text-sm tabular-nums')}>
                           CHF {Number(order.total).toLocaleString('it-CH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </TableCell>
                         <TableCell className={getColumnClass('actions', 'text-right')}>

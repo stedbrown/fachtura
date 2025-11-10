@@ -579,7 +579,7 @@ export default function InvoicesPage() {
                           })
                         : '-'}
                     </TableCell>
-                    <TableCell className={getColumnClass('total', 'text-right font-medium text-xs md:text-sm')}>CHF {invoice.total.toFixed(2)}</TableCell>
+                    <TableCell className={getColumnClass('total', 'text-right font-medium text-xs md:text-sm tabular-nums')}>CHF {invoice.total.toFixed(2)}</TableCell>
                     <TableCell className={getColumnClass('status', 'text-xs md:text-sm')}>
                       <Badge variant={getInvoiceStatusVariant(invoice.status)} className="text-xs">
                         {t(`status.${invoice.status}`)}
