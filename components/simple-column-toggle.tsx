@@ -13,9 +13,11 @@ import {
 } from '@/components/ui/dropdown-menu'
 
 export type ColumnConfig = {
-  id: string
+  key: string
   label: string
-  defaultVisible?: boolean
+  visible?: boolean
+  hiddenClass?: string
+  alwaysVisible?: boolean
 }
 
 interface SimpleColumnToggleProps {
@@ -46,7 +48,7 @@ export function SimpleColumnToggle({
     
     // Default visibility
     return columns.reduce((acc, col) => {
-      acc[col.id] = col.defaultVisible !== false
+      acc[col.key] = col.visible !== false
       return acc
     }, {} as Record<string, boolean>)
   })
@@ -78,15 +80,17 @@ export function SimpleColumnToggle({
       <DropdownMenuContent align="end" className="w-[200px]">
         <DropdownMenuLabel>{label}</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {columns.map((column) => (
-          <DropdownMenuCheckboxItem
-            key={column.id}
-            checked={visibility[column.id]}
-            onCheckedChange={(checked) => handleToggle(column.id, checked)}
-          >
-            {column.label}
-          </DropdownMenuCheckboxItem>
-        ))}
+        {columns
+          .filter(col => !col.alwaysVisible)
+          .map((column) => (
+            <DropdownMenuCheckboxItem
+              key={column.key}
+              checked={visibility[column.key]}
+              onCheckedChange={(checked) => handleToggle(column.key, checked)}
+            >
+              {column.label}
+            </DropdownMenuCheckboxItem>
+          ))}
       </DropdownMenuContent>
     </DropdownMenu>
   )
@@ -127,15 +131,21 @@ export function useColumnVisibility(columns: ColumnConfig[], storageKey?: string
     })
   }
 
-  const getColumnClass = (columnId: string) => {
-    return hiddenColumns.has(columnId) ? 'hidden' : ''
+  const getColumnClass = (columnKey: string) => {
+    return hiddenColumns.has(columnKey) ? 'hidden' : ''
   }
 
+  const visibleColumns = columns.map(col => ({
+    ...col,
+    visible: !hiddenColumns.has(col.key)
+  }))
+
   return {
+    visibleColumns,
     hiddenColumns,
     handleVisibilityChange,
     getColumnClass,
-    isColumnVisible: (columnId: string) => !hiddenColumns.has(columnId),
+    isColumnVisible: (columnKey: string) => !hiddenColumns.has(columnKey),
   }
 }
 
