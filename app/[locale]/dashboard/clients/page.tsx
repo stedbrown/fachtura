@@ -12,7 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Plus, Pencil, Trash2, Archive, ArchiveRestore, Users } from 'lucide-react'
+import { Plus, Edit3, Trash2, Archive, ArchiveRestore, Users } from 'lucide-react'
 import { ClientDialog } from '@/components/clients/client-dialog'
 import { ImportClientsDialog } from '@/components/clients/import-clients-dialog'
 import { DeleteDialog } from '@/components/delete-dialog'
@@ -518,7 +518,7 @@ export default function ClientsPage() {
                               onClick={() => handleEdit(client)}
                               title={tCommon('edit')}
                             >
-                              <Pencil className="h-4 w-4" />
+                              <Edit3 className="h-4 w-4" />
                             </Button>
                             <Button
                               variant="ghost"

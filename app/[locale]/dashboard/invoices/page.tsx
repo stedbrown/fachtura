@@ -604,12 +604,12 @@ export default function InvoicesPage() {
                           <>
                             <Button
                               variant="ghost"
-                              size="sm"
+                              size="icon"
                               onClick={(e) => {
                                 e.stopPropagation()
                                 handleEditInvoice(invoice)
                               }}
-                              className="h-8 w-8 p-0"
+                              title={tCommon('edit')}
                             >
                               <Edit3 className="h-4 w-4" />
                             </Button>

@@ -14,7 +14,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Edit, Trash2, Archive, ArchiveRestore, ShoppingCart, Download } from 'lucide-react'
+import { Plus, Edit3, Trash2, Archive, ArchiveRestore, ShoppingCart, Download } from 'lucide-react'
 import { DeleteDialog } from '@/components/delete-dialog'
 import { SimpleColumnToggle, useColumnVisibility, type ColumnConfig } from '@/components/simple-column-toggle'
 import { SortableHeader, useSorting } from '@/components/sortable-header'
@@ -402,7 +402,7 @@ export default function OrdersPage() {
                                   onClick={() => router.push(`/${locale}/dashboard/orders/${order.id}`)}
                                   title={t('edit')}
                                 >
-                                  <Edit className="h-4 w-4" />
+                                  <Edit3 className="h-4 w-4" />
                                 </Button>
                                 <Button
                                   variant="ghost"

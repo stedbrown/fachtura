@@ -13,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Plus, Pencil, Trash2, Archive, ArchiveRestore, Truck } from 'lucide-react'
+import { Plus, Edit3, Trash2, Archive, ArchiveRestore, Truck } from 'lucide-react'
 import { DeleteDialog } from '@/components/delete-dialog'
 import { SimpleColumnToggle, useColumnVisibility, type ColumnConfig } from '@/components/simple-column-toggle'
 import { SortableHeader, useSorting } from '@/components/sortable-header'
@@ -403,7 +403,7 @@ export default function SuppliersPage() {
                                   onClick={() => handleEdit(supplier)}
                                   title={tCommon('edit')}
                                 >
-                                  <Pencil className="h-4 w-4" />
+                                  <Edit3 className="h-4 w-4" />
                                 </Button>
                                 <Button
                                   variant="ghost"
