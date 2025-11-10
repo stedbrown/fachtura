@@ -34,9 +34,10 @@ export function SortableHeader({
       variant="ghost"
       onClick={() => onSort(sortKey)}
       className={cn(
-        'flex items-center gap-2 hover:bg-muted/50 h-auto p-2 -ml-2 font-semibold',
-        align === 'right' && 'justify-end',
-        align === 'center' && 'justify-center',
+        'flex items-center gap-2 hover:bg-muted/50 h-auto p-2 font-semibold w-full',
+        align === 'left' && 'justify-start text-left -ml-2',
+        align === 'center' && 'justify-center text-center',
+        align === 'right' && 'justify-end text-right flex-row-reverse gap-1 -mr-2',
         className
       )}
     >
