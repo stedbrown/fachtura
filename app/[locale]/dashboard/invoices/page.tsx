@@ -14,7 +14,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Eye, Trash2, Download, Archive, ArchiveRestore, FileText } from 'lucide-react'
+import { Plus, Eye, Trash2, Download, Archive, ArchiveRestore, FileText, Edit3 } from 'lucide-react'
 import { DeleteDialog } from '@/components/delete-dialog'
 import { SimpleColumnToggle, useColumnVisibility, type ColumnConfig } from '@/components/simple-column-toggle'
 import { SortableHeader, useSorting } from '@/components/sortable-header'
@@ -567,8 +567,6 @@ export default function InvoicesPage() {
                 {sortedInvoices.map((invoice) => (
                   <TableRow 
                     key={invoice.id}
-                    className="cursor-pointer hover:bg-muted/50"
-                    onClick={() => handleEditInvoice(invoice)}
                   >
                     <TableCell className={getColumnClass('invoice_number', 'font-medium text-xs md:text-sm')}>
                       {invoice.invoice_number}
@@ -592,10 +590,18 @@ export default function InvoicesPage() {
                         {t(`status.${invoice.status}`)}
                       </Badge>
                     </TableCell>
-                    <TableCell className={getColumnClass('actions', 'text-right')} onClick={(e) => e.stopPropagation()}>
+                    <TableCell className={getColumnClass('actions', 'text-right')}>
                       <div className="flex justify-end gap-2">
                         {!showArchived && (
                           <>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleEditInvoice(invoice)}
+                              className="h-8 w-8 p-0"
+                            >
+                              <Edit3 className="h-4 w-4" />
+                            </Button>
                             <Button
                               variant="ghost"
                               size="icon"
