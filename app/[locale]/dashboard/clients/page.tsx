@@ -18,6 +18,7 @@ import { ImportClientsDialog } from '@/components/clients/import-clients-dialog'
 import { DeleteDialog } from '@/components/delete-dialog'
 import { ClientFilters, type ClientFilterState } from '@/components/client-filters'
 import { exportFormattedToCSV, exportFormattedToExcel } from '@/lib/export-utils'
+import { SimpleColumnToggle, useColumnVisibility, type ColumnConfig } from '@/components/simple-column-toggle'
 import type { Client } from '@/lib/types/database'
 import type { ClientInput } from '@/lib/validations/client'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -56,6 +57,20 @@ export default function ClientsPage() {
   })
   
   const { subscription, checkLimits } = useSubscription()
+
+  // Column visibility configuration
+  const columns: ColumnConfig[] = [
+    { id: 'name', label: t('fields.name'), defaultVisible: true },
+    { id: 'email', label: t('fields.email'), defaultVisible: true },
+    { id: 'phone', label: t('fields.phone'), defaultVisible: true },
+    { id: 'city', label: t('fields.city'), defaultVisible: true },
+    { id: 'actions', label: tCommon('actions'), defaultVisible: true },
+  ]
+
+  const { handleVisibilityChange, getColumnClass } = useColumnVisibility(
+    columns,
+    'clients-table-columns'
+  )
 
   useEffect(() => {
     loadClients()
@@ -393,12 +408,20 @@ export default function ClientsPage() {
                 </TabsList>
               </Tabs>
 
-              {/* Filters */}
-              <ClientFilters
-                filters={filters}
-                onFiltersChange={setFilters}
-                onExport={handleExport}
-              />
+              {/* Filters and Column Toggle */}
+              <div className="flex gap-2">
+                <ClientFilters
+                  filters={filters}
+                  onFiltersChange={setFilters}
+                  onExport={handleExport}
+                />
+                <SimpleColumnToggle
+                  columns={columns}
+                  onVisibilityChange={handleVisibilityChange}
+                  storageKey="clients-table-columns"
+                  label={t('toggleColumns') || 'Mostra/Nascondi colonne'}
+                />
+              </div>
             </div>
           </div>
 
@@ -424,11 +447,11 @@ export default function ClientsPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="text-xs md:text-sm">{t('fields.name')}</TableHead>
-                      <TableHead className="hidden md:table-cell text-xs md:text-sm">{t('fields.email')}</TableHead>
-                      <TableHead className="hidden lg:table-cell text-xs md:text-sm">{t('fields.phone')}</TableHead>
-                      <TableHead className="hidden md:table-cell text-xs md:text-sm">{t('fields.city')}</TableHead>
-                      <TableHead className="text-right text-xs md:text-sm">{tCommon('actions')}</TableHead>
+                      <TableHead className={`text-xs md:text-sm ${getColumnClass('name')}`}>{t('fields.name')}</TableHead>
+                      <TableHead className={`hidden md:table-cell text-xs md:text-sm ${getColumnClass('email')}`}>{t('fields.email')}</TableHead>
+                      <TableHead className={`hidden lg:table-cell text-xs md:text-sm ${getColumnClass('phone')}`}>{t('fields.phone')}</TableHead>
+                      <TableHead className={`hidden md:table-cell text-xs md:text-sm ${getColumnClass('city')}`}>{t('fields.city')}</TableHead>
+                      <TableHead className={`text-right text-xs md:text-sm ${getColumnClass('actions')}`}>{tCommon('actions')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -438,13 +461,13 @@ export default function ClientsPage() {
                     className="cursor-pointer hover:bg-muted/50"
                     onClick={() => handleRowClick(client.id)}
                   >
-                    <TableCell className="font-medium text-xs md:text-sm">
+                    <TableCell className={`font-medium text-xs md:text-sm ${getColumnClass('name')}`}>
                       {client.name}
                     </TableCell>
-                    <TableCell className="hidden md:table-cell text-xs md:text-sm">{client.email || '-'}</TableCell>
-                    <TableCell className="hidden lg:table-cell text-xs md:text-sm">{client.phone || '-'}</TableCell>
-                    <TableCell className="hidden md:table-cell text-xs md:text-sm">{client.city || '-'}</TableCell>
-                    <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                    <TableCell className={`hidden md:table-cell text-xs md:text-sm ${getColumnClass('email')}`}>{client.email || '-'}</TableCell>
+                    <TableCell className={`hidden lg:table-cell text-xs md:text-sm ${getColumnClass('phone')}`}>{client.phone || '-'}</TableCell>
+                    <TableCell className={`hidden md:table-cell text-xs md:text-sm ${getColumnClass('city')}`}>{client.city || '-'}</TableCell>
+                    <TableCell className={`text-right ${getColumnClass('actions')}`} onClick={(e) => e.stopPropagation()}>
                       <div className="flex justify-end gap-2">
                         {!showArchived && (
                           <>
