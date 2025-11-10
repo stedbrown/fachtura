@@ -552,6 +552,7 @@ export default function InvoicesPage() {
                           currentSortKey={sortKey}
                           currentDirection={sortDirection}
                           onSort={handleSort}
+                          align="right"
                         />
                       </TableHead>
                       <TableHead className={getColumnClass('status', 'text-xs md:text-sm')}>

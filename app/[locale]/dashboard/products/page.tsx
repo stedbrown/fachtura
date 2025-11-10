@@ -386,6 +386,7 @@ export default function ProductsPage() {
                           currentSortKey={sortKey}
                           currentDirection={sortDirection}
                           onSort={handleSort}
+                          align="right"
                         />
                       </TableHead>
                       <TableHead className={getColumnClass('stock', 'hidden sm:table-cell text-right text-xs md:text-sm')}>
@@ -395,6 +396,7 @@ export default function ProductsPage() {
                           currentSortKey={sortKey}
                           currentDirection={sortDirection}
                           onSort={handleSort}
+                          align="right"
                         />
                       </TableHead>
                       <TableHead className={getColumnClass('status', 'text-xs md:text-sm')}>

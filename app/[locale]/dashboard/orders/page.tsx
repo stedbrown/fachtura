@@ -356,6 +356,7 @@ export default function OrdersPage() {
                           currentSortKey={sortKey}
                           currentDirection={sortDirection}
                           onSort={handleSort}
+                          align="right"
                         />
                       </TableHead>
                       <TableHead className={getColumnClass('actions', 'text-right text-xs md:text-sm')}>{tCommon('actions')}</TableHead>
