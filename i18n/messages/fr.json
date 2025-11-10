@@ -161,6 +161,7 @@
     "notes": "Notes",
     "error": "Erreur",
     "success": "Succès",
+    "toggleColumns": "Afficher/Masquer colonnes",
     "quotes": "devis",
     "invoices": "factures",
     "clear": "Effacer",

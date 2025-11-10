@@ -164,6 +164,7 @@
     "notes": "Note",
     "error": "Errore",
     "success": "Successo",
+    "toggleColumns": "Mostra/Nascondi colonne",
     "quotes": "preventivi",
     "invoices": "fatture",
     "clear": "Cancella",

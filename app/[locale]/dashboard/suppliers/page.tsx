@@ -15,6 +15,8 @@ import {
 } from '@/components/ui/table'
 import { Plus, Pencil, Trash2, Archive, ArchiveRestore } from 'lucide-react'
 import { DeleteDialog } from '@/components/delete-dialog'
+import { SimpleColumnToggle, useColumnVisibility, type ColumnConfig } from '@/components/simple-column-toggle'
+import { SortableHeader, useSorting } from '@/components/sortable-header'
 import type { Supplier } from '@/lib/types/database'
 import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
@@ -51,9 +53,30 @@ export default function SuppliersPage() {
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null)
   const [dialogLoading, setDialogLoading] = useState(false)
 
+  // Column visibility configuration
+  const supplierColumns: ColumnConfig[] = [
+    { key: 'name', label: t('fields.name'), visible: true },
+    { key: 'contact', label: t('fields.contact'), visible: true, hiddenClass: 'hidden md:table-cell' },
+    { key: 'email', label: t('fields.email'), visible: true, hiddenClass: 'hidden lg:table-cell' },
+    { key: 'phone', label: t('fields.phone'), visible: true, hiddenClass: 'hidden lg:table-cell' },
+    { key: 'actions', label: tCommon('actions'), visible: true, alwaysVisible: true },
+  ]
+
+  const { visibleColumns, getColumnClass, handleVisibilityChange } = useColumnVisibility(
+    supplierColumns,
+    'suppliers-table-columns'
+  )
+
   useEffect(() => {
     loadSuppliers()
   }, [showArchived])
+
+  // Sorting
+  const { sortedData: sortedSuppliers, sortKey, sortDirection, handleSort } = useSorting(
+    suppliers,
+    'name',
+    'asc'
+  )
 
   async function loadSuppliers() {
     const supabase = createClient()
@@ -269,18 +292,30 @@ export default function SuppliersPage() {
       <Card>
         <CardHeader className="pb-3 md:pb-4">
           <div className="flex flex-col gap-4">
-            {/* Tabs Row */}
-            <Tabs value={showArchived ? 'archived' : 'active'} onValueChange={(value) => setShowArchived(value === 'archived')} className="w-full sm:w-auto">
-              <TabsList className="grid w-full sm:w-auto grid-cols-2">
-                <TabsTrigger value="active" className="text-xs md:text-sm">
-                  {tTabs('active')}
-                </TabsTrigger>
-                <TabsTrigger value="archived" className="text-xs md:text-sm">
-                  <Archive className="h-4 w-4 mr-2" />
-                  {tTabs('archived')}
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
+            {/* Tabs and Column Toggle Row */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <Tabs value={showArchived ? 'archived' : 'active'} onValueChange={(value) => setShowArchived(value === 'archived')} className="w-full sm:w-auto">
+                <TabsList className="grid w-full sm:w-auto grid-cols-2">
+                  <TabsTrigger value="active" className="text-xs md:text-sm">
+                    {tTabs('active')}
+                  </TabsTrigger>
+                  <TabsTrigger value="archived" className="text-xs md:text-sm">
+                    <Archive className="h-4 w-4 mr-2" />
+                    {tTabs('archived')}
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+
+              {/* Column Toggle */}
+              {!showArchived && suppliers.length > 0 && (
+                <SimpleColumnToggle
+                  columns={visibleColumns}
+                  onVisibilityChange={handleVisibilityChange}
+                  storageKey="suppliers-table-columns"
+                  label={t('toggleColumns') || tCommon('toggleColumns') || 'Colonne'}
+                />
+              )}
+            </div>
           </div>
 
           <CardTitle className="mt-4 text-lg md:text-xl">
@@ -295,7 +330,7 @@ export default function SuppliersPage() {
             <div className="text-center py-8 md:py-12 text-muted-foreground">
               {tCommon('loading')}...
             </div>
-          ) : suppliers.length === 0 ? (
+          ) : sortedSuppliers.length === 0 ? (
             <div className="text-center py-8 md:py-12 text-muted-foreground">
               {showArchived ? t('noArchivedSuppliers') : t('noSuppliers')}
             </div>
@@ -305,27 +340,59 @@ export default function SuppliersPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="text-xs md:text-sm">{t('fields.name')}</TableHead>
-                      <TableHead className="hidden md:table-cell text-xs md:text-sm">{t('fields.contact')}</TableHead>
-                      <TableHead className="hidden lg:table-cell text-xs md:text-sm">{t('fields.email')}</TableHead>
-                      <TableHead className="hidden lg:table-cell text-xs md:text-sm">{t('fields.phone')}</TableHead>
-                      <TableHead className="text-right text-xs md:text-sm">{tCommon('actions')}</TableHead>
+                      <TableHead className={`text-xs md:text-sm ${getColumnClass('name')}`}>
+                        <SortableHeader
+                          label={t('fields.name')}
+                          sortKey="name"
+                          currentSortKey={sortKey}
+                          currentDirection={sortDirection}
+                          onSort={handleSort}
+                        />
+                      </TableHead>
+                      <TableHead className={`hidden md:table-cell text-xs md:text-sm ${getColumnClass('contact')}`}>
+                        <SortableHeader
+                          label={t('fields.contact')}
+                          sortKey="contact_person"
+                          currentSortKey={sortKey}
+                          currentDirection={sortDirection}
+                          onSort={handleSort}
+                        />
+                      </TableHead>
+                      <TableHead className={`hidden lg:table-cell text-xs md:text-sm ${getColumnClass('email')}`}>
+                        <SortableHeader
+                          label={t('fields.email')}
+                          sortKey="email"
+                          currentSortKey={sortKey}
+                          currentDirection={sortDirection}
+                          onSort={handleSort}
+                        />
+                      </TableHead>
+                      <TableHead className={`hidden lg:table-cell text-xs md:text-sm ${getColumnClass('phone')}`}>
+                        <SortableHeader
+                          label={t('fields.phone')}
+                          sortKey="phone"
+                          currentSortKey={sortKey}
+                          currentDirection={sortDirection}
+                          onSort={handleSort}
+                        />
+                      </TableHead>
+                      <TableHead className={`text-right text-xs md:text-sm ${getColumnClass('actions')}`}>{tCommon('actions')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {suppliers.map((supplier) => (
+                    {sortedSuppliers.map((supplier) => (
                       <TableRow 
                         key={supplier.id}
                         className="cursor-pointer hover:bg-muted/50"
                         onClick={() => handleRowClick(supplier)}
                       >
-                        <TableCell className="font-medium text-xs md:text-sm">
+                        <TableCell className={`font-medium text-xs md:text-sm ${getColumnClass('name')}`}>
                           {supplier.name}
                         </TableCell>
-                        <TableCell className="hidden md:table-cell text-xs md:text-sm">{supplier.contact_person || '-'}</TableCell>
-                        <TableCell className="hidden lg:table-cell text-xs md:text-sm">{supplier.email || '-'}</TableCell>
-                        <TableCell className="hidden lg:table-cell text-xs md:text-sm">{supplier.phone || '-'}</TableCell>
-                        <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                        <TableCell className={`hidden md:table-cell text-xs md:text-sm ${getColumnClass('contact')}`}>{supplier.contact_person || '-'}</TableCell>
+                        <TableCell className={`hidden lg:table-cell text-xs md:text-sm ${getColumnClass('email')}`}>{supplier.email || '-'}</TableCell>
+                        <TableCell className={`hidden lg:table-cell text-xs md:text-sm ${getColumnClass('phone')}`}>{supplier.phone || '-'}</TableCell>
+                        <TableCell className={`text-right ${getColumnClass('actions')}`} onClick={(e) => e.stopPropagation()}>
                           <div className="flex justify-end gap-2">
                             {!showArchived && (
                               <>

@@ -16,6 +16,8 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Plus, Eye, Trash2, Download, Archive, ArchiveRestore } from 'lucide-react'
 import { DeleteDialog } from '@/components/delete-dialog'
+import { SimpleColumnToggle, useColumnVisibility, type ColumnConfig } from '@/components/simple-column-toggle'
+import { SortableHeader, useSorting } from '@/components/sortable-header'
 import type { InvoiceWithClient } from '@/lib/types/database'
 import { format, isWithinInterval, startOfDay, endOfDay } from 'date-fns'
 import { it, de, fr, enUS, type Locale } from 'date-fns/locale'
@@ -76,6 +78,22 @@ export default function InvoicesPage() {
     planName: 'Free'
   })
   const [invoiceDialogOpen, setInvoiceDialogOpen] = useState(false)
+
+  // Column visibility configuration
+  const invoiceColumns: ColumnConfig[] = [
+    { key: 'invoice_number', label: t('fields.invoiceNumber'), visible: true },
+    { key: 'client', label: t('fields.client'), visible: true },
+    { key: 'date', label: t('fields.date'), visible: true, hiddenClass: 'hidden md:table-cell' },
+    { key: 'due_date', label: t('fields.dueDate'), visible: true, hiddenClass: 'hidden lg:table-cell' },
+    { key: 'total', label: tCommon('total'), visible: true },
+    { key: 'status', label: tCommon('status'), visible: true },
+    { key: 'actions', label: tCommon('actions'), visible: true, alwaysVisible: true },
+  ]
+
+  const { visibleColumns, getColumnClass, handleVisibilityChange } = useColumnVisibility(
+    invoiceColumns,
+    'invoices-table-columns'
+  )
 
   // Initialize filters from URL params
   useEffect(() => {
@@ -252,6 +270,13 @@ export default function InvoicesPage() {
     return result
   }, [invoices, filters])
 
+  // Sorting
+  const { sortedData: sortedInvoices, sortKey, sortDirection, handleSort } = useSorting(
+    filteredInvoices,
+    'invoice_number',
+    'desc'
+  )
+
   // Export function
   const handleExport = (exportFormat: 'csv' | 'excel') => {
     if (filteredInvoices.length === 0) {
@@ -423,22 +448,30 @@ export default function InvoicesPage() {
                 </TabsList>
               </Tabs>
 
-              {/* Filters */}
+              {/* Filters and Column Toggle */}
               {!showArchived && (
-                <AdvancedFilters
-                  filters={filters}
-                  onFiltersChange={setFilters}
-                  onExport={handleExport}
-                  showClientFilter={true}
-                  showStatusFilter={true}
-                  statusOptions={[
-                    { value: 'draft', label: t('status.draft') },
-                    { value: 'issued', label: t('status.issued') },
-                    { value: 'paid', label: t('status.paid') },
-                    { value: 'overdue', label: t('status.overdue') },
-                  ]}
-                  clients={clients}
-                />
+                <div className="flex gap-2">
+                  <SimpleColumnToggle
+                    columns={visibleColumns}
+                    onVisibilityChange={handleVisibilityChange}
+                    storageKey="invoices-table-columns"
+                    label={t('toggleColumns') || tCommon('toggleColumns') || 'Colonne'}
+                  />
+                  <AdvancedFilters
+                    filters={filters}
+                    onFiltersChange={setFilters}
+                    onExport={handleExport}
+                    showClientFilter={true}
+                    showStatusFilter={true}
+                    statusOptions={[
+                      { value: 'draft', label: t('status.draft') },
+                      { value: 'issued', label: t('status.issued') },
+                      { value: 'paid', label: t('status.paid') },
+                      { value: 'overdue', label: t('status.overdue') },
+                    ]}
+                    clients={clients}
+                  />
+                </div>
               )}
             </div>
           </div>
@@ -455,7 +488,7 @@ export default function InvoicesPage() {
             <div className="text-center py-8 md:py-12 text-muted-foreground">
               {tCommon('loading')}...
             </div>
-          ) : filteredInvoices.length === 0 ? (
+          ) : sortedInvoices.length === 0 ? (
             <div className="text-center py-8 md:py-12 text-muted-foreground">
               {invoices.length === 0 ? t('noInvoices') : 'Nessuna fattura trovata con i filtri applicati'}
             </div>
@@ -465,45 +498,93 @@ export default function InvoicesPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="text-xs md:text-sm">{t('fields.invoiceNumber')}</TableHead>
-                      <TableHead className="text-xs md:text-sm">{t('fields.client')}</TableHead>
-                      <TableHead className="hidden md:table-cell text-xs md:text-sm">{t('fields.date')}</TableHead>
-                      <TableHead className="hidden lg:table-cell text-xs md:text-sm">{t('fields.dueDate')}</TableHead>
-                      <TableHead className="text-right text-xs md:text-sm">{tCommon('total')}</TableHead>
-                      <TableHead className="text-xs md:text-sm">{tCommon('status')}</TableHead>
-                      <TableHead className="text-right text-xs md:text-sm">{tCommon('actions')}</TableHead>
+                      <TableHead className={`text-xs md:text-sm ${getColumnClass('invoice_number')}`}>
+                        <SortableHeader
+                          label={t('fields.invoiceNumber')}
+                          sortKey="invoice_number"
+                          currentSortKey={sortKey}
+                          currentDirection={sortDirection}
+                          onSort={handleSort}
+                        />
+                      </TableHead>
+                      <TableHead className={`text-xs md:text-sm ${getColumnClass('client')}`}>
+                        <SortableHeader
+                          label={t('fields.client')}
+                          sortKey="client.name"
+                          currentSortKey={sortKey}
+                          currentDirection={sortDirection}
+                          onSort={handleSort}
+                        />
+                      </TableHead>
+                      <TableHead className={`hidden md:table-cell text-xs md:text-sm ${getColumnClass('date')}`}>
+                        <SortableHeader
+                          label={t('fields.date')}
+                          sortKey="date"
+                          currentSortKey={sortKey}
+                          currentDirection={sortDirection}
+                          onSort={handleSort}
+                        />
+                      </TableHead>
+                      <TableHead className={`hidden lg:table-cell text-xs md:text-sm ${getColumnClass('due_date')}`}>
+                        <SortableHeader
+                          label={t('fields.dueDate')}
+                          sortKey="due_date"
+                          currentSortKey={sortKey}
+                          currentDirection={sortDirection}
+                          onSort={handleSort}
+                        />
+                      </TableHead>
+                      <TableHead className={`text-right text-xs md:text-sm ${getColumnClass('total')}`}>
+                        <SortableHeader
+                          label={tCommon('total')}
+                          sortKey="total"
+                          currentSortKey={sortKey}
+                          currentDirection={sortDirection}
+                          onSort={handleSort}
+                        />
+                      </TableHead>
+                      <TableHead className={`text-xs md:text-sm ${getColumnClass('status')}`}>
+                        <SortableHeader
+                          label={tCommon('status')}
+                          sortKey="status"
+                          currentSortKey={sortKey}
+                          currentDirection={sortDirection}
+                          onSort={handleSort}
+                        />
+                      </TableHead>
+                      <TableHead className={`text-right text-xs md:text-sm ${getColumnClass('actions')}`}>{tCommon('actions')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                {filteredInvoices.map((invoice) => (
+                {sortedInvoices.map((invoice) => (
                   <TableRow 
                     key={invoice.id}
                     className="cursor-pointer hover:bg-muted/50"
                     onClick={() => router.push(`/${locale}/dashboard/invoices/${invoice.id}`)}
                   >
-                    <TableCell className="font-medium text-xs md:text-sm">
+                    <TableCell className={`font-medium text-xs md:text-sm ${getColumnClass('invoice_number')}`}>
                       {invoice.invoice_number}
                     </TableCell>
-                    <TableCell className="text-xs md:text-sm">{invoice.client.name}</TableCell>
-                    <TableCell className="hidden md:table-cell text-xs md:text-sm">
+                    <TableCell className={`text-xs md:text-sm ${getColumnClass('client')}`}>{invoice.client.name}</TableCell>
+                    <TableCell className={`hidden md:table-cell text-xs md:text-sm ${getColumnClass('date')}`}>
                       {format(new Date(invoice.date), 'dd MMM yyyy', {
                         locale: localeMap[locale] || enUS,
                       })}
                     </TableCell>
-                    <TableCell className="hidden lg:table-cell text-xs md:text-sm">
+                    <TableCell className={`hidden lg:table-cell text-xs md:text-sm ${getColumnClass('due_date')}`}>
                       {invoice.due_date
                         ? format(new Date(invoice.due_date), 'dd MMM yyyy', {
                             locale: localeMap[locale] || enUS,
                           })
                         : '-'}
                     </TableCell>
-                    <TableCell className="text-right font-medium text-xs md:text-sm">CHF {invoice.total.toFixed(2)}</TableCell>
-                    <TableCell>
+                    <TableCell className={`text-right font-medium text-xs md:text-sm ${getColumnClass('total')}`}>CHF {invoice.total.toFixed(2)}</TableCell>
+                    <TableCell className={getColumnClass('status')}>
                       <Badge variant={getInvoiceStatusVariant(invoice.status)} className="text-xs">
                         {t(`status.${invoice.status}`)}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                    <TableCell className={`text-right ${getColumnClass('actions')}`} onClick={(e) => e.stopPropagation()}>
                       <div className="flex justify-end gap-2">
                         {!showArchived && (
                           <>

@@ -16,6 +16,8 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Plus, Eye, Trash2, Download, Archive, ArchiveRestore } from 'lucide-react'
 import { DeleteDialog } from '@/components/delete-dialog'
+import { SimpleColumnToggle, useColumnVisibility, type ColumnConfig } from '@/components/simple-column-toggle'
+import { SortableHeader, useSorting } from '@/components/sortable-header'
 import type { QuoteWithClient } from '@/lib/types/database'
 import { format, isWithinInterval, startOfDay, endOfDay } from 'date-fns'
 import { it, de, fr, enUS, type Locale } from 'date-fns/locale'
@@ -75,6 +77,21 @@ export default function QuotesPage() {
     planName: 'Free'
   })
   const [quoteDialogOpen, setQuoteDialogOpen] = useState(false)
+
+  // Column visibility configuration
+  const quoteColumns: ColumnConfig[] = [
+    { key: 'quote_number', label: t('fields.quoteNumber'), visible: true },
+    { key: 'client', label: t('fields.client'), visible: true },
+    { key: 'date', label: tCommon('date'), visible: true, hiddenClass: 'hidden md:table-cell' },
+    { key: 'total', label: tCommon('total'), visible: true },
+    { key: 'status', label: tCommon('status'), visible: true },
+    { key: 'actions', label: tCommon('actions'), visible: true, alwaysVisible: true },
+  ]
+
+  const { visibleColumns, getColumnClass, handleVisibilityChange } = useColumnVisibility(
+    quoteColumns,
+    'quotes-table-columns'
+  )
 
   useEffect(() => {
     loadQuotes()
@@ -229,6 +246,13 @@ export default function QuotesPage() {
 
     return result
   }, [quotes, filters])
+
+  // Sorting
+  const { sortedData: sortedQuotes, sortKey, sortDirection, handleSort } = useSorting(
+    filteredQuotes,
+    'quote_number',
+    'desc'
+  )
 
   const handleExport = (exportFormat: 'csv' | 'excel') => {
     if (filteredQuotes.length === 0) {
@@ -400,22 +424,30 @@ export default function QuotesPage() {
                 </TabsList>
               </Tabs>
 
-              {/* Filters */}
+              {/* Filters and Column Toggle */}
               {!showArchived && (
-                <AdvancedFilters
-                  filters={filters}
-                  onFiltersChange={setFilters}
-                  clients={clients}
-                  onExport={handleExport}
-                  showClientFilter={true}
-                  showStatusFilter={true}
-                  statusOptions={[
-                    { value: 'draft', label: t('status.draft') },
-                    { value: 'sent', label: t('status.sent') },
-                    { value: 'accepted', label: t('status.accepted') },
-                    { value: 'rejected', label: t('status.rejected') },
-                  ]}
-                />
+                <div className="flex gap-2">
+                  <SimpleColumnToggle
+                    columns={visibleColumns}
+                    onVisibilityChange={handleVisibilityChange}
+                    storageKey="quotes-table-columns"
+                    label={t('toggleColumns') || tCommon('toggleColumns') || 'Colonne'}
+                  />
+                  <AdvancedFilters
+                    filters={filters}
+                    onFiltersChange={setFilters}
+                    clients={clients}
+                    onExport={handleExport}
+                    showClientFilter={true}
+                    showStatusFilter={true}
+                    statusOptions={[
+                      { value: 'draft', label: t('status.draft') },
+                      { value: 'sent', label: t('status.sent') },
+                      { value: 'accepted', label: t('status.accepted') },
+                      { value: 'rejected', label: t('status.rejected') },
+                    ]}
+                  />
+                </div>
               )}
             </div>
           </div>
@@ -432,7 +464,7 @@ export default function QuotesPage() {
             <div className="text-center py-8 md:py-12 text-muted-foreground">
               {tCommon('loading')}...
             </div>
-          ) : filteredQuotes.length === 0 ? (
+          ) : sortedQuotes.length === 0 ? (
             <div className="text-center py-8 md:py-12 text-muted-foreground">
               {quotes.length === 0 ? t('noQuotes') : tCommon('noResults')}
             </div>
@@ -442,37 +474,77 @@ export default function QuotesPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="text-xs md:text-sm">{t('fields.quoteNumber')}</TableHead>
-                      <TableHead className="text-xs md:text-sm">{t('fields.client')}</TableHead>
-                      <TableHead className="hidden md:table-cell text-xs md:text-sm">{tCommon('date')}</TableHead>
-                      <TableHead className="text-right text-xs md:text-sm">{tCommon('total')}</TableHead>
-                      <TableHead className="text-xs md:text-sm">{tCommon('status')}</TableHead>
-                      <TableHead className="text-right text-xs md:text-sm">{tCommon('actions')}</TableHead>
+                      <TableHead className={`text-xs md:text-sm ${getColumnClass('quote_number')}`}>
+                        <SortableHeader
+                          label={t('fields.quoteNumber')}
+                          sortKey="quote_number"
+                          currentSortKey={sortKey}
+                          currentDirection={sortDirection}
+                          onSort={handleSort}
+                        />
+                      </TableHead>
+                      <TableHead className={`text-xs md:text-sm ${getColumnClass('client')}`}>
+                        <SortableHeader
+                          label={t('fields.client')}
+                          sortKey="client.name"
+                          currentSortKey={sortKey}
+                          currentDirection={sortDirection}
+                          onSort={handleSort}
+                        />
+                      </TableHead>
+                      <TableHead className={`hidden md:table-cell text-xs md:text-sm ${getColumnClass('date')}`}>
+                        <SortableHeader
+                          label={tCommon('date')}
+                          sortKey="date"
+                          currentSortKey={sortKey}
+                          currentDirection={sortDirection}
+                          onSort={handleSort}
+                        />
+                      </TableHead>
+                      <TableHead className={`text-right text-xs md:text-sm ${getColumnClass('total')}`}>
+                        <SortableHeader
+                          label={tCommon('total')}
+                          sortKey="total"
+                          currentSortKey={sortKey}
+                          currentDirection={sortDirection}
+                          onSort={handleSort}
+                        />
+                      </TableHead>
+                      <TableHead className={`text-xs md:text-sm ${getColumnClass('status')}`}>
+                        <SortableHeader
+                          label={tCommon('status')}
+                          sortKey="status"
+                          currentSortKey={sortKey}
+                          currentDirection={sortDirection}
+                          onSort={handleSort}
+                        />
+                      </TableHead>
+                      <TableHead className={`text-right text-xs md:text-sm ${getColumnClass('actions')}`}>{tCommon('actions')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                {filteredQuotes.map((quote) => (
+                {sortedQuotes.map((quote) => (
                   <TableRow 
                     key={quote.id}
                     className="cursor-pointer hover:bg-muted/50"
                     onClick={() => router.push(`/${locale}/dashboard/quotes/${quote.id}`)}
                   >
-                    <TableCell className="font-medium text-xs md:text-sm">
+                    <TableCell className={`font-medium text-xs md:text-sm ${getColumnClass('quote_number')}`}>
                       {quote.quote_number}
                     </TableCell>
-                    <TableCell className="text-xs md:text-sm">{quote.client.name}</TableCell>
-                    <TableCell className="hidden md:table-cell text-xs md:text-sm">
+                    <TableCell className={`text-xs md:text-sm ${getColumnClass('client')}`}>{quote.client.name}</TableCell>
+                    <TableCell className={`hidden md:table-cell text-xs md:text-sm ${getColumnClass('date')}`}>
                       {format(new Date(quote.date), 'dd MMM yyyy', {
                         locale: localeMap[locale] || enUS,
                       })}
                     </TableCell>
-                    <TableCell className="text-right font-medium text-xs md:text-sm">CHF {quote.total.toFixed(2)}</TableCell>
-                    <TableCell>
+                    <TableCell className={`text-right font-medium text-xs md:text-sm ${getColumnClass('total')}`}>CHF {quote.total.toFixed(2)}</TableCell>
+                    <TableCell className={getColumnClass('status')}>
                       <Badge variant={getQuoteStatusVariant(quote.status)} className="text-xs">
                         {t(`status.${quote.status}`)}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                    <TableCell className={`text-right ${getColumnClass('actions')}`} onClick={(e) => e.stopPropagation()}>
                       <div className="flex justify-end gap-2">
                         {!showArchived && (
                           <>

@@ -16,6 +16,8 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Plus, Edit, Trash2, Archive, ArchiveRestore, ShoppingCart, Download } from 'lucide-react'
 import { DeleteDialog } from '@/components/delete-dialog'
+import { SimpleColumnToggle, useColumnVisibility, type ColumnConfig } from '@/components/simple-column-toggle'
+import { SortableHeader, useSorting } from '@/components/sortable-header'
 import type { OrderWithSupplier } from '@/lib/types/database'
 import { format } from 'date-fns'
 import { it, de, fr, enUS, type Locale } from 'date-fns/locale'
@@ -71,9 +73,32 @@ export default function OrdersPage() {
     planName: 'Free'
   })
 
+  // Column visibility configuration
+  const orderColumns: ColumnConfig[] = [
+    { key: 'order_number', label: t('orderNumber'), visible: true },
+    { key: 'supplier', label: t('supplier'), visible: true },
+    { key: 'date', label: t('orderDate'), visible: true, hiddenClass: 'hidden md:table-cell' },
+    { key: 'delivery_date', label: t('deliveryDate'), visible: true, hiddenClass: 'hidden lg:table-cell' },
+    { key: 'status', label: tCommon('status'), visible: true },
+    { key: 'total', label: t('totalAmount'), visible: true },
+    { key: 'actions', label: tCommon('actions'), visible: true, alwaysVisible: true },
+  ]
+
+  const { visibleColumns, getColumnClass, handleVisibilityChange } = useColumnVisibility(
+    orderColumns,
+    'orders-table-columns'
+  )
+
   useEffect(() => {
     loadOrders()
   }, [showArchived])
+
+  // Sorting
+  const { sortedData: sortedOrders, sortKey, sortDirection, handleSort } = useSorting(
+    orders,
+    'order_number',
+    'desc'
+  )
 
   async function loadOrders() {
     const supabase = createClient()
@@ -223,9 +248,15 @@ export default function OrdersPage() {
                 </TabsList>
               </Tabs>
 
-              {/* Export Buttons */}
+              {/* Column Toggle and Export Buttons */}
               {!showArchived && orders.length > 0 && (
                 <div className="flex gap-2">
+                  <SimpleColumnToggle
+                    columns={visibleColumns}
+                    onVisibilityChange={handleVisibilityChange}
+                    storageKey="orders-table-columns"
+                    label={t('toggleColumns') || tCommon('toggleColumns') || 'Colonne'}
+                  />
                   <Button variant="outline" size="sm" onClick={() => handleExport('csv')} className="flex-1 sm:flex-none">
                     <Download className="h-4 w-4 mr-2" />
                     <span className="hidden sm:inline">CSV</span>
@@ -251,7 +282,7 @@ export default function OrdersPage() {
             <div className="text-center py-8 md:py-12 text-muted-foreground">
               {tCommon('loading')}...
             </div>
-          ) : orders.length === 0 ? (
+          ) : sortedOrders.length === 0 ? (
             <div className="text-center py-8 md:py-12">
               <ShoppingCart className="h-12 w-12 md:h-16 md:w-16 mx-auto text-muted-foreground mb-4" />
               <h3 className="text-base md:text-lg font-semibold mb-2">
@@ -273,38 +304,86 @@ export default function OrdersPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="text-xs md:text-sm">{t('orderNumber')}</TableHead>
-                      <TableHead className="text-xs md:text-sm">{t('supplier')}</TableHead>
-                      <TableHead className="hidden md:table-cell text-xs md:text-sm">{t('orderDate')}</TableHead>
-                      <TableHead className="hidden lg:table-cell text-xs md:text-sm">{t('deliveryDate')}</TableHead>
-                      <TableHead className="text-xs md:text-sm">{tCommon('status')}</TableHead>
-                      <TableHead className="text-right text-xs md:text-sm">{t('totalAmount')}</TableHead>
-                      <TableHead className="text-right text-xs md:text-sm">{tCommon('actions')}</TableHead>
+                      <TableHead className={`text-xs md:text-sm ${getColumnClass('order_number')}`}>
+                        <SortableHeader
+                          label={t('orderNumber')}
+                          sortKey="order_number"
+                          currentSortKey={sortKey}
+                          currentDirection={sortDirection}
+                          onSort={handleSort}
+                        />
+                      </TableHead>
+                      <TableHead className={`text-xs md:text-sm ${getColumnClass('supplier')}`}>
+                        <SortableHeader
+                          label={t('supplier')}
+                          sortKey="supplier.name"
+                          currentSortKey={sortKey}
+                          currentDirection={sortDirection}
+                          onSort={handleSort}
+                        />
+                      </TableHead>
+                      <TableHead className={`hidden md:table-cell text-xs md:text-sm ${getColumnClass('date')}`}>
+                        <SortableHeader
+                          label={t('orderDate')}
+                          sortKey="date"
+                          currentSortKey={sortKey}
+                          currentDirection={sortDirection}
+                          onSort={handleSort}
+                        />
+                      </TableHead>
+                      <TableHead className={`hidden lg:table-cell text-xs md:text-sm ${getColumnClass('delivery_date')}`}>
+                        <SortableHeader
+                          label={t('deliveryDate')}
+                          sortKey="expected_delivery_date"
+                          currentSortKey={sortKey}
+                          currentDirection={sortDirection}
+                          onSort={handleSort}
+                        />
+                      </TableHead>
+                      <TableHead className={`text-xs md:text-sm ${getColumnClass('status')}`}>
+                        <SortableHeader
+                          label={tCommon('status')}
+                          sortKey="status"
+                          currentSortKey={sortKey}
+                          currentDirection={sortDirection}
+                          onSort={handleSort}
+                        />
+                      </TableHead>
+                      <TableHead className={`text-right text-xs md:text-sm ${getColumnClass('total')}`}>
+                        <SortableHeader
+                          label={t('totalAmount')}
+                          sortKey="total"
+                          currentSortKey={sortKey}
+                          currentDirection={sortDirection}
+                          onSort={handleSort}
+                        />
+                      </TableHead>
+                      <TableHead className={`text-right text-xs md:text-sm ${getColumnClass('actions')}`}>{tCommon('actions')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {orders.map((order) => (
+                    {sortedOrders.map((order) => (
                       <TableRow key={order.id}>
-                        <TableCell className="font-medium text-xs md:text-sm">{order.order_number}</TableCell>
-                        <TableCell className="text-xs md:text-sm">{order.supplier?.name || '-'}</TableCell>
-                        <TableCell className="hidden md:table-cell text-xs md:text-sm">
+                        <TableCell className={`font-medium text-xs md:text-sm ${getColumnClass('order_number')}`}>{order.order_number}</TableCell>
+                        <TableCell className={`text-xs md:text-sm ${getColumnClass('supplier')}`}>{order.supplier?.name || '-'}</TableCell>
+                        <TableCell className={`hidden md:table-cell text-xs md:text-sm ${getColumnClass('date')}`}>
                           {format(new Date(order.date), 'dd MMM yyyy', { locale: dateLocale })}
                         </TableCell>
-                        <TableCell className="hidden lg:table-cell text-xs md:text-sm">
+                        <TableCell className={`hidden lg:table-cell text-xs md:text-sm ${getColumnClass('delivery_date')}`}>
                           {order.expected_delivery_date 
                             ? format(new Date(order.expected_delivery_date), 'dd MMM yyyy', { locale: dateLocale })
                             : '-'
                           }
                         </TableCell>
-                        <TableCell>
+                        <TableCell className={getColumnClass('status')}>
                           <Badge variant={getOrderStatusVariant(order.status)} className="text-xs">
                             {tStatus(order.status)}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-right font-medium text-xs md:text-sm">
+                        <TableCell className={`text-right font-medium text-xs md:text-sm ${getColumnClass('total')}`}>
                           CHF {Number(order.total).toLocaleString('it-CH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className={`text-right ${getColumnClass('actions')}`}>
                           <div className="flex items-center justify-end gap-2">
                             {showArchived ? (
                               <Button

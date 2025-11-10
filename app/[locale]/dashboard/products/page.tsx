@@ -16,6 +16,8 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Plus, Edit, Trash2, Archive, ArchiveRestore, Package, Download } from 'lucide-react'
 import { DeleteDialog } from '@/components/delete-dialog'
+import { SimpleColumnToggle, useColumnVisibility, type ColumnConfig } from '@/components/simple-column-toggle'
+import { SortableHeader, useSorting } from '@/components/sortable-header'
 import type { Product } from '@/lib/types/database'
 import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
@@ -53,9 +55,32 @@ export default function ProductsPage() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [dialogLoading, setDialogLoading] = useState(false)
 
+  // Column visibility configuration
+  const productColumns: ColumnConfig[] = [
+    { key: 'sku', label: t('sku') || 'SKU', visible: true },
+    { key: 'name', label: t('name'), visible: true },
+    { key: 'category', label: t('category'), visible: true, hiddenClass: 'hidden md:table-cell' },
+    { key: 'price', label: t('price'), visible: true },
+    { key: 'stock', label: t('stock') || 'Stock', visible: true, hiddenClass: 'hidden sm:table-cell' },
+    { key: 'status', label: t('status'), visible: true },
+    { key: 'actions', label: tCommon('actions'), visible: true, alwaysVisible: true },
+  ]
+
+  const { visibleColumns, getColumnClass, handleVisibilityChange } = useColumnVisibility(
+    productColumns,
+    'products-table-columns'
+  )
+
   useEffect(() => {
     loadProducts()
   }, [showArchived])
+
+  // Sorting
+  const { sortedData: sortedProducts, sortKey, sortDirection, handleSort } = useSorting(
+    products,
+    'name',
+    'asc'
+  )
 
   async function loadProducts() {
     const supabase = createClient()
@@ -273,9 +298,15 @@ export default function ProductsPage() {
                 </TabsList>
               </Tabs>
 
-              {/* Export Buttons */}
+              {/* Column Toggle and Export Buttons */}
               {!showArchived && products.length > 0 && (
                 <div className="flex gap-2">
+                  <SimpleColumnToggle
+                    columns={visibleColumns}
+                    onVisibilityChange={handleVisibilityChange}
+                    storageKey="products-table-columns"
+                    label={t('toggleColumns') || tCommon('toggleColumns') || 'Colonne'}
+                  />
                   <Button variant="outline" size="sm" onClick={() => handleExport('csv')} className="flex-1 sm:flex-none">
                     <Download className="h-4 w-4 mr-2" />
                     <span className="hidden sm:inline">CSV</span>
@@ -301,7 +332,7 @@ export default function ProductsPage() {
             <div className="text-center py-8 md:py-12 text-muted-foreground">
               {tCommon('loading')}...
             </div>
-          ) : products.length === 0 ? (
+          ) : sortedProducts.length === 0 ? (
             <div className="text-center py-8 md:py-12">
               <Package className="h-12 w-12 md:h-16 md:w-16 mx-auto text-muted-foreground mb-4" />
               <h3 className="text-base md:text-lg font-semibold mb-2">
@@ -323,20 +354,68 @@ export default function ProductsPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="text-xs md:text-sm">{t('sku') || 'SKU'}</TableHead>
-                      <TableHead className="text-xs md:text-sm">{t('name')}</TableHead>
-                      <TableHead className="hidden md:table-cell text-xs md:text-sm">{t('category')}</TableHead>
-                      <TableHead className="text-right text-xs md:text-sm">{t('price')}</TableHead>
-                      <TableHead className="hidden sm:table-cell text-right text-xs md:text-sm">{t('stock') || 'Stock'}</TableHead>
-                      <TableHead className="text-xs md:text-sm">{t('status')}</TableHead>
-                      <TableHead className="text-right text-xs md:text-sm">{tCommon('actions')}</TableHead>
+                      <TableHead className={`text-xs md:text-sm ${getColumnClass('sku')}`}>
+                        <SortableHeader
+                          label={t('sku') || 'SKU'}
+                          sortKey="sku"
+                          currentSortKey={sortKey}
+                          currentDirection={sortDirection}
+                          onSort={handleSort}
+                        />
+                      </TableHead>
+                      <TableHead className={`text-xs md:text-sm ${getColumnClass('name')}`}>
+                        <SortableHeader
+                          label={t('name')}
+                          sortKey="name"
+                          currentSortKey={sortKey}
+                          currentDirection={sortDirection}
+                          onSort={handleSort}
+                        />
+                      </TableHead>
+                      <TableHead className={`hidden md:table-cell text-xs md:text-sm ${getColumnClass('category')}`}>
+                        <SortableHeader
+                          label={t('category')}
+                          sortKey="category"
+                          currentSortKey={sortKey}
+                          currentDirection={sortDirection}
+                          onSort={handleSort}
+                        />
+                      </TableHead>
+                      <TableHead className={`text-right text-xs md:text-sm ${getColumnClass('price')}`}>
+                        <SortableHeader
+                          label={t('price')}
+                          sortKey="unit_price"
+                          currentSortKey={sortKey}
+                          currentDirection={sortDirection}
+                          onSort={handleSort}
+                        />
+                      </TableHead>
+                      <TableHead className={`hidden sm:table-cell text-right text-xs md:text-sm ${getColumnClass('stock')}`}>
+                        <SortableHeader
+                          label={t('stock') || 'Stock'}
+                          sortKey="stock_quantity"
+                          currentSortKey={sortKey}
+                          currentDirection={sortDirection}
+                          onSort={handleSort}
+                        />
+                      </TableHead>
+                      <TableHead className={`text-xs md:text-sm ${getColumnClass('status')}`}>
+                        <SortableHeader
+                          label={t('status')}
+                          sortKey="is_active"
+                          currentSortKey={sortKey}
+                          currentDirection={sortDirection}
+                          onSort={handleSort}
+                        />
+                      </TableHead>
+                      <TableHead className={`text-right text-xs md:text-sm ${getColumnClass('actions')}`}>{tCommon('actions')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {products.map((product) => (
+                    {sortedProducts.map((product) => (
                       <TableRow key={product.id}>
-                        <TableCell className="font-mono text-xs md:text-sm">{product.sku || '-'}</TableCell>
-                        <TableCell className="font-medium text-xs md:text-sm">
+                        <TableCell className={`font-mono text-xs md:text-sm ${getColumnClass('sku')}`}>{product.sku || '-'}</TableCell>
+                        <TableCell className={`font-medium text-xs md:text-sm ${getColumnClass('name')}`}>
                           {product.name}
                           {product.description && (
                             <p className="text-xs text-muted-foreground truncate max-w-[200px] sm:max-w-[300px]">
@@ -344,11 +423,11 @@ export default function ProductsPage() {
                             </p>
                           )}
                         </TableCell>
-                        <TableCell className="hidden md:table-cell text-xs md:text-sm">{product.category || '-'}</TableCell>
-                        <TableCell className="text-right text-xs md:text-sm">
+                        <TableCell className={`hidden md:table-cell text-xs md:text-sm ${getColumnClass('category')}`}>{product.category || '-'}</TableCell>
+                        <TableCell className={`text-right text-xs md:text-sm ${getColumnClass('price')}`}>
                           CHF {Number(product.unit_price).toLocaleString('it-CH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </TableCell>
-                        <TableCell className="hidden sm:table-cell text-right text-xs md:text-sm">
+                        <TableCell className={`hidden sm:table-cell text-right text-xs md:text-sm ${getColumnClass('stock')}`}>
                           {product.track_inventory ? (
                             <span className={product.stock_quantity && product.stock_quantity <= (product.low_stock_threshold || 10) ? 'text-destructive font-medium' : ''}>
                               {product.stock_quantity || 0}
@@ -357,12 +436,12 @@ export default function ProductsPage() {
                             <span className="text-muted-foreground text-xs">{t('notTracked')}</span>
                           )}
                         </TableCell>
-                        <TableCell>
+                        <TableCell className={getColumnClass('status')}>
                           <Badge variant={product.is_active ? 'default' : 'secondary'} className="text-xs">
                             {product.is_active ? t('active') : t('inactive')}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className={`text-right ${getColumnClass('actions')}`}>
                           <div className="flex items-center justify-end gap-2">
                             {showArchived ? (
                               <Button
