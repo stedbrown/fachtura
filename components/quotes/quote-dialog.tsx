@@ -69,12 +69,41 @@ export function QuoteDialog({
       loadClients()
       loadProducts()
       if (quote) {
-        // TODO: Load quote data
+        loadQuoteData()
       } else {
         resetForm()
       }
     }
   }, [open, quote])
+
+  const loadQuoteData = async () => {
+    if (!quote) return
+
+    // Load quote data into form
+    setClientId(quote.client_id)
+    setDate(quote.date)
+    setDueDate(quote.valid_until || '')
+    setStatus(quote.status as 'draft' | 'sent' | 'accepted' | 'rejected')
+    setNotes(quote.notes || '')
+
+    // Load quote items
+    const supabase = createClient()
+    const { data: itemsData } = await supabase
+      .from('quote_items')
+      .select('*')
+      .eq('quote_id', quote.id)
+      .order('created_at')
+
+    if (itemsData && itemsData.length > 0) {
+      setItems(itemsData.map(item => ({
+        description: item.description,
+        quantity: item.quantity,
+        unit_price: item.unit_price,
+        tax_rate: item.tax_rate,
+        product_id: item.product_id || undefined
+      })))
+    }
+  }
 
   const resetForm = () => {
     setClientId('')
@@ -201,52 +230,94 @@ export function QuoteDialog({
     }
 
     try {
-      const quoteNumber = generateQuoteNumber()
       const totals = calculateQuoteTotals(items)
 
-      const { data: quoteData, error: quoteError } = await supabase
-        .from('quotes')
-        .insert({
-          user_id: user.id,
-          client_id: clientId,
-          quote_number: quoteNumber,
-          date,
-          valid_until: dueDate || null,
-          status,
-          notes: notes || null,
-          subtotal: totals.subtotal,
-          tax_amount: totals.totalTax,
-          total: totals.total,
-        })
-        .select()
-        .single()
+      if (quote) {
+        // UPDATE existing quote
+        const { error: quoteError } = await supabase
+          .from('quotes')
+          .update({
+            client_id: clientId,
+            date,
+            valid_until: dueDate || null,
+            status,
+            notes: notes || null,
+            subtotal: totals.subtotal,
+            tax_amount: totals.totalTax,
+            total: totals.total,
+          })
+          .eq('id', quote.id)
 
-      if (quoteError || !quoteData) throw quoteError
+        if (quoteError) throw quoteError
 
-      const itemsToInsert = items.map((item) => ({
-        quote_id: quoteData.id,
-        product_id: item.product_id || null,
-        description: item.description,
-        quantity: item.quantity,
-        unit_price: item.unit_price,
-        tax_rate: item.tax_rate,
-        line_total: item.quantity * item.unit_price * (1 + item.tax_rate / 100),
-      }))
+        // Delete old items
+        await supabase.from('quote_items').delete().eq('quote_id', quote.id)
 
-      console.log('Inserting quote items:', itemsToInsert)
-      const { error: itemsError } = await supabase.from('quote_items').insert(itemsToInsert)
-      
-      if (itemsError) {
-        console.error('Error inserting quote items:', itemsError)
-        throw new Error(`Errore inserimento articoli: ${itemsError.message}`)
+        // Insert new items
+        const itemsToInsert = items.map((item) => ({
+          quote_id: quote.id,
+          product_id: item.product_id || null,
+          description: item.description,
+          quantity: item.quantity,
+          unit_price: item.unit_price,
+          tax_rate: item.tax_rate,
+          line_total: item.quantity * item.unit_price * (1 + item.tax_rate / 100),
+        }))
+
+        const { error: itemsError } = await supabase.from('quote_items').insert(itemsToInsert)
+        
+        if (itemsError) {
+          throw new Error(`Errore aggiornamento articoli: ${itemsError.message}`)
+        }
+
+        toast.success('Preventivo aggiornato con successo')
+      } else {
+        // CREATE new quote
+        const quoteNumber = generateQuoteNumber()
+
+        const { data: quoteData, error: quoteError } = await supabase
+          .from('quotes')
+          .insert({
+            user_id: user.id,
+            client_id: clientId,
+            quote_number: quoteNumber,
+            date,
+            valid_until: dueDate || null,
+            status,
+            notes: notes || null,
+            subtotal: totals.subtotal,
+            tax_amount: totals.totalTax,
+            total: totals.total,
+          })
+          .select()
+          .single()
+
+        if (quoteError || !quoteData) throw quoteError
+
+        const itemsToInsert = items.map((item) => ({
+          quote_id: quoteData.id,
+          product_id: item.product_id || null,
+          description: item.description,
+          quantity: item.quantity,
+          unit_price: item.unit_price,
+          tax_rate: item.tax_rate,
+          line_total: item.quantity * item.unit_price * (1 + item.tax_rate / 100),
+        }))
+
+        const { error: itemsError } = await supabase.from('quote_items').insert(itemsToInsert)
+        
+        if (itemsError) {
+          throw new Error(`Errore inserimento articoli: ${itemsError.message}`)
+        }
+
+        toast.success(t('createSuccess') || 'Preventivo creato con successo')
       }
 
-      toast.success(t('createSuccess') || 'Preventivo creato con successo')
       onOpenChange(false)
       onSuccess()
     } catch (error: any) {
-      console.error('Error creating quote:', error)
-      toast.error(error?.message || t('createError'))
+      console.error('Error saving quote:', error)
+      toast.error(error?.message || (quote ? 'Errore aggiornamento preventivo' : t('createError')))
     } finally {
       setLoading(false)
     }
@@ -573,7 +644,7 @@ export function QuoteDialog({
             disabled={loading}
             className="w-full sm:w-auto sm:min-w-[180px]"
           >
-            {loading ? tCommon('loading') : t('form.create')}
+            {loading ? tCommon('loading') : (quote ? tCommon('save') : t('form.create'))}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -69,12 +69,41 @@ export function InvoiceDialog({
       loadClients()
       loadProducts()
       if (invoice) {
-        // TODO: Load invoice data
+        loadInvoiceData()
       } else {
         resetForm()
       }
     }
   }, [open, invoice])
+
+  const loadInvoiceData = async () => {
+    if (!invoice) return
+
+    // Load invoice data into form
+    setClientId(invoice.client_id)
+    setDate(invoice.date)
+    setDueDate(invoice.due_date || '')
+    setStatus(invoice.status as 'draft' | 'issued' | 'paid' | 'overdue')
+    setNotes(invoice.notes || '')
+
+    // Load invoice items
+    const supabase = createClient()
+    const { data: itemsData } = await supabase
+      .from('invoice_items')
+      .select('*')
+      .eq('invoice_id', invoice.id)
+      .order('created_at')
+
+    if (itemsData && itemsData.length > 0) {
+      setItems(itemsData.map(item => ({
+        description: item.description,
+        quantity: item.quantity,
+        unit_price: item.unit_price,
+        tax_rate: item.tax_rate,
+        product_id: item.product_id || undefined
+      })))
+    }
+  }
 
   const resetForm = () => {
     setClientId('')
@@ -201,52 +230,94 @@ export function InvoiceDialog({
     }
 
     try {
-      const invoiceNumber = generateInvoiceNumber()
       const totals = calculateInvoiceTotals(items)
 
-      const { data: invoiceData, error: invoiceError } = await supabase
-        .from('invoices')
-        .insert({
-          user_id: user.id,
-          client_id: clientId,
-          invoice_number: invoiceNumber,
-          date,
-          due_date: dueDate || null,
-          status,
-          notes: notes || null,
-          subtotal: totals.subtotal,
-          tax_amount: totals.totalTax,
-          total: totals.total,
-        })
-        .select()
-        .single()
+      if (invoice) {
+        // UPDATE existing invoice
+        const { error: invoiceError } = await supabase
+          .from('invoices')
+          .update({
+            client_id: clientId,
+            date,
+            due_date: dueDate || null,
+            status,
+            notes: notes || null,
+            subtotal: totals.subtotal,
+            tax_amount: totals.totalTax,
+            total: totals.total,
+          })
+          .eq('id', invoice.id)
 
-      if (invoiceError || !invoiceData) throw invoiceError
+        if (invoiceError) throw invoiceError
 
-      const itemsToInsert = items.map((item) => ({
-        invoice_id: invoiceData.id,
-        product_id: item.product_id || null,
-        description: item.description,
-        quantity: item.quantity,
-        unit_price: item.unit_price,
-        tax_rate: item.tax_rate,
-        line_total: item.quantity * item.unit_price * (1 + item.tax_rate / 100),
-      }))
+        // Delete old items
+        await supabase.from('invoice_items').delete().eq('invoice_id', invoice.id)
 
-      console.log('Inserting invoice items:', itemsToInsert)
-      const { error: itemsError } = await supabase.from('invoice_items').insert(itemsToInsert)
-      
-      if (itemsError) {
-        console.error('Error inserting invoice items:', itemsError)
-        throw new Error(`Errore inserimento articoli: ${itemsError.message}`)
+        // Insert new items
+        const itemsToInsert = items.map((item) => ({
+          invoice_id: invoice.id,
+          product_id: item.product_id || null,
+          description: item.description,
+          quantity: item.quantity,
+          unit_price: item.unit_price,
+          tax_rate: item.tax_rate,
+          line_total: item.quantity * item.unit_price * (1 + item.tax_rate / 100),
+        }))
+
+        const { error: itemsError } = await supabase.from('invoice_items').insert(itemsToInsert)
+        
+        if (itemsError) {
+          throw new Error(`Errore aggiornamento articoli: ${itemsError.message}`)
+        }
+
+        toast.success('Fattura aggiornata con successo')
+      } else {
+        // CREATE new invoice
+        const invoiceNumber = generateInvoiceNumber()
+
+        const { data: invoiceData, error: invoiceError } = await supabase
+          .from('invoices')
+          .insert({
+            user_id: user.id,
+            client_id: clientId,
+            invoice_number: invoiceNumber,
+            date,
+            due_date: dueDate || null,
+            status,
+            notes: notes || null,
+            subtotal: totals.subtotal,
+            tax_amount: totals.totalTax,
+            total: totals.total,
+          })
+          .select()
+          .single()
+
+        if (invoiceError || !invoiceData) throw invoiceError
+
+        const itemsToInsert = items.map((item) => ({
+          invoice_id: invoiceData.id,
+          product_id: item.product_id || null,
+          description: item.description,
+          quantity: item.quantity,
+          unit_price: item.unit_price,
+          tax_rate: item.tax_rate,
+          line_total: item.quantity * item.unit_price * (1 + item.tax_rate / 100),
+        }))
+
+        const { error: itemsError } = await supabase.from('invoice_items').insert(itemsToInsert)
+        
+        if (itemsError) {
+          throw new Error(`Errore inserimento articoli: ${itemsError.message}`)
+        }
+
+        toast.success(t('createSuccess') || 'Fattura creata con successo')
       }
 
-      toast.success(t('createSuccess') || 'Fattura creata con successo')
       onOpenChange(false)
       onSuccess()
     } catch (error: any) {
-      console.error('Error creating invoice:', error)
-      toast.error(error?.message || t('createError'))
+      console.error('Error saving invoice:', error)
+      toast.error(error?.message || (invoice ? 'Errore aggiornamento fattura' : t('createError')))
     } finally {
       setLoading(false)
     }
@@ -573,7 +644,7 @@ export function InvoiceDialog({
             disabled={loading}
             className="w-full sm:w-auto sm:min-w-[180px]"
           >
-            {loading ? tCommon('loading') : t('form.create')}
+            {loading ? tCommon('loading') : (invoice ? tCommon('save') : t('form.create'))}
           </Button>
         </DialogFooter>
       </DialogContent>
