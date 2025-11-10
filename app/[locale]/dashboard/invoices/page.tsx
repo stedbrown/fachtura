@@ -78,6 +78,7 @@ export default function InvoicesPage() {
     planName: 'Free'
   })
   const [invoiceDialogOpen, setInvoiceDialogOpen] = useState(false)
+  const [editingInvoice, setEditingInvoice] = useState<InvoiceWithClient | null>(null)
 
   // Column visibility configuration
   const invoiceColumns: ColumnConfig[] = [
@@ -213,6 +214,12 @@ export default function InvoicesPage() {
     }
     
     // Apri il dialog di creazione
+    setEditingInvoice(null)
+    setInvoiceDialogOpen(true)
+  }
+
+  const handleEditInvoice = (invoice: InvoiceWithClient) => {
+    setEditingInvoice(invoice)
     setInvoiceDialogOpen(true)
   }
 
@@ -561,7 +568,7 @@ export default function InvoicesPage() {
                   <TableRow 
                     key={invoice.id}
                     className="cursor-pointer hover:bg-muted/50"
-                    onClick={() => router.push(`/${locale}/dashboard/invoices/${invoice.id}`)}
+                    onClick={() => handleEditInvoice(invoice)}
                   >
                     <TableCell className={getColumnClass('invoice_number', 'font-medium text-xs md:text-sm')}>
                       {invoice.invoice_number}
@@ -660,9 +667,14 @@ export default function InvoicesPage() {
       {/* Invoice Dialog */}
       <InvoiceDialog
         open={invoiceDialogOpen}
-        onOpenChange={setInvoiceDialogOpen}
+        onOpenChange={(open) => {
+          setInvoiceDialogOpen(open)
+          if (!open) setEditingInvoice(null)
+        }}
+        invoice={editingInvoice}
         onSuccess={() => {
           setInvoiceDialogOpen(false)
+          setEditingInvoice(null)
           updateOverdueInvoicesAndLoad()
         }}
       />

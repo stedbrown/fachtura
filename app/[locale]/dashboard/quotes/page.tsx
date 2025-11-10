@@ -77,6 +77,7 @@ export default function QuotesPage() {
     planName: 'Free'
   })
   const [quoteDialogOpen, setQuoteDialogOpen] = useState(false)
+  const [editingQuote, setEditingQuote] = useState<QuoteWithClient | null>(null)
 
   // Column visibility configuration
   const quoteColumns: ColumnConfig[] = [
@@ -190,6 +191,7 @@ export default function QuotesPage() {
     }
     
     // Apri il dialog di creazione
+    setEditingQuote(null)
     setQuoteDialogOpen(true)
   }
 
@@ -528,7 +530,10 @@ export default function QuotesPage() {
                   <TableRow 
                     key={quote.id}
                     className="cursor-pointer hover:bg-muted/50"
-                    onClick={() => router.push(`/${locale}/dashboard/quotes/${quote.id}`)}
+                    onClick={() => {
+                      setEditingQuote(quote)
+                      setQuoteDialogOpen(true)
+                    }}
                   >
                     <TableCell className={getColumnClass('quote_number', 'font-medium text-xs md:text-sm')}>
                       {quote.quote_number}
@@ -620,9 +625,14 @@ export default function QuotesPage() {
       {/* Quote Dialog */}
       <QuoteDialog
         open={quoteDialogOpen}
-        onOpenChange={setQuoteDialogOpen}
+        onOpenChange={(open) => {
+          setQuoteDialogOpen(open)
+          if (!open) setEditingQuote(null)
+        }}
+        quote={editingQuote}
         onSuccess={() => {
           setQuoteDialogOpen(false)
+          setEditingQuote(null)
           loadQuotes()
         }}
       />
