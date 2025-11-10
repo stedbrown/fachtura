@@ -14,7 +14,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Eye, Trash2, Download, Archive, ArchiveRestore } from 'lucide-react'
+import { Plus, Eye, Trash2, Download, Archive, ArchiveRestore, FileText } from 'lucide-react'
 import { DeleteDialog } from '@/components/delete-dialog'
 import { SimpleColumnToggle, useColumnVisibility, type ColumnConfig } from '@/components/simple-column-toggle'
 import { SortableHeader, useSorting } from '@/components/sortable-header'
@@ -439,6 +439,7 @@ export default function InvoicesPage() {
               <Tabs value={showArchived ? 'archived' : 'active'} onValueChange={(value) => setShowArchived(value === 'archived')} className="w-full sm:w-auto">
                 <TabsList className="grid w-full sm:w-auto grid-cols-2">
                   <TabsTrigger value="active" className="text-xs md:text-sm">
+                    <FileText className="h-4 w-4 mr-2" />
                     {tTabs('active')}
                   </TabsTrigger>
                   <TabsTrigger value="archived" className="text-xs md:text-sm">

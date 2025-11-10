@@ -14,9 +14,10 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Edit, Trash2, Archive, ArchiveRestore, Package, Download } from 'lucide-react'
+import { Plus, Edit, Trash2, Archive, ArchiveRestore, Package } from 'lucide-react'
 import { DeleteDialog } from '@/components/delete-dialog'
 import { SimpleColumnToggle, useColumnVisibility, type ColumnConfig } from '@/components/simple-column-toggle'
+import { AdvancedFilters, type FilterState } from '@/components/advanced-filters'
 import { SortableHeader, useSorting } from '@/components/sortable-header'
 import type { Product } from '@/lib/types/database'
 import { useTranslations } from 'next-intl'
@@ -298,7 +299,7 @@ export default function ProductsPage() {
                 </TabsList>
               </Tabs>
 
-              {/* Column Toggle and Export Buttons */}
+              {/* Column Toggle and Export */}
               {!showArchived && products.length > 0 && (
                 <div className="flex gap-2">
                   <SimpleColumnToggle
@@ -307,14 +308,11 @@ export default function ProductsPage() {
                     onVisibilityChange={handleVisibilityChange}
                     label={t('toggleColumns') || tCommon('toggleColumns') || 'Colonne'}
                   />
-                  <Button variant="outline" size="sm" onClick={() => handleExport('csv')} className="flex-1 sm:flex-none">
-                    <Download className="h-4 w-4 mr-2" />
-                    <span className="hidden sm:inline">CSV</span>
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={() => handleExport('excel')} className="flex-1 sm:flex-none">
-                    <Download className="h-4 w-4 mr-2" />
-                    <span className="hidden sm:inline">Excel</span>
-                  </Button>
+                  <AdvancedFilters
+                    filters={{}}
+                    onFiltersChange={() => {}}
+                    onExport={handleExport}
+                  />
                 </div>
               )}
             </div>

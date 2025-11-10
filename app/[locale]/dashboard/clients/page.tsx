@@ -12,7 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Plus, Pencil, Trash2, Archive, ArchiveRestore } from 'lucide-react'
+import { Plus, Pencil, Trash2, Archive, ArchiveRestore, Users } from 'lucide-react'
 import { ClientDialog } from '@/components/clients/client-dialog'
 import { ImportClientsDialog } from '@/components/clients/import-clients-dialog'
 import { DeleteDialog } from '@/components/delete-dialog'
@@ -407,6 +407,7 @@ export default function ClientsPage() {
               <Tabs value={showArchived ? 'archived' : 'active'} onValueChange={(value) => setShowArchived(value === 'archived')} className="w-full sm:w-auto">
                 <TabsList className="grid w-full sm:w-auto grid-cols-2">
                   <TabsTrigger value="active" className="text-xs md:text-sm">
+                    <Users className="h-4 w-4 mr-2" />
                     {tTabs('active')}
                   </TabsTrigger>
                   <TabsTrigger value="archived" className="text-xs md:text-sm">
