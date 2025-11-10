@@ -61,11 +61,11 @@ export default function ClientsPage() {
 
   // Column visibility configuration
   const columns: ColumnConfig[] = [
-    { id: 'name', label: t('fields.name'), defaultVisible: true },
-    { id: 'email', label: t('fields.email'), defaultVisible: true },
-    { id: 'phone', label: t('fields.phone'), defaultVisible: true },
-    { id: 'city', label: t('fields.city'), defaultVisible: true },
-    { id: 'actions', label: tCommon('actions'), defaultVisible: true },
+    { key: 'name', label: t('fields.name'), visible: true },
+    { key: 'email', label: t('fields.email'), visible: true },
+    { key: 'phone', label: t('fields.phone'), visible: true },
+    { key: 'city', label: t('fields.city'), visible: true },
+    { key: 'actions', label: tCommon('actions'), visible: true, alwaysVisible: true },
   ]
 
   const { handleVisibilityChange, getColumnClass } = useColumnVisibility(
