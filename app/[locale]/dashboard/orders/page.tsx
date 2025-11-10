@@ -84,7 +84,7 @@ export default function OrdersPage() {
     { key: 'actions', label: tCommon('actions'), visible: true, alwaysVisible: true },
   ]
 
-  const { visibleColumns, getColumnClass, handleVisibilityChange } = useColumnVisibility(
+  const { columnVisibility, getColumnClass, handleVisibilityChange } = useColumnVisibility(
     orderColumns,
     'orders-table-columns'
   )
@@ -252,9 +252,9 @@ export default function OrdersPage() {
               {!showArchived && orders.length > 0 && (
                 <div className="flex gap-2">
                   <SimpleColumnToggle
-                    columns={visibleColumns}
+                    columns={orderColumns}
+                    columnVisibility={columnVisibility}
                     onVisibilityChange={handleVisibilityChange}
-                    storageKey="orders-table-columns"
                     label={t('toggleColumns') || tCommon('toggleColumns') || 'Colonne'}
                   />
                   <Button variant="outline" size="sm" onClick={() => handleExport('csv')} className="flex-1 sm:flex-none">

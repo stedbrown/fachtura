@@ -90,7 +90,7 @@ export default function InvoicesPage() {
     { key: 'actions', label: tCommon('actions'), visible: true, alwaysVisible: true },
   ]
 
-  const { visibleColumns, getColumnClass, handleVisibilityChange } = useColumnVisibility(
+  const { columnVisibility, getColumnClass, handleVisibilityChange } = useColumnVisibility(
     invoiceColumns,
     'invoices-table-columns'
   )
@@ -452,9 +452,9 @@ export default function InvoicesPage() {
               {!showArchived && (
                 <div className="flex gap-2">
                   <SimpleColumnToggle
-                    columns={visibleColumns}
+                    columns={invoiceColumns}
+                    columnVisibility={columnVisibility}
                     onVisibilityChange={handleVisibilityChange}
-                    storageKey="invoices-table-columns"
                     label={t('toggleColumns') || tCommon('toggleColumns') || 'Colonne'}
                   />
                   <AdvancedFilters

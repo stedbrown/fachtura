@@ -20,21 +20,10 @@ export type ColumnConfig = {
   alwaysVisible?: boolean
 }
 
-interface SimpleColumnToggleProps {
-  columns: ColumnConfig[]
-  onVisibilityChange: (columnId: string, visible: boolean) => void
-  storageKey?: string
-  label?: string
-}
-
-export function SimpleColumnToggle({
-  columns,
-  onVisibilityChange,
-  storageKey,
-  label = 'Mostra/Nascondi colonne',
-}: SimpleColumnToggleProps) {
-  const [visibility, setVisibility] = useState<Record<string, boolean>>(() => {
-    // Initialize from storage if available
+// Hook to use in components - SINGLE SOURCE OF TRUTH
+export function useColumnVisibility(initialColumns: ColumnConfig[], storageKey?: string) {
+  const [columnVisibility, setColumnVisibility] = useState<Record<string, boolean>>(() => {
+    // Try to load from localStorage first
     if (storageKey && typeof window !== 'undefined') {
       const stored = localStorage.getItem(storageKey)
       if (stored) {
@@ -46,8 +35,8 @@ export function SimpleColumnToggle({
       }
     }
     
-    // Default visibility
-    return columns.reduce((acc, col) => {
+    // Default visibility from column config
+    return initialColumns.reduce((acc, col) => {
       acc[col.key] = col.visible !== false
       return acc
     }, {} as Record<string, boolean>)
@@ -55,16 +44,50 @@ export function SimpleColumnToggle({
 
   // Save to localStorage whenever visibility changes
   useEffect(() => {
-    if (storageKey) {
-      localStorage.setItem(storageKey, JSON.stringify(visibility))
+    if (storageKey && typeof window !== 'undefined') {
+      localStorage.setItem(storageKey, JSON.stringify(columnVisibility))
     }
-  }, [visibility, storageKey])
+  }, [columnVisibility, storageKey])
 
-  const handleToggle = (columnId: string, checked: boolean) => {
-    setVisibility(prev => ({ ...prev, [columnId]: checked }))
-    onVisibilityChange(columnId, checked)
+  const handleVisibilityChange = (columnKey: string, visible: boolean) => {
+    setColumnVisibility(prev => ({
+      ...prev,
+      [columnKey]: visible
+    }))
   }
 
+  const getColumnClass = (columnKey: string) => {
+    // If column is explicitly hidden, return 'hidden'
+    // Otherwise return empty string (visible)
+    return columnVisibility[columnKey] === false ? 'hidden' : ''
+  }
+
+  const isColumnVisible = (columnKey: string) => {
+    return columnVisibility[columnKey] !== false
+  }
+
+  return {
+    columnVisibility,
+    handleVisibilityChange,
+    getColumnClass,
+    isColumnVisible,
+  }
+}
+
+// Component for the column toggle dropdown
+interface SimpleColumnToggleProps {
+  columns: ColumnConfig[]
+  columnVisibility: Record<string, boolean>
+  onVisibilityChange: (columnKey: string, visible: boolean) => void
+  label?: string
+}
+
+export function SimpleColumnToggle({
+  columns,
+  columnVisibility,
+  onVisibilityChange,
+  label = 'Mostra/Nascondi colonne',
+}: SimpleColumnToggleProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -85,8 +108,8 @@ export function SimpleColumnToggle({
           .map((column) => (
             <DropdownMenuCheckboxItem
               key={column.key}
-              checked={visibility[column.key]}
-              onCheckedChange={(checked) => handleToggle(column.key, checked)}
+              checked={columnVisibility[column.key] !== false}
+              onCheckedChange={(checked) => onVisibilityChange(column.key, checked)}
             >
               {column.label}
             </DropdownMenuCheckboxItem>
@@ -94,58 +117,5 @@ export function SimpleColumnToggle({
       </DropdownMenuContent>
     </DropdownMenu>
   )
-}
-
-// Hook to use in components
-export function useColumnVisibility(columns: ColumnConfig[], storageKey?: string) {
-  const [hiddenColumns, setHiddenColumns] = useState<Set<string>>(new Set())
-
-  useEffect(() => {
-    if (storageKey && typeof window !== 'undefined') {
-      const stored = localStorage.getItem(storageKey)
-      if (stored) {
-        try {
-          const visibility = JSON.parse(stored)
-          const hidden = new Set(
-            Object.entries(visibility)
-              .filter(([, visible]) => !visible)
-              .map(([id]) => id)
-          )
-          setHiddenColumns(hidden)
-        } catch (e) {
-          // Ignore parse errors
-        }
-      }
-    }
-  }, [storageKey])
-
-  const handleVisibilityChange = (columnId: string, visible: boolean) => {
-    setHiddenColumns(prev => {
-      const next = new Set(prev)
-      if (visible) {
-        next.delete(columnId)
-      } else {
-        next.add(columnId)
-      }
-      return next
-    })
-  }
-
-  const getColumnClass = (columnKey: string) => {
-    return hiddenColumns.has(columnKey) ? 'hidden' : ''
-  }
-
-  const visibleColumns = columns.map(col => ({
-    ...col,
-    visible: !hiddenColumns.has(col.key)
-  }))
-
-  return {
-    visibleColumns,
-    hiddenColumns,
-    handleVisibilityChange,
-    getColumnClass,
-    isColumnVisible: (columnKey: string) => !hiddenColumns.has(columnKey),
-  }
 }
 

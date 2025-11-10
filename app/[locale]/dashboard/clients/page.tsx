@@ -68,7 +68,7 @@ export default function ClientsPage() {
     { key: 'actions', label: tCommon('actions'), visible: true, alwaysVisible: true },
   ]
 
-  const { handleVisibilityChange, getColumnClass } = useColumnVisibility(
+  const { columnVisibility, handleVisibilityChange, getColumnClass } = useColumnVisibility(
     columns,
     'clients-table-columns'
   )
@@ -425,8 +425,8 @@ export default function ClientsPage() {
                 />
                 <SimpleColumnToggle
                   columns={columns}
+                  columnVisibility={columnVisibility}
                   onVisibilityChange={handleVisibilityChange}
-                  storageKey="clients-table-columns"
                   label={t('toggleColumns') || 'Mostra/Nascondi colonne'}
                 />
               </div>

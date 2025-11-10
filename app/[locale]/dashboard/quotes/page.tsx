@@ -88,7 +88,7 @@ export default function QuotesPage() {
     { key: 'actions', label: tCommon('actions'), visible: true, alwaysVisible: true },
   ]
 
-  const { visibleColumns, getColumnClass, handleVisibilityChange } = useColumnVisibility(
+  const { columnVisibility, getColumnClass, handleVisibilityChange } = useColumnVisibility(
     quoteColumns,
     'quotes-table-columns'
   )
@@ -428,9 +428,9 @@ export default function QuotesPage() {
               {!showArchived && (
                 <div className="flex gap-2">
                   <SimpleColumnToggle
-                    columns={visibleColumns}
+                    columns={quoteColumns}
+                    columnVisibility={columnVisibility}
                     onVisibilityChange={handleVisibilityChange}
-                    storageKey="quotes-table-columns"
                     label={t('toggleColumns') || tCommon('toggleColumns') || 'Colonne'}
                   />
                   <AdvancedFilters

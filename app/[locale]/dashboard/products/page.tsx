@@ -66,7 +66,7 @@ export default function ProductsPage() {
     { key: 'actions', label: tCommon('actions'), visible: true, alwaysVisible: true },
   ]
 
-  const { visibleColumns, getColumnClass, handleVisibilityChange } = useColumnVisibility(
+  const { columnVisibility, getColumnClass, handleVisibilityChange } = useColumnVisibility(
     productColumns,
     'products-table-columns'
   )
@@ -302,9 +302,9 @@ export default function ProductsPage() {
               {!showArchived && products.length > 0 && (
                 <div className="flex gap-2">
                   <SimpleColumnToggle
-                    columns={visibleColumns}
+                    columns={productColumns}
+                    columnVisibility={columnVisibility}
                     onVisibilityChange={handleVisibilityChange}
-                    storageKey="products-table-columns"
                     label={t('toggleColumns') || tCommon('toggleColumns') || 'Colonne'}
                   />
                   <Button variant="outline" size="sm" onClick={() => handleExport('csv')} className="flex-1 sm:flex-none">

@@ -62,7 +62,7 @@ export default function SuppliersPage() {
     { key: 'actions', label: tCommon('actions'), visible: true, alwaysVisible: true },
   ]
 
-  const { visibleColumns, getColumnClass, handleVisibilityChange } = useColumnVisibility(
+  const { columnVisibility, getColumnClass, handleVisibilityChange } = useColumnVisibility(
     supplierColumns,
     'suppliers-table-columns'
   )
@@ -309,9 +309,9 @@ export default function SuppliersPage() {
               {/* Column Toggle */}
               {!showArchived && suppliers.length > 0 && (
                 <SimpleColumnToggle
-                  columns={visibleColumns}
+                  columns={supplierColumns}
+                  columnVisibility={columnVisibility}
                   onVisibilityChange={handleVisibilityChange}
-                  storageKey="suppliers-table-columns"
                   label={t('toggleColumns') || tCommon('toggleColumns') || 'Colonne'}
                 />
               )}
