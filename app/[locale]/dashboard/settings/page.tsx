@@ -15,7 +15,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import Image from 'next/image'
-import { Upload, X, Building2, FileText, Receipt, Palette } from 'lucide-react'
+import { Upload, X, Building2, FileText, Receipt, Palette, CreditCard } from 'lucide-react'
 import { ThemeCustomizer } from '@/components/theme-customizer'
 import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
@@ -217,7 +217,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6 p-4 sm:p-6">
       <div>
         <h1 className="text-3xl font-bold">{t('title')}</h1>
         <p className="text-muted-foreground">
@@ -227,32 +227,32 @@ export default function SettingsPage() {
 
       <form onSubmit={handleSubmit(onSubmit)}>
         <Tabs defaultValue="company" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5 max-w-3xl">
-            <TabsTrigger value="company" className="flex items-center gap-2">
+          <TabsList className="w-full max-w-5xl grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+            <TabsTrigger value="company" className="flex items-center gap-2 justify-center sm:justify-start text-xs sm:text-sm">
               <Building2 className="h-4 w-4" />
               <span className="hidden sm:inline">Azienda</span>
             </TabsTrigger>
-            <TabsTrigger value="appearance" className="flex items-center gap-2">
+            <TabsTrigger value="appearance" className="flex items-center gap-2 justify-center sm:justify-start text-xs sm:text-sm">
               <Palette className="h-4 w-4" />
               <span className="hidden sm:inline">Aspetto</span>
             </TabsTrigger>
-            <TabsTrigger value="quotes" className="flex items-center gap-2">
+            <TabsTrigger value="quotes" className="flex items-center gap-2 justify-center sm:justify-start text-xs sm:text-sm">
               <FileText className="h-4 w-4" />
               <span className="hidden sm:inline">Preventivi</span>
             </TabsTrigger>
-            <TabsTrigger value="invoices" className="flex items-center gap-2">
+            <TabsTrigger value="invoices" className="flex items-center gap-2 justify-center sm:justify-start text-xs sm:text-sm">
               <Receipt className="h-4 w-4" />
               <span className="hidden sm:inline">Fatture</span>
             </TabsTrigger>
-            <TabsTrigger value="payment" className="flex items-center gap-2">
-              💳
+            <TabsTrigger value="payment" className="flex items-center gap-2 justify-center sm:justify-start text-xs sm:text-sm">
+              <CreditCard className="h-4 w-4" />
               <span className="hidden sm:inline">Pagamenti</span>
             </TabsTrigger>
           </TabsList>
 
           {/* Company Info Tab */}
           <TabsContent value="company">
-            <Card className="max-w-2xl">
+            <Card className="max-w-2xl w-full">
               <CardHeader>
                 <CardTitle>{t('companyInfo')}</CardTitle>
                 <CardDescription>
@@ -275,7 +275,7 @@ export default function SettingsPage() {
                 
                 <div className="space-y-2">
                   <Label>{t('fields.logo')}</Label>
-                  <div className="flex items-start gap-4">
+                  <div className="flex flex-col sm:flex-row sm:items-start gap-4">
                     {logoPreview ? (
                       <div className="relative w-32 h-32 border-2 border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
                         <Image
@@ -306,13 +306,13 @@ export default function SettingsPage() {
                         />
                       </label>
                     )}
-                    <div className="flex-1 text-sm text-gray-500 dark:text-gray-400">
+                    <div className="text-sm text-gray-500 dark:text-gray-400">
                       {t('logoDescription')}
                     </div>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="address">{t('fields.address')}</Label>
                     <Input id="address" {...register('address')} />
@@ -323,7 +323,7 @@ export default function SettingsPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="postal_code">{t('fields.postalCode')}</Label>
                     <Input id="postal_code" {...register('postal_code')} />
@@ -334,7 +334,7 @@ export default function SettingsPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="vat_number">{t('fields.vatNumber')}</Label>
                     <Input id="vat_number" {...register('vat_number')} />
@@ -345,7 +345,7 @@ export default function SettingsPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="phone">{t('fields.phone')}</Label>
                     <Input id="phone" {...register('phone')} />
@@ -371,7 +371,7 @@ export default function SettingsPage() {
 
           {/* Appearance Tab */}
           <TabsContent value="appearance">
-            <Card className="max-w-2xl">
+            <Card className="max-w-2xl w-full">
               <CardHeader>
                 <CardTitle>Personalizzazione Aspetto</CardTitle>
                 <CardDescription>
@@ -386,7 +386,7 @@ export default function SettingsPage() {
 
           {/* Quotes Customization Tab */}
           <TabsContent value="quotes">
-            <Card className="max-w-2xl">
+            <Card className="max-w-2xl w-full">
               <CardHeader>
                 <CardTitle>{t('quoteCustomization')}</CardTitle>
                 <CardDescription>
@@ -452,7 +452,7 @@ export default function SettingsPage() {
 
           {/* Invoices Customization Tab */}
           <TabsContent value="invoices">
-            <Card className="max-w-2xl">
+            <Card className="max-w-2xl w-full">
               <CardHeader>
                 <CardTitle>{t('invoiceCustomization')}</CardTitle>
                 <CardDescription>
@@ -518,7 +518,7 @@ export default function SettingsPage() {
 
           {/* Payment Info Tab */}
           <TabsContent value="payment">
-            <Card className="max-w-2xl">
+            <Card className="max-w-2xl w-full">
               <CardHeader>
                 <CardTitle>{t('paymentInfo')}</CardTitle>
                 <CardDescription>
