@@ -273,6 +273,7 @@
     "restore": "Ripristina",
     "permanentDelete": "Elimina definitivamente",
     "permanentDeleteWarning": "ATTENZIONE: Questa azione eliminerà definitivamente il cliente e non potrà essere annullata. Continuare?",
+    "toggleColumns": "Mostra/Nascondi colonne",
     "import": {
       "limitReached": "Limite raggiunto! Puoi creare solo {remaining} clienti in più con il piano {plan}.",
       "tooMany": "Puoi importare al massimo {remaining} clienti. Rimuovine {excess} dal file.",
