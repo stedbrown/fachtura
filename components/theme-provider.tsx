@@ -1,21 +1,9 @@
 'use client'
 
-import { useEffect } from 'react'
+import * as React from 'react'
+import { ThemeProvider as NextThemesProvider } from 'next-themes'
+import { type ThemeProviderProps } from 'next-themes/dist/types'
 
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  useEffect(() => {
-    // Load theme on mount
-    const savedTheme = localStorage.getItem('fachtura-theme')
-    const savedRadius = localStorage.getItem('fachtura-radius')
-
-    if (savedTheme) {
-      document.documentElement.setAttribute('data-theme', savedTheme)
-    }
-
-    if (savedRadius) {
-      document.documentElement.style.setProperty('--radius', `${savedRadius}rem`)
-    }
-  }, [])
-
-  return <>{children}</>
+export function ThemeProvider({ children, ...props }: ThemeProviderProps) {
+  return <NextThemesProvider {...props}>{children}</NextThemesProvider>
 }

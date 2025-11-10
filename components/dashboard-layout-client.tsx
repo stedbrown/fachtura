@@ -2,7 +2,7 @@
 
 import { AppSidebar } from '@/components/app-sidebar'
 import { SidebarProvider, SidebarInset } from '@/components/ui/sidebar'
-import { ThemeProvider } from '@/components/theme-provider'
+import { ColorThemeProvider } from '@/components/color-theme-provider'
 import dynamic from 'next/dynamic'
 
 // Dynamic import to avoid hydration mismatch with DropdownMenu IDs
@@ -21,7 +21,7 @@ interface DashboardLayoutClientProps {
 
 export function DashboardLayoutClient({ children, user, defaultOpen }: DashboardLayoutClientProps) {
   return (
-    <ThemeProvider>
+    <ColorThemeProvider>
       <SidebarProvider defaultOpen={defaultOpen}>
         <AppSidebar />
         <SidebarInset className="flex flex-col h-screen overflow-hidden">
@@ -31,7 +31,7 @@ export function DashboardLayoutClient({ children, user, defaultOpen }: Dashboard
           </main>
         </SidebarInset>
       </SidebarProvider>
-    </ThemeProvider>
+    </ColorThemeProvider>
   )
 }
 

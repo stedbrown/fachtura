@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 
-const THEME_STORAGE_KEY = 'fachtura-theme'
+const THEME_STORAGE_KEY = 'fachtura-color-theme'
 const RADIUS_STORAGE_KEY = 'fachtura-radius'
 
 export type ThemeColor = 
@@ -19,8 +19,8 @@ export type ThemeColor =
 
 export type ThemeRadius = '0' | '0.3' | '0.5' | '0.75' | '1.0'
 
-export function useTheme() {
-  const [theme, setTheme] = useState<ThemeColor>('neutral')
+export function useColorTheme() {
+  const [colorTheme, setColorTheme] = useState<ThemeColor>('neutral')
   const [radius, setRadius] = useState<ThemeRadius>('0.5')
   const [mounted, setMounted] = useState(false)
 
@@ -30,7 +30,7 @@ export function useTheme() {
     const savedRadius = localStorage.getItem(RADIUS_STORAGE_KEY) as ThemeRadius
     
     if (savedTheme) {
-      setTheme(savedTheme)
+      setColorTheme(savedTheme)
       document.documentElement.setAttribute('data-theme', savedTheme)
     }
     
@@ -40,8 +40,8 @@ export function useTheme() {
     }
   }, [])
 
-  const changeTheme = (newTheme: ThemeColor) => {
-    setTheme(newTheme)
+  const changeColorTheme = (newTheme: ThemeColor) => {
+    setColorTheme(newTheme)
     localStorage.setItem(THEME_STORAGE_KEY, newTheme)
     document.documentElement.setAttribute('data-theme', newTheme)
   }
@@ -53,10 +53,10 @@ export function useTheme() {
   }
 
   return {
-    theme,
+    colorTheme,
     radius,
     mounted,
-    changeTheme,
+    changeColorTheme,
     changeRadius,
   }
 }

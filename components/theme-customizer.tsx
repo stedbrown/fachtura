@@ -1,6 +1,6 @@
 'use client'
 
-import { useTheme, type ThemeColor, type ThemeRadius } from '@/hooks/use-theme'
+import { useColorTheme, type ThemeColor, type ThemeRadius } from '@/hooks/use-theme'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Check } from 'lucide-react'
@@ -28,7 +28,7 @@ const radiusOptions: { name: string; value: ThemeRadius; description: string }[]
 ]
 
 export function ThemeCustomizer() {
-  const { theme, radius, mounted, changeTheme, changeRadius } = useTheme()
+  const { colorTheme, radius, mounted, changeColorTheme, changeRadius } = useColorTheme()
 
   if (!mounted) {
     return (
@@ -60,17 +60,17 @@ export function ThemeCustomizer() {
           {themes.map((t) => (
             <button
               key={t.value}
-              onClick={() => changeTheme(t.value)}
+              onClick={() => changeColorTheme(t.value)}
               className={cn(
                 'group relative flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-all hover:border-primary/50',
-                theme === t.value
+                colorTheme === t.value
                   ? 'border-primary bg-primary/5'
                   : 'border-border bg-background hover:bg-accent'
               )}
             >
               <div className={cn('h-10 w-10 rounded-md ring-2 ring-border', t.color)} />
               <span className="text-sm font-medium">{t.name}</span>
-              {theme === t.value && (
+              {colorTheme === t.value && (
                 <div className="absolute top-2 right-2">
                   <Check className="h-4 w-4 text-primary" />
                 </div>
