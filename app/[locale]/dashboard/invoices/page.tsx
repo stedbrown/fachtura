@@ -627,7 +627,7 @@ export default function InvoicesPage() {
                               onClick={() => confirmDelete(invoice.id)}
                               title={tCommon('delete')}
                             >
-                              <Trash2 className="h-4 w-4 text-red-600" />
+                              <Trash2 className="h-4 w-4" />
                             </Button>
                           </>
                         )}
@@ -647,7 +647,7 @@ export default function InvoicesPage() {
                               onClick={() => handlePermanentDelete(invoice.id)}
                               title={t('permanentDelete')}
                             >
-                              <Trash2 className="h-4 w-4 text-red-600" />
+                              <Trash2 className="h-4 w-4" />
                             </Button>
                           </>
                         )}
