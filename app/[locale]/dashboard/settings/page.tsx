@@ -226,7 +226,7 @@ export default function SettingsPage() {
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)}>
-        <Tabs defaultValue="company" className="space-y-6">
+        <Tabs defaultValue="company" className="space-y-6 max-w-5xl">
           <TabsList className="w-full max-w-5xl grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
             <TabsTrigger value="company" className="flex items-center gap-2 justify-center sm:justify-start text-xs sm:text-sm">
               <Building2 className="h-4 w-4" />
