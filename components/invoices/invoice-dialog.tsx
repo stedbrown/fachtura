@@ -268,20 +268,20 @@ export function InvoiceDialog({
 
         <SetupAlert />
 
-        <div className="space-y-6">
+        <div className="space-y-4">
           {/* General Info Section */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+          <div className="space-y-3">
+            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
               {t('form.generalInfo')}
             </h3>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="client" className="text-sm font-medium">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+              <div className="space-y-1.5 lg:col-span-2">
+                <Label htmlFor="client" className="text-xs font-medium">
                   {t('fields.client')} <span className="text-red-500">*</span>
                 </Label>
                 <Select value={clientId} onValueChange={setClientId}>
-                  <SelectTrigger className="h-10">
+                  <SelectTrigger className="h-9">
                     <SelectValue placeholder={t('form.selectClient')} />
                   </SelectTrigger>
                   <SelectContent>
@@ -293,10 +293,33 @@ export function InvoiceDialog({
                   </SelectContent>
                 </Select>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="status" className="text-sm font-medium">{tCommon('status')}</Label>
+              <div className="space-y-1.5">
+                <Label htmlFor="date" className="text-xs font-medium">{t('fields.date')}</Label>
+                <Input
+                  id="date"
+                  type="date"
+                  className="h-9"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="due_date" className="text-xs font-medium">{t('fields.dueDate')}</Label>
+                <Input
+                  id="due_date"
+                  type="date"
+                  className="h-9"
+                  value={dueDate}
+                  onChange={(e) => setDueDate(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+              <div className="space-y-1.5">
+                <Label htmlFor="status" className="text-xs font-medium">{tCommon('status')}</Label>
                 <Select value={status} onValueChange={(v: any) => setStatus(v)}>
-                  <SelectTrigger className="h-10">
+                  <SelectTrigger className="h-9">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -309,60 +332,34 @@ export function InvoiceDialog({
                 </Select>
               </div>
             </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="date" className="text-sm font-medium">{t('fields.date')}</Label>
-                <Input
-                  id="date"
-                  type="date"
-                  className="h-10"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="due_date" className="text-sm font-medium">{t('fields.dueDate')}</Label>
-                <Input
-                  id="due_date"
-                  type="date"
-                  className="h-10"
-                  value={dueDate}
-                  onChange={(e) => setDueDate(e.target.value)}
-                />
-              </div>
-            </div>
           </div>
 
           {/* Separator */}
-          <div className="border-t pt-4"></div>
+          <div className="border-t pt-3"></div>
 
           {/* Items Section */}
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                 {t('form.items')}
               </h3>
-              <Button type="button" variant="outline" size="sm" onClick={addItem}>
-                <Plus className="h-4 w-4 mr-2" />
+              <Button type="button" variant="outline" size="sm" onClick={addItem} className="h-8">
+                <Plus className="h-3.5 w-3.5 mr-1.5" />
                 {t('form.addItem')}
               </Button>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-2">
               {items.map((item, index) => (
-                <Card key={index} className="relative border-border/60 bg-card/50 backdrop-blur-sm">
-                  <CardHeader className="pb-3 pt-4 px-4 sm:px-6">
+                <Card key={index} className="relative border-border/60">
+                  <CardHeader className="pb-2 pt-3 px-3 sm:px-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="text-xs font-semibold">
+                        <Badge variant="outline" className="text-xs px-1.5 py-0">
                           #{index + 1}
                         </Badge>
-                        <span className="text-xs text-muted-foreground hidden sm:inline">
-                          {t('form.item')}
-                        </span>
                         {calculateLineTotal(item) > 0 && (
-                          <Badge variant="secondary" className="ml-2 text-xs font-medium">
+                          <Badge variant="secondary" className="text-xs font-medium px-2 py-0 tabular-nums">
                             CHF {calculateLineTotal(item).toFixed(2)}
                           </Badge>
                         )}
@@ -372,45 +369,45 @@ export function InvoiceDialog({
                           type="button"
                           variant="ghost"
                           size="sm"
-                          className="h-8 w-8 p-0 hover:bg-destructive/10"
+                          className="h-7 w-7 p-0 hover:bg-destructive/10"
                           onClick={() => removeItem(index)}
                         >
-                          <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                          <Trash2 className="h-3 w-3 text-destructive" />
                         </Button>
                       )}
                     </div>
                   </CardHeader>
-                  <CardContent className="space-y-3 px-4 sm:px-6 pb-4">
+                  <CardContent className="space-y-2.5 px-3 sm:px-4 pb-3">
                     <Tabs defaultValue="manual" className="w-full">
-                      <TabsList className="grid w-full grid-cols-2 h-9">
-                        <TabsTrigger value="manual" className="text-xs">
-                          <Edit3 className="h-3 w-3 mr-1.5" />
-                          Inserimento Manuale
+                      <TabsList className="grid w-full grid-cols-2 h-8">
+                        <TabsTrigger value="manual" className="text-xs py-1">
+                          <Edit3 className="h-3 w-3 mr-1" />
+                          Manuale
                         </TabsTrigger>
                         {products.length > 0 && (
-                          <TabsTrigger value="catalog" className="text-xs">
-                            <Package className="h-3 w-3 mr-1.5" />
-                            Dal Catalogo
+                          <TabsTrigger value="catalog" className="text-xs py-1">
+                            <Package className="h-3 w-3 mr-1" />
+                            Catalogo
                           </TabsTrigger>
                         )}
                       </TabsList>
 
-                      <TabsContent value="manual" className="space-y-3 mt-3">
-                        <div className="space-y-1.5">
+                      <TabsContent value="manual" className="space-y-2.5 mt-2.5">
+                        <div className="space-y-1">
                           <Label className="text-xs font-medium">
                             {t('form.description')} <span className="text-red-500">*</span>
                           </Label>
                           <Textarea
                             value={item.description}
                             onChange={(e) => updateItem(index, 'description', e.target.value)}
-                            className="resize-none text-sm min-h-[60px]"
+                            className="resize-none text-sm min-h-[50px]"
                             rows={2}
-                            placeholder="Es: Sviluppo sito web, Consulenza, Servizio..."
+                            placeholder="Es: Sviluppo sito web, Consulenza..."
                           />
                         </div>
 
-                        <div className="grid grid-cols-3 gap-3">
-                          <div className="space-y-1.5">
+                        <div className="grid grid-cols-[1fr_auto_auto_auto] gap-2">
+                          <div className="space-y-1">
                             <Label className="text-xs font-medium">
                               {t('form.quantity')} <span className="text-red-500">*</span>
                             </Label>
@@ -418,85 +415,89 @@ export function InvoiceDialog({
                               type="number"
                               min="0.01"
                               step="0.01"
-                              className="h-9 text-sm"
+                              className="h-8 text-sm w-full"
                               value={item.quantity}
                               onChange={(e) => updateItem(index, 'quantity', parseFloat(e.target.value) || 1)}
                               placeholder="1"
                             />
                           </div>
-                          <div className="space-y-1.5">
+                          <div className="space-y-1">
                             <Label className="text-xs font-medium">
-                              {t('form.unitPrice')} (CHF) <span className="text-red-500">*</span>
+                              {t('form.unitPrice')} <span className="text-red-500">*</span>
                             </Label>
                             <Input
                               type="number"
                               min="0"
                               step="0.01"
-                              className="h-9 text-sm"
+                              className="h-8 text-sm w-28 tabular-nums"
                               value={item.unit_price}
                               onChange={(e) => updateItem(index, 'unit_price', parseFloat(e.target.value) || 0)}
                               placeholder="0.00"
                             />
                           </div>
-                          <div className="space-y-1.5">
+                          <div className="space-y-1">
                             <Label className="text-xs font-medium">
-                              {t('form.taxRate')} (%)
+                              {t('form.taxRate')}
                             </Label>
                             <Input
                               type="number"
                               min="0"
                               max="100"
                               step="0.1"
-                              className="h-9 text-sm"
+                              className="h-8 text-sm w-20 tabular-nums"
                               value={item.tax_rate}
                               onChange={(e) => updateItem(index, 'tax_rate', parseFloat(e.target.value) || 0)}
                               placeholder="8.1"
                             />
                           </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs font-medium text-muted-foreground">
+                              Totale
+                            </Label>
+                            <div className="h-8 flex items-center px-2 text-sm font-medium tabular-nums bg-muted/50 rounded-md border">
+                              {calculateLineTotal(item).toFixed(2)}
+                            </div>
+                          </div>
                         </div>
                       </TabsContent>
 
                       {products.length > 0 && (
-                        <TabsContent value="catalog" className="space-y-3 mt-3">
-                          <div className="space-y-1.5">
+                        <TabsContent value="catalog" className="space-y-2 mt-2.5">
+                          <div className="space-y-1">
                             <Label className="text-xs font-medium">
-                              Seleziona un prodotto
+                              Seleziona prodotto
                             </Label>
                             <Select onValueChange={(v) => fillFromProduct(index, v)}>
-                              <SelectTrigger className="h-10 text-sm">
-                                <SelectValue placeholder="Cerca nel tuo catalogo prodotti..." />
+                              <SelectTrigger className="h-8 text-sm">
+                                <SelectValue placeholder="Cerca nel catalogo..." />
                               </SelectTrigger>
                               <SelectContent>
                                 {products.map((product) => (
                                   <SelectItem key={product.id} value={product.id}>
                                     <div className="flex items-center justify-between w-full gap-3">
-                                      <span className="font-medium">{product.name}</span>
-                                      <span className="text-muted-foreground text-xs">CHF {product.unit_price.toFixed(2)}</span>
+                                      <span className="font-medium text-sm">{product.name}</span>
+                                      <span className="text-muted-foreground text-xs tabular-nums">CHF {product.unit_price.toFixed(2)}</span>
                                     </div>
                                   </SelectItem>
                                 ))}
                               </SelectContent>
                             </Select>
-                            <p className="text-xs text-muted-foreground">
-                              Il prodotto selezionato compilerà automaticamente tutti i campi
-                            </p>
                           </div>
 
                           {/* Show filled fields preview */}
                           {item.description && (
-                            <div className="space-y-2 p-3 bg-muted/50 rounded-lg border">
-                              <p className="text-xs font-medium">Anteprima:</p>
-                              <div className="grid grid-cols-2 gap-2 text-xs">
+                            <div className="p-2 bg-muted/50 rounded-md border">
+                              <div className="grid grid-cols-4 gap-2 text-xs">
                                 <div>
-                                  <span className="text-muted-foreground">Descrizione:</span>
-                                  <p className="font-medium truncate">{item.description}</p>
+                                  <span className="text-muted-foreground">Desc:</span>
+                                  <p className="font-medium truncate text-xs">{item.description}</p>
                                 </div>
                                 <div>
                                   <span className="text-muted-foreground">Prezzo:</span>
-                                  <p className="font-medium">CHF {item.unit_price.toFixed(2)}</p>
+                                  <p className="font-medium tabular-nums">CHF {item.unit_price.toFixed(2)}</p>
                                 </div>
                                 <div>
-                                  <span className="text-muted-foreground">Quantità:</span>
+                                  <span className="text-muted-foreground">Qtà:</span>
                                   <p className="font-medium">{item.quantity}</p>
                                 </div>
                                 <div>
@@ -516,44 +517,47 @@ export function InvoiceDialog({
           </div>
 
           {/* Separator */}
-          <div className="border-t"></div>
+          <div className="border-t pt-3"></div>
 
-          {/* Totals Section */}
-          <Card className="border-primary/20 bg-primary/5">
-            <CardContent className="pt-5 pb-5">
-              <div className="space-y-3">
-                <div className="flex justify-between text-sm items-center">
-                  <span className="text-muted-foreground">{t('form.subtotal')}</span>
-                  <span className="font-semibold text-base">CHF {totals.subtotal.toFixed(2)}</span>
-                </div>
-                <div className="flex justify-between text-sm items-center">
-                  <span className="text-muted-foreground">{t('form.tax')}</span>
-                  <span className="font-semibold text-base">CHF {totals.totalTax.toFixed(2)}</span>
-                </div>
-                <div className="border-t border-primary/20 pt-3 flex justify-between items-center">
-                  <span className="text-base font-bold">{t('form.total')}</span>
-                  <span className="text-2xl font-bold text-primary">CHF {totals.total.toFixed(2)}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Totals and Notes Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-4">
+            {/* Notes Section */}
+            <div className="space-y-1.5 order-2 lg:order-1">
+              <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                {tCommon('notes')}
+              </Label>
+              <Textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                rows={3}
+                className="resize-none text-sm"
+                placeholder={t('form.notesPlaceholder')}
+              />
+            </div>
 
-          {/* Notes Section */}
-          <div className="space-y-2">
-            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              {tCommon('notes')}
-            </Label>
-            <Textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={3}
-              className="resize-none text-sm"
-              placeholder={t('form.notesPlaceholder')}
-            />
+            {/* Totals Section */}
+            <Card className="border-primary/20 bg-primary/5 order-1 lg:order-2 lg:min-w-[320px]">
+              <CardContent className="pt-3 pb-3">
+                <div className="space-y-2">
+                  <div className="flex justify-between text-xs items-center">
+                    <span className="text-muted-foreground">{t('form.subtotal')}</span>
+                    <span className="font-semibold text-sm tabular-nums">CHF {totals.subtotal.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-xs items-center">
+                    <span className="text-muted-foreground">{t('form.tax')}</span>
+                    <span className="font-semibold text-sm tabular-nums">CHF {totals.totalTax.toFixed(2)}</span>
+                  </div>
+                  <div className="border-t border-primary/20 pt-2 flex justify-between items-center">
+                    <span className="text-sm font-bold">{t('form.total')}</span>
+                    <span className="text-xl font-bold text-primary tabular-nums">CHF {totals.total.toFixed(2)}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
 
-        <DialogFooter className="gap-2 sm:gap-0 flex-col-reverse sm:flex-row pt-4 border-t sm:justify-end">
+        <DialogFooter className="gap-2 sm:gap-0 flex-col-reverse sm:flex-row pt-3 border-t sm:justify-end">
           <Button
             type="button"
             variant="outline"
