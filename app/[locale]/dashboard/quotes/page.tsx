@@ -29,6 +29,7 @@ import { toast } from 'sonner'
 import { useSubscription } from '@/hooks/use-subscription'
 import { SubscriptionUpgradeDialog } from '@/components/subscription-upgrade-dialog'
 import { QuoteDialog } from '@/components/quotes/quote-dialog'
+import { QuotePreview } from '@/components/quotes/quote-preview'
 
 const localeMap: Record<string, Locale> = {
   it: it,
@@ -78,6 +79,8 @@ export default function QuotesPage() {
   })
   const [quoteDialogOpen, setQuoteDialogOpen] = useState(false)
   const [editingQuote, setEditingQuote] = useState<QuoteWithClient | null>(null)
+  const [previewQuote, setPreviewQuote] = useState<QuoteWithClient | null>(null)
+  const [previewOpen, setPreviewOpen] = useState(false)
 
   // Column visibility configuration
   const quoteColumns: ColumnConfig[] = [
@@ -529,6 +532,11 @@ export default function QuotesPage() {
                 {sortedQuotes.map((quote) => (
                   <TableRow 
                     key={quote.id}
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => {
+                      setPreviewQuote(quote)
+                      setPreviewOpen(true)
+                    }}
                   >
                     <TableCell className={getColumnClass('quote_number', 'font-medium text-xs md:text-sm')}>
                       {quote.quote_number}
@@ -545,14 +553,15 @@ export default function QuotesPage() {
                         {t(`status.${quote.status}`)}
                       </Badge>
                     </TableCell>
-                    <TableCell className={getColumnClass('actions', 'text-right')}>
+                    <TableCell className={getColumnClass('actions', 'text-right')} onClick={(e) => e.stopPropagation()}>
                       <div className="flex justify-end gap-2">
                         {!showArchived && (
                           <>
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => {
+                              onClick={(e) => {
+                                e.stopPropagation()
                                 setEditingQuote(quote)
                                 setQuoteDialogOpen(true)
                               }}
@@ -640,6 +649,29 @@ export default function QuotesPage() {
           setQuoteDialogOpen(false)
           setEditingQuote(null)
           loadQuotes()
+        }}
+      />
+
+      {/* Quote Preview */}
+      <QuotePreview
+        open={previewOpen}
+        onOpenChange={(open) => {
+          setPreviewOpen(open)
+          if (!open) setPreviewQuote(null)
+        }}
+        quote={previewQuote}
+        locale={locale}
+        onEdit={() => {
+          if (previewQuote) {
+            setPreviewOpen(false)
+            setEditingQuote(previewQuote)
+            setQuoteDialogOpen(true)
+          }
+        }}
+        onDownload={() => {
+          if (previewQuote) {
+            handleDownloadPDF(previewQuote.id, previewQuote.quote_number)
+          }
         }}
       />
     </div>

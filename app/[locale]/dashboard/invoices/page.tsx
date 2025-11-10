@@ -29,6 +29,7 @@ import { toast } from 'sonner'
 import { useSubscription } from '@/hooks/use-subscription'
 import { SubscriptionUpgradeDialog } from '@/components/subscription-upgrade-dialog'
 import { InvoiceDialog } from '@/components/invoices/invoice-dialog'
+import { InvoicePreview } from '@/components/invoices/invoice-preview'
 
 const localeMap: Record<string, Locale> = {
   it: it,
@@ -79,6 +80,8 @@ export default function InvoicesPage() {
   })
   const [invoiceDialogOpen, setInvoiceDialogOpen] = useState(false)
   const [editingInvoice, setEditingInvoice] = useState<InvoiceWithClient | null>(null)
+  const [previewInvoice, setPreviewInvoice] = useState<InvoiceWithClient | null>(null)
+  const [previewOpen, setPreviewOpen] = useState(false)
 
   // Column visibility configuration
   const invoiceColumns: ColumnConfig[] = [
@@ -567,6 +570,11 @@ export default function InvoicesPage() {
                 {sortedInvoices.map((invoice) => (
                   <TableRow 
                     key={invoice.id}
+                    className="cursor-pointer hover:bg-muted/50"
+                    onClick={() => {
+                      setPreviewInvoice(invoice)
+                      setPreviewOpen(true)
+                    }}
                   >
                     <TableCell className={getColumnClass('invoice_number', 'font-medium text-xs md:text-sm')}>
                       {invoice.invoice_number}
@@ -590,14 +598,17 @@ export default function InvoicesPage() {
                         {t(`status.${invoice.status}`)}
                       </Badge>
                     </TableCell>
-                    <TableCell className={getColumnClass('actions', 'text-right')}>
+                    <TableCell className={getColumnClass('actions', 'text-right')} onClick={(e) => e.stopPropagation()}>
                       <div className="flex justify-end gap-2">
                         {!showArchived && (
                           <>
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => handleEditInvoice(invoice)}
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleEditInvoice(invoice)
+                              }}
                               className="h-8 w-8 p-0"
                             >
                               <Edit3 className="h-4 w-4" />
@@ -682,6 +693,29 @@ export default function InvoicesPage() {
           setInvoiceDialogOpen(false)
           setEditingInvoice(null)
           updateOverdueInvoicesAndLoad()
+        }}
+      />
+
+      {/* Invoice Preview */}
+      <InvoicePreview
+        open={previewOpen}
+        onOpenChange={(open) => {
+          setPreviewOpen(open)
+          if (!open) setPreviewInvoice(null)
+        }}
+        invoice={previewInvoice}
+        locale={locale}
+        onEdit={() => {
+          if (previewInvoice) {
+            setPreviewOpen(false)
+            setEditingInvoice(previewInvoice)
+            setInvoiceDialogOpen(true)
+          }
+        }}
+        onDownload={() => {
+          if (previewInvoice) {
+            handleDownloadPDF(previewInvoice.id)
+          }
         }}
       />
     </div>
