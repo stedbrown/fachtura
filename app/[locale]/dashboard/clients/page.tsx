@@ -19,6 +19,7 @@ import { DeleteDialog } from '@/components/delete-dialog'
 import { ClientFilters, type ClientFilterState } from '@/components/client-filters'
 import { exportFormattedToCSV, exportFormattedToExcel } from '@/lib/export-utils'
 import { SimpleColumnToggle, useColumnVisibility, type ColumnConfig } from '@/components/simple-column-toggle'
+import { SortableHeader, useSorting } from '@/components/sortable-header'
 import type { Client } from '@/lib/types/database'
 import type { ClientInput } from '@/lib/validations/client'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -345,6 +346,13 @@ export default function ClientsPage() {
     return result
   }, [clients, filters])
 
+  // Sorting
+  const { sortedData: sortedClients, sortKey, sortDirection, handleSort } = useSorting(
+    filteredClients,
+    'name', // default sort by name
+    'asc'
+  )
+
   // Export function
   const handleExport = (exportFormat: 'csv' | 'excel') => {
     const dataToExport = filteredClients.map((client) => ({
@@ -437,7 +445,7 @@ export default function ClientsPage() {
             <div className="text-center py-8 md:py-12 text-muted-foreground">
               {tCommon('loading')}...
             </div>
-          ) : filteredClients.length === 0 ? (
+          ) : sortedClients.length === 0 ? (
             <div className="text-center py-8 md:py-12 text-muted-foreground">
               {clients.length === 0 ? t('noClients') : tCommon('noResults')}
             </div>
@@ -447,15 +455,47 @@ export default function ClientsPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className={`text-xs md:text-sm ${getColumnClass('name')}`}>{t('fields.name')}</TableHead>
-                      <TableHead className={`hidden md:table-cell text-xs md:text-sm ${getColumnClass('email')}`}>{t('fields.email')}</TableHead>
-                      <TableHead className={`hidden lg:table-cell text-xs md:text-sm ${getColumnClass('phone')}`}>{t('fields.phone')}</TableHead>
-                      <TableHead className={`hidden md:table-cell text-xs md:text-sm ${getColumnClass('city')}`}>{t('fields.city')}</TableHead>
-                      <TableHead className={`text-right text-xs md:text-sm ${getColumnClass('actions')}`}>{tCommon('actions')}</TableHead>
+                      <TableHead className={getColumnClass('name')}>
+                        <SortableHeader
+                          label={t('fields.name')}
+                          sortKey="name"
+                          currentSortKey={sortKey}
+                          currentDirection={sortDirection}
+                          onSort={handleSort}
+                        />
+                      </TableHead>
+                      <TableHead className={`hidden md:table-cell ${getColumnClass('email')}`}>
+                        <SortableHeader
+                          label={t('fields.email')}
+                          sortKey="email"
+                          currentSortKey={sortKey}
+                          currentDirection={sortDirection}
+                          onSort={handleSort}
+                        />
+                      </TableHead>
+                      <TableHead className={`hidden lg:table-cell ${getColumnClass('phone')}`}>
+                        <SortableHeader
+                          label={t('fields.phone')}
+                          sortKey="phone"
+                          currentSortKey={sortKey}
+                          currentDirection={sortDirection}
+                          onSort={handleSort}
+                        />
+                      </TableHead>
+                      <TableHead className={`hidden md:table-cell ${getColumnClass('city')}`}>
+                        <SortableHeader
+                          label={t('fields.city')}
+                          sortKey="city"
+                          currentSortKey={sortKey}
+                          currentDirection={sortDirection}
+                          onSort={handleSort}
+                        />
+                      </TableHead>
+                      <TableHead className={`text-right ${getColumnClass('actions')}`}>{tCommon('actions')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                {filteredClients.map((client) => (
+                {sortedClients.map((client) => (
                   <TableRow 
                     key={client.id}
                     className="cursor-pointer hover:bg-muted/50"
