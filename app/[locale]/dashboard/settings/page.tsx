@@ -15,7 +15,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import Image from 'next/image'
-import { Upload, X, Building2, FileText, Receipt } from 'lucide-react'
+import { Upload, X, Building2, FileText, Receipt, Palette } from 'lucide-react'
+import { ThemeCustomizer } from '@/components/theme-customizer'
 import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 
@@ -226,10 +227,14 @@ export default function SettingsPage() {
 
       <form onSubmit={handleSubmit(onSubmit)}>
         <Tabs defaultValue="company" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 max-w-2xl">
+          <TabsList className="grid w-full grid-cols-5 max-w-3xl">
             <TabsTrigger value="company" className="flex items-center gap-2">
               <Building2 className="h-4 w-4" />
               <span className="hidden sm:inline">Azienda</span>
+            </TabsTrigger>
+            <TabsTrigger value="appearance" className="flex items-center gap-2">
+              <Palette className="h-4 w-4" />
+              <span className="hidden sm:inline">Aspetto</span>
             </TabsTrigger>
             <TabsTrigger value="quotes" className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
@@ -360,6 +365,21 @@ export default function SettingsPage() {
                   <Label htmlFor="website">{t('fields.website')}</Label>
                   <Input id="website" {...register('website')} placeholder="https://..." />
                 </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Appearance Tab */}
+          <TabsContent value="appearance">
+            <Card className="max-w-2xl">
+              <CardHeader>
+                <CardTitle>Personalizzazione Aspetto</CardTitle>
+                <CardDescription>
+                  Scegli il tema e lo stile dell'applicazione
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ThemeCustomizer />
               </CardContent>
             </Card>
           </TabsContent>
