@@ -304,7 +304,7 @@ export default function OrdersPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className={`text-xs md:text-sm ${getColumnClass('order_number')}`}>
+                      <TableHead className={getColumnClass('order_number', 'text-xs md:text-sm')}>
                         <SortableHeader
                           label={t('orderNumber')}
                           sortKey="order_number"
@@ -313,7 +313,7 @@ export default function OrdersPage() {
                           onSort={handleSort}
                         />
                       </TableHead>
-                      <TableHead className={`text-xs md:text-sm ${getColumnClass('supplier')}`}>
+                      <TableHead className={getColumnClass('supplier', 'text-xs md:text-sm')}>
                         <SortableHeader
                           label={t('supplier')}
                           sortKey="supplier.name"
@@ -322,7 +322,7 @@ export default function OrdersPage() {
                           onSort={handleSort}
                         />
                       </TableHead>
-                      <TableHead className={`hidden md:table-cell text-xs md:text-sm ${getColumnClass('date')}`}>
+                      <TableHead className={getColumnClass('date', 'hidden md:table-cell text-xs md:text-sm')}>
                         <SortableHeader
                           label={t('orderDate')}
                           sortKey="date"
@@ -331,7 +331,7 @@ export default function OrdersPage() {
                           onSort={handleSort}
                         />
                       </TableHead>
-                      <TableHead className={`hidden lg:table-cell text-xs md:text-sm ${getColumnClass('delivery_date')}`}>
+                      <TableHead className={getColumnClass('delivery_date', 'hidden lg:table-cell text-xs md:text-sm')}>
                         <SortableHeader
                           label={t('deliveryDate')}
                           sortKey="expected_delivery_date"
@@ -340,7 +340,7 @@ export default function OrdersPage() {
                           onSort={handleSort}
                         />
                       </TableHead>
-                      <TableHead className={`text-xs md:text-sm ${getColumnClass('status')}`}>
+                      <TableHead className={getColumnClass('status', 'text-xs md:text-sm')}>
                         <SortableHeader
                           label={tCommon('status')}
                           sortKey="status"
@@ -349,7 +349,7 @@ export default function OrdersPage() {
                           onSort={handleSort}
                         />
                       </TableHead>
-                      <TableHead className={`text-right text-xs md:text-sm ${getColumnClass('total')}`}>
+                      <TableHead className={getColumnClass('total', 'text-right text-xs md:text-sm')}>
                         <SortableHeader
                           label={t('totalAmount')}
                           sortKey="total"
@@ -358,32 +358,32 @@ export default function OrdersPage() {
                           onSort={handleSort}
                         />
                       </TableHead>
-                      <TableHead className={`text-right text-xs md:text-sm ${getColumnClass('actions')}`}>{tCommon('actions')}</TableHead>
+                      <TableHead className={getColumnClass('actions', 'text-right text-xs md:text-sm')}>{tCommon('actions')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {sortedOrders.map((order) => (
                       <TableRow key={order.id}>
-                        <TableCell className={`font-medium text-xs md:text-sm ${getColumnClass('order_number')}`}>{order.order_number}</TableCell>
-                        <TableCell className={`text-xs md:text-sm ${getColumnClass('supplier')}`}>{order.supplier?.name || '-'}</TableCell>
-                        <TableCell className={`hidden md:table-cell text-xs md:text-sm ${getColumnClass('date')}`}>
+                        <TableCell className={getColumnClass('order_number', 'font-medium text-xs md:text-sm')}>{order.order_number}</TableCell>
+                        <TableCell className={getColumnClass('supplier', 'text-xs md:text-sm')}>{order.supplier?.name || '-'}</TableCell>
+                        <TableCell className={getColumnClass('date', 'hidden md:table-cell text-xs md:text-sm')}>
                           {format(new Date(order.date), 'dd MMM yyyy', { locale: dateLocale })}
                         </TableCell>
-                        <TableCell className={`hidden lg:table-cell text-xs md:text-sm ${getColumnClass('delivery_date')}`}>
+                        <TableCell className={getColumnClass('delivery_date', 'hidden lg:table-cell text-xs md:text-sm')}>
                           {order.expected_delivery_date 
                             ? format(new Date(order.expected_delivery_date), 'dd MMM yyyy', { locale: dateLocale })
                             : '-'
                           }
                         </TableCell>
-                        <TableCell className={getColumnClass('status')}>
+                        <TableCell className={getColumnClass('status', 'text-xs md:text-sm')}>
                           <Badge variant={getOrderStatusVariant(order.status)} className="text-xs">
                             {tStatus(order.status)}
                           </Badge>
                         </TableCell>
-                        <TableCell className={`text-right font-medium text-xs md:text-sm ${getColumnClass('total')}`}>
+                        <TableCell className={getColumnClass('total', 'text-right font-medium text-xs md:text-sm')}>
                           CHF {Number(order.total).toLocaleString('it-CH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </TableCell>
-                        <TableCell className={`text-right ${getColumnClass('actions')}`}>
+                        <TableCell className={getColumnClass('actions', 'text-right')}>
                           <div className="flex items-center justify-end gap-2">
                             {showArchived ? (
                               <Button

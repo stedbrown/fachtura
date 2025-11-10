@@ -340,7 +340,7 @@ export default function SuppliersPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className={`text-xs md:text-sm ${getColumnClass('name')}`}>
+                      <TableHead className={getColumnClass('name', 'text-xs md:text-sm')}>
                         <SortableHeader
                           label={t('fields.name')}
                           sortKey="name"
@@ -349,7 +349,7 @@ export default function SuppliersPage() {
                           onSort={handleSort}
                         />
                       </TableHead>
-                      <TableHead className={`hidden md:table-cell text-xs md:text-sm ${getColumnClass('contact')}`}>
+                      <TableHead className={getColumnClass('contact', 'hidden md:table-cell text-xs md:text-sm')}>
                         <SortableHeader
                           label={t('fields.contact')}
                           sortKey="contact_person"
@@ -358,7 +358,7 @@ export default function SuppliersPage() {
                           onSort={handleSort}
                         />
                       </TableHead>
-                      <TableHead className={`hidden lg:table-cell text-xs md:text-sm ${getColumnClass('email')}`}>
+                      <TableHead className={getColumnClass('email', 'hidden lg:table-cell text-xs md:text-sm')}>
                         <SortableHeader
                           label={t('fields.email')}
                           sortKey="email"
@@ -367,7 +367,7 @@ export default function SuppliersPage() {
                           onSort={handleSort}
                         />
                       </TableHead>
-                      <TableHead className={`hidden lg:table-cell text-xs md:text-sm ${getColumnClass('phone')}`}>
+                      <TableHead className={getColumnClass('phone', 'hidden lg:table-cell text-xs md:text-sm')}>
                         <SortableHeader
                           label={t('fields.phone')}
                           sortKey="phone"
@@ -376,7 +376,7 @@ export default function SuppliersPage() {
                           onSort={handleSort}
                         />
                       </TableHead>
-                      <TableHead className={`text-right text-xs md:text-sm ${getColumnClass('actions')}`}>{tCommon('actions')}</TableHead>
+                      <TableHead className={getColumnClass('actions', 'text-right text-xs md:text-sm')}>{tCommon('actions')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -386,13 +386,13 @@ export default function SuppliersPage() {
                         className="cursor-pointer hover:bg-muted/50"
                         onClick={() => handleRowClick(supplier)}
                       >
-                        <TableCell className={`font-medium text-xs md:text-sm ${getColumnClass('name')}`}>
+                        <TableCell className={getColumnClass('name', 'font-medium text-xs md:text-sm')}>
                           {supplier.name}
                         </TableCell>
-                        <TableCell className={`hidden md:table-cell text-xs md:text-sm ${getColumnClass('contact')}`}>{supplier.contact_person || '-'}</TableCell>
-                        <TableCell className={`hidden lg:table-cell text-xs md:text-sm ${getColumnClass('email')}`}>{supplier.email || '-'}</TableCell>
-                        <TableCell className={`hidden lg:table-cell text-xs md:text-sm ${getColumnClass('phone')}`}>{supplier.phone || '-'}</TableCell>
-                        <TableCell className={`text-right ${getColumnClass('actions')}`} onClick={(e) => e.stopPropagation()}>
+                        <TableCell className={getColumnClass('contact', 'hidden md:table-cell text-xs md:text-sm')}>{supplier.contact_person || '-'}</TableCell>
+                        <TableCell className={getColumnClass('email', 'hidden lg:table-cell text-xs md:text-sm')}>{supplier.email || '-'}</TableCell>
+                        <TableCell className={getColumnClass('phone', 'hidden lg:table-cell text-xs md:text-sm')}>{supplier.phone || '-'}</TableCell>
+                        <TableCell className={getColumnClass('actions', 'text-right')} onClick={(e) => e.stopPropagation()}>
                           <div className="flex justify-end gap-2">
                             {!showArchived && (
                               <>

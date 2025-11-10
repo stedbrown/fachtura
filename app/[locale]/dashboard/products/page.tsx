@@ -354,7 +354,7 @@ export default function ProductsPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className={`text-xs md:text-sm ${getColumnClass('sku')}`}>
+                      <TableHead className={getColumnClass('sku', 'text-xs md:text-sm')}>
                         <SortableHeader
                           label={t('sku') || 'SKU'}
                           sortKey="sku"
@@ -363,7 +363,7 @@ export default function ProductsPage() {
                           onSort={handleSort}
                         />
                       </TableHead>
-                      <TableHead className={`text-xs md:text-sm ${getColumnClass('name')}`}>
+                      <TableHead className={getColumnClass('name', 'text-xs md:text-sm')}>
                         <SortableHeader
                           label={t('name')}
                           sortKey="name"
@@ -372,7 +372,7 @@ export default function ProductsPage() {
                           onSort={handleSort}
                         />
                       </TableHead>
-                      <TableHead className={`hidden md:table-cell text-xs md:text-sm ${getColumnClass('category')}`}>
+                      <TableHead className={getColumnClass('category', 'hidden md:table-cell text-xs md:text-sm')}>
                         <SortableHeader
                           label={t('category')}
                           sortKey="category"
@@ -381,7 +381,7 @@ export default function ProductsPage() {
                           onSort={handleSort}
                         />
                       </TableHead>
-                      <TableHead className={`text-right text-xs md:text-sm ${getColumnClass('price')}`}>
+                      <TableHead className={getColumnClass('price', 'text-right text-xs md:text-sm')}>
                         <SortableHeader
                           label={t('price')}
                           sortKey="unit_price"
@@ -390,7 +390,7 @@ export default function ProductsPage() {
                           onSort={handleSort}
                         />
                       </TableHead>
-                      <TableHead className={`hidden sm:table-cell text-right text-xs md:text-sm ${getColumnClass('stock')}`}>
+                      <TableHead className={getColumnClass('stock', 'hidden sm:table-cell text-right text-xs md:text-sm')}>
                         <SortableHeader
                           label={t('stock') || 'Stock'}
                           sortKey="stock_quantity"
@@ -399,7 +399,7 @@ export default function ProductsPage() {
                           onSort={handleSort}
                         />
                       </TableHead>
-                      <TableHead className={`text-xs md:text-sm ${getColumnClass('status')}`}>
+                      <TableHead className={getColumnClass('status', 'text-xs md:text-sm')}>
                         <SortableHeader
                           label={t('status')}
                           sortKey="is_active"
@@ -408,14 +408,14 @@ export default function ProductsPage() {
                           onSort={handleSort}
                         />
                       </TableHead>
-                      <TableHead className={`text-right text-xs md:text-sm ${getColumnClass('actions')}`}>{tCommon('actions')}</TableHead>
+                      <TableHead className={getColumnClass('actions', 'text-right text-xs md:text-sm')}>{tCommon('actions')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {sortedProducts.map((product) => (
                       <TableRow key={product.id}>
-                        <TableCell className={`font-mono text-xs md:text-sm ${getColumnClass('sku')}`}>{product.sku || '-'}</TableCell>
-                        <TableCell className={`font-medium text-xs md:text-sm ${getColumnClass('name')}`}>
+                        <TableCell className={getColumnClass('sku', 'font-mono text-xs md:text-sm')}>{product.sku || '-'}</TableCell>
+                        <TableCell className={getColumnClass('name', 'font-medium text-xs md:text-sm')}>
                           {product.name}
                           {product.description && (
                             <p className="text-xs text-muted-foreground truncate max-w-[200px] sm:max-w-[300px]">
@@ -423,11 +423,11 @@ export default function ProductsPage() {
                             </p>
                           )}
                         </TableCell>
-                        <TableCell className={`hidden md:table-cell text-xs md:text-sm ${getColumnClass('category')}`}>{product.category || '-'}</TableCell>
-                        <TableCell className={`text-right text-xs md:text-sm ${getColumnClass('price')}`}>
+                        <TableCell className={getColumnClass('category', 'hidden md:table-cell text-xs md:text-sm')}>{product.category || '-'}</TableCell>
+                        <TableCell className={getColumnClass('price', 'text-right text-xs md:text-sm')}>
                           CHF {Number(product.unit_price).toLocaleString('it-CH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </TableCell>
-                        <TableCell className={`hidden sm:table-cell text-right text-xs md:text-sm ${getColumnClass('stock')}`}>
+                        <TableCell className={getColumnClass('stock', 'hidden sm:table-cell text-right text-xs md:text-sm')}>
                           {product.track_inventory ? (
                             <span className={product.stock_quantity && product.stock_quantity <= (product.low_stock_threshold || 10) ? 'text-destructive font-medium' : ''}>
                               {product.stock_quantity || 0}
@@ -436,12 +436,12 @@ export default function ProductsPage() {
                             <span className="text-muted-foreground text-xs">{t('notTracked')}</span>
                           )}
                         </TableCell>
-                        <TableCell className={getColumnClass('status')}>
+                        <TableCell className={getColumnClass('status', 'text-xs md:text-sm')}>
                           <Badge variant={product.is_active ? 'default' : 'secondary'} className="text-xs">
                             {product.is_active ? t('active') : t('inactive')}
                           </Badge>
                         </TableCell>
-                        <TableCell className={`text-right ${getColumnClass('actions')}`}>
+                        <TableCell className={getColumnClass('actions', 'text-right')}>
                           <div className="flex items-center justify-end gap-2">
                             {showArchived ? (
                               <Button

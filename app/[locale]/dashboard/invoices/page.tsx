@@ -498,7 +498,7 @@ export default function InvoicesPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className={`text-xs md:text-sm ${getColumnClass('invoice_number')}`}>
+                      <TableHead className={getColumnClass('invoice_number', 'text-xs md:text-sm')}>
                         <SortableHeader
                           label={t('fields.invoiceNumber')}
                           sortKey="invoice_number"
@@ -507,7 +507,7 @@ export default function InvoicesPage() {
                           onSort={handleSort}
                         />
                       </TableHead>
-                      <TableHead className={`text-xs md:text-sm ${getColumnClass('client')}`}>
+                      <TableHead className={getColumnClass('client', 'text-xs md:text-sm')}>
                         <SortableHeader
                           label={t('fields.client')}
                           sortKey="client.name"
@@ -516,7 +516,7 @@ export default function InvoicesPage() {
                           onSort={handleSort}
                         />
                       </TableHead>
-                      <TableHead className={`hidden md:table-cell text-xs md:text-sm ${getColumnClass('date')}`}>
+                      <TableHead className={getColumnClass('date', 'hidden md:table-cell text-xs md:text-sm')}>
                         <SortableHeader
                           label={t('fields.date')}
                           sortKey="date"
@@ -525,7 +525,7 @@ export default function InvoicesPage() {
                           onSort={handleSort}
                         />
                       </TableHead>
-                      <TableHead className={`hidden lg:table-cell text-xs md:text-sm ${getColumnClass('due_date')}`}>
+                      <TableHead className={getColumnClass('due_date', 'hidden lg:table-cell text-xs md:text-sm')}>
                         <SortableHeader
                           label={t('fields.dueDate')}
                           sortKey="due_date"
@@ -534,7 +534,7 @@ export default function InvoicesPage() {
                           onSort={handleSort}
                         />
                       </TableHead>
-                      <TableHead className={`text-right text-xs md:text-sm ${getColumnClass('total')}`}>
+                      <TableHead className={getColumnClass('total', 'text-right text-xs md:text-sm')}>
                         <SortableHeader
                           label={tCommon('total')}
                           sortKey="total"
@@ -543,7 +543,7 @@ export default function InvoicesPage() {
                           onSort={handleSort}
                         />
                       </TableHead>
-                      <TableHead className={`text-xs md:text-sm ${getColumnClass('status')}`}>
+                      <TableHead className={getColumnClass('status', 'text-xs md:text-sm')}>
                         <SortableHeader
                           label={tCommon('status')}
                           sortKey="status"
@@ -552,7 +552,7 @@ export default function InvoicesPage() {
                           onSort={handleSort}
                         />
                       </TableHead>
-                      <TableHead className={`text-right text-xs md:text-sm ${getColumnClass('actions')}`}>{tCommon('actions')}</TableHead>
+                      <TableHead className={getColumnClass('actions', 'text-right text-xs md:text-sm')}>{tCommon('actions')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -562,29 +562,29 @@ export default function InvoicesPage() {
                     className="cursor-pointer hover:bg-muted/50"
                     onClick={() => router.push(`/${locale}/dashboard/invoices/${invoice.id}`)}
                   >
-                    <TableCell className={`font-medium text-xs md:text-sm ${getColumnClass('invoice_number')}`}>
+                    <TableCell className={getColumnClass('invoice_number', 'font-medium text-xs md:text-sm')}>
                       {invoice.invoice_number}
                     </TableCell>
-                    <TableCell className={`text-xs md:text-sm ${getColumnClass('client')}`}>{invoice.client.name}</TableCell>
-                    <TableCell className={`hidden md:table-cell text-xs md:text-sm ${getColumnClass('date')}`}>
+                    <TableCell className={getColumnClass('client', 'text-xs md:text-sm')}>{invoice.client.name}</TableCell>
+                    <TableCell className={getColumnClass('date', 'hidden md:table-cell text-xs md:text-sm')}>
                       {format(new Date(invoice.date), 'dd MMM yyyy', {
                         locale: localeMap[locale] || enUS,
                       })}
                     </TableCell>
-                    <TableCell className={`hidden lg:table-cell text-xs md:text-sm ${getColumnClass('due_date')}`}>
+                    <TableCell className={getColumnClass('due_date', 'hidden lg:table-cell text-xs md:text-sm')}>
                       {invoice.due_date
                         ? format(new Date(invoice.due_date), 'dd MMM yyyy', {
                             locale: localeMap[locale] || enUS,
                           })
                         : '-'}
                     </TableCell>
-                    <TableCell className={`text-right font-medium text-xs md:text-sm ${getColumnClass('total')}`}>CHF {invoice.total.toFixed(2)}</TableCell>
-                    <TableCell className={getColumnClass('status')}>
+                    <TableCell className={getColumnClass('total', 'text-right font-medium text-xs md:text-sm')}>CHF {invoice.total.toFixed(2)}</TableCell>
+                    <TableCell className={getColumnClass('status', 'text-xs md:text-sm')}>
                       <Badge variant={getInvoiceStatusVariant(invoice.status)} className="text-xs">
                         {t(`status.${invoice.status}`)}
                       </Badge>
                     </TableCell>
-                    <TableCell className={`text-right ${getColumnClass('actions')}`} onClick={(e) => e.stopPropagation()}>
+                    <TableCell className={getColumnClass('actions', 'text-right')} onClick={(e) => e.stopPropagation()}>
                       <div className="flex justify-end gap-2">
                         {!showArchived && (
                           <>

@@ -56,10 +56,13 @@ export function useColumnVisibility(initialColumns: ColumnConfig[], storageKey?:
     }))
   }
 
-  const getColumnClass = (columnKey: string) => {
-    // If column is explicitly hidden, return 'hidden'
-    // Otherwise return empty string (visible)
-    return columnVisibility[columnKey] === false ? 'hidden' : ''
+  const getColumnClass = (columnKey: string, baseClasses: string = '') => {
+    // If column is explicitly hidden by toggle, force hidden
+    if (columnVisibility[columnKey] === false) {
+      return '!hidden'
+    }
+    // Otherwise return base classes (like responsive classes)
+    return baseClasses
   }
 
   const isColumnVisible = (columnKey: string) => {

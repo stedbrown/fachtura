@@ -474,7 +474,7 @@ export default function QuotesPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className={`text-xs md:text-sm ${getColumnClass('quote_number')}`}>
+                      <TableHead className={getColumnClass('quote_number', 'text-xs md:text-sm')}>
                         <SortableHeader
                           label={t('fields.quoteNumber')}
                           sortKey="quote_number"
@@ -483,7 +483,7 @@ export default function QuotesPage() {
                           onSort={handleSort}
                         />
                       </TableHead>
-                      <TableHead className={`text-xs md:text-sm ${getColumnClass('client')}`}>
+                      <TableHead className={getColumnClass('client', 'text-xs md:text-sm')}>
                         <SortableHeader
                           label={t('fields.client')}
                           sortKey="client.name"
@@ -492,7 +492,7 @@ export default function QuotesPage() {
                           onSort={handleSort}
                         />
                       </TableHead>
-                      <TableHead className={`hidden md:table-cell text-xs md:text-sm ${getColumnClass('date')}`}>
+                      <TableHead className={getColumnClass('date', 'hidden md:table-cell text-xs md:text-sm')}>
                         <SortableHeader
                           label={tCommon('date')}
                           sortKey="date"
@@ -501,7 +501,7 @@ export default function QuotesPage() {
                           onSort={handleSort}
                         />
                       </TableHead>
-                      <TableHead className={`text-right text-xs md:text-sm ${getColumnClass('total')}`}>
+                      <TableHead className={getColumnClass('total', 'text-right text-xs md:text-sm')}>
                         <SortableHeader
                           label={tCommon('total')}
                           sortKey="total"
@@ -510,7 +510,7 @@ export default function QuotesPage() {
                           onSort={handleSort}
                         />
                       </TableHead>
-                      <TableHead className={`text-xs md:text-sm ${getColumnClass('status')}`}>
+                      <TableHead className={getColumnClass('status', 'text-xs md:text-sm')}>
                         <SortableHeader
                           label={tCommon('status')}
                           sortKey="status"
@@ -519,7 +519,7 @@ export default function QuotesPage() {
                           onSort={handleSort}
                         />
                       </TableHead>
-                      <TableHead className={`text-right text-xs md:text-sm ${getColumnClass('actions')}`}>{tCommon('actions')}</TableHead>
+                      <TableHead className={getColumnClass('actions', 'text-right text-xs md:text-sm')}>{tCommon('actions')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -529,22 +529,22 @@ export default function QuotesPage() {
                     className="cursor-pointer hover:bg-muted/50"
                     onClick={() => router.push(`/${locale}/dashboard/quotes/${quote.id}`)}
                   >
-                    <TableCell className={`font-medium text-xs md:text-sm ${getColumnClass('quote_number')}`}>
+                    <TableCell className={getColumnClass('quote_number', 'font-medium text-xs md:text-sm')}>
                       {quote.quote_number}
                     </TableCell>
-                    <TableCell className={`text-xs md:text-sm ${getColumnClass('client')}`}>{quote.client.name}</TableCell>
-                    <TableCell className={`hidden md:table-cell text-xs md:text-sm ${getColumnClass('date')}`}>
+                    <TableCell className={getColumnClass('client', 'text-xs md:text-sm')}>{quote.client.name}</TableCell>
+                    <TableCell className={getColumnClass('date', 'hidden md:table-cell text-xs md:text-sm')}>
                       {format(new Date(quote.date), 'dd MMM yyyy', {
                         locale: localeMap[locale] || enUS,
                       })}
                     </TableCell>
-                    <TableCell className={`text-right font-medium text-xs md:text-sm ${getColumnClass('total')}`}>CHF {quote.total.toFixed(2)}</TableCell>
-                    <TableCell className={getColumnClass('status')}>
+                    <TableCell className={getColumnClass('total', 'text-right font-medium text-xs md:text-sm')}>CHF {quote.total.toFixed(2)}</TableCell>
+                    <TableCell className={getColumnClass('status', 'text-xs md:text-sm')}>
                       <Badge variant={getQuoteStatusVariant(quote.status)} className="text-xs">
                         {t(`status.${quote.status}`)}
                       </Badge>
                     </TableCell>
-                    <TableCell className={`text-right ${getColumnClass('actions')}`} onClick={(e) => e.stopPropagation()}>
+                    <TableCell className={getColumnClass('actions', 'text-right')} onClick={(e) => e.stopPropagation()}>
                       <div className="flex justify-end gap-2">
                         {!showArchived && (
                           <>

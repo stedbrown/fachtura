@@ -464,7 +464,7 @@ export default function ClientsPage() {
                           onSort={handleSort}
                         />
                       </TableHead>
-                      <TableHead className={`hidden md:table-cell ${getColumnClass('email')}`}>
+                      <TableHead className={getColumnClass('email', 'hidden md:table-cell')}>
                         <SortableHeader
                           label={t('fields.email')}
                           sortKey="email"
@@ -473,7 +473,7 @@ export default function ClientsPage() {
                           onSort={handleSort}
                         />
                       </TableHead>
-                      <TableHead className={`hidden lg:table-cell ${getColumnClass('phone')}`}>
+                      <TableHead className={getColumnClass('phone', 'hidden lg:table-cell')}>
                         <SortableHeader
                           label={t('fields.phone')}
                           sortKey="phone"
@@ -482,7 +482,7 @@ export default function ClientsPage() {
                           onSort={handleSort}
                         />
                       </TableHead>
-                      <TableHead className={`hidden md:table-cell ${getColumnClass('city')}`}>
+                      <TableHead className={getColumnClass('city', 'hidden md:table-cell')}>
                         <SortableHeader
                           label={t('fields.city')}
                           sortKey="city"
@@ -491,7 +491,7 @@ export default function ClientsPage() {
                           onSort={handleSort}
                         />
                       </TableHead>
-                      <TableHead className={`text-right ${getColumnClass('actions')}`}>{tCommon('actions')}</TableHead>
+                      <TableHead className={getColumnClass('actions', 'text-right')}>{tCommon('actions')}</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -501,13 +501,13 @@ export default function ClientsPage() {
                     className="cursor-pointer hover:bg-muted/50"
                     onClick={() => handleRowClick(client.id)}
                   >
-                    <TableCell className={`font-medium text-xs md:text-sm ${getColumnClass('name')}`}>
+                    <TableCell className={getColumnClass('name', 'font-medium text-xs md:text-sm')}>
                       {client.name}
                     </TableCell>
-                    <TableCell className={`hidden md:table-cell text-xs md:text-sm ${getColumnClass('email')}`}>{client.email || '-'}</TableCell>
-                    <TableCell className={`hidden lg:table-cell text-xs md:text-sm ${getColumnClass('phone')}`}>{client.phone || '-'}</TableCell>
-                    <TableCell className={`hidden md:table-cell text-xs md:text-sm ${getColumnClass('city')}`}>{client.city || '-'}</TableCell>
-                    <TableCell className={`text-right ${getColumnClass('actions')}`} onClick={(e) => e.stopPropagation()}>
+                    <TableCell className={getColumnClass('email', 'hidden md:table-cell text-xs md:text-sm')}>{client.email || '-'}</TableCell>
+                    <TableCell className={getColumnClass('phone', 'hidden lg:table-cell text-xs md:text-sm')}>{client.phone || '-'}</TableCell>
+                    <TableCell className={getColumnClass('city', 'hidden md:table-cell text-xs md:text-sm')}>{client.city || '-'}</TableCell>
+                    <TableCell className={getColumnClass('actions', 'text-right')} onClick={(e) => e.stopPropagation()}>
                       <div className="flex justify-end gap-2">
                         {!showArchived && (
                           <>
