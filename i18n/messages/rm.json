@@ -174,7 +174,11 @@
     "max": "Max",
     "all": "Tuts",
     "client": "Client",
-    "exportSuccess": "Export realisà cun success"
+    "exportSuccess": "Export realisà cun success",
+    "info": "Infurmaziuns",
+    "optional": "Opziunal",
+    "autoCalculated": "Calculà automaticamain",
+    "quantity": "Quantità"
   },
   "auth": {
     "login": "S'annunziar",

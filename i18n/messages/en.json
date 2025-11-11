@@ -174,7 +174,11 @@
     "max": "Max",
     "all": "All",
     "client": "Client",
-    "exportSuccess": "Export completed successfully"
+    "exportSuccess": "Export completed successfully",
+    "info": "Information",
+    "optional": "Optional",
+    "autoCalculated": "Auto-calculated",
+    "quantity": "Quantity"
   },
   "auth": {
     "login": "Login",

@@ -174,7 +174,11 @@
     "max": "Max",
     "all": "Alle",
     "client": "Kunde",
-    "exportSuccess": "Export erfolgreich abgeschlossen"
+    "exportSuccess": "Export erfolgreich abgeschlossen",
+    "info": "Informationen",
+    "optional": "Optional",
+    "autoCalculated": "Automatisch berechnet",
+    "quantity": "Menge"
   },
   "auth": {
     "login": "Anmelden",
