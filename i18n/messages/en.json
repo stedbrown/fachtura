@@ -173,7 +173,8 @@
     "min": "Min",
     "max": "Max",
     "all": "All",
-    "client": "Client"
+    "client": "Client",
+    "exportSuccess": "Export completed successfully"
   },
   "auth": {
     "login": "Login",
@@ -271,6 +272,7 @@
     "restore": "Restore",
     "permanentDelete": "Delete permanently",
     "permanentDeleteWarning": "WARNING: This action will permanently delete the client and cannot be undone. Continue?",
+    "toggleColumns": "Show/Hide columns",
     "import": {
       "limitReached": "Limit reached! You can only create {remaining} more clients with the {plan} plan.",
       "tooMany": "You can import a maximum of {remaining} clients. Remove {excess} from the file.",
@@ -307,6 +309,7 @@
     "changeStatus": "Change status",
     "convertToInvoice": "Convert to Invoice",
     "downloadPDF": "Download PDF",
+    "toggleColumns": "Show/Hide columns",
     "quote": "Quote",
     "shareText": "Dear {clientName}, please find attached quote {quoteNumber}.",
     "shareNotSupported": "Sharing is not supported on this device",
@@ -388,6 +391,7 @@
     "sharedSuccessfully": "Document shared successfully",
     "shareError": "Error sharing document",
     "downloadPDF": "Download PDF",
+    "toggleColumns": "Show/Hide columns",
     "status": {
       "draft": "Draft",
       "issued": "Issued",
@@ -614,7 +618,8 @@
       "invoice": "invoices",
       "quote": "quotes",
       "product": "products",
-      "order": "orders"
+      "order": "orders",
+      "supplier": "suppliers"
     },
     "features": {
       "3clients": "3 clients",

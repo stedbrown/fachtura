@@ -301,19 +301,17 @@ export default function ProductsPage() {
 
               {/* Column Toggle and Export */}
               {!showArchived && products.length > 0 && (
-                <div className="flex flex-col sm:flex-row sm:flex-wrap sm:justify-end gap-2 w-full lg:w-auto">
+                <div className="flex flex-row flex-wrap items-center justify-end gap-2 w-full lg:w-auto">
                   <SimpleColumnToggle
                     columns={productColumns}
                     columnVisibility={columnVisibility}
                     onVisibilityChange={handleVisibilityChange}
-                    label={t('toggleColumns') || tCommon('toggleColumns') || 'Colonne'}
-                    className="w-full sm:w-auto sm:max-w-[220px]"
+                    label={tCommon('toggleColumns')}
                   />
                   <AdvancedFilters
                     filters={{}}
                     onFiltersChange={() => {}}
                     onExport={handleExport}
-                    className="w-full sm:w-auto"
                   />
                 </div>
               )}

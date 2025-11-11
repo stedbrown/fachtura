@@ -428,7 +428,7 @@ export default function QuotesPage() {
 
               {/* Filters and Column Toggle */}
               {!showArchived && (
-                <div className="flex flex-col sm:flex-row sm:flex-wrap sm:justify-end gap-2 w-full lg:w-auto">
+                <div className="flex flex-row flex-wrap items-center justify-end gap-2 w-full lg:w-auto">
                   <AdvancedFilters
                     filters={filters}
                     onFiltersChange={setFilters}
@@ -442,14 +442,12 @@ export default function QuotesPage() {
                       { value: 'accepted', label: t('status.accepted') },
                       { value: 'rejected', label: t('status.rejected') },
                     ]}
-                    className="w-full sm:w-auto"
                   />
                   <SimpleColumnToggle
                     columns={quoteColumns}
                     columnVisibility={columnVisibility}
                     onVisibilityChange={handleVisibilityChange}
-                    label={t('toggleColumns') || tCommon('toggleColumns') || 'Colonne'}
-                    className="w-full sm:w-auto sm:max-w-[220px]"
+                    label={tCommon('toggleColumns')}
                   />
                 </div>
               )}

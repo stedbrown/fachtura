@@ -176,7 +176,8 @@
     "min": "Min",
     "max": "Max",
     "all": "Tutti",
-    "client": "Cliente"
+    "client": "Cliente",
+    "exportSuccess": "Esportazione completata con successo"
   },
   "auth": {
     "login": "Accedi",
@@ -915,6 +916,7 @@
     "permanentDeleteError": "Errore nell'eliminazione del fornitore",
     "restore": "Ripristina",
     "permanentDelete": "Elimina definitivamente",
+    "toggleColumns": "Mostra/Nascondi colonne",
     "loadError": "Errore nel caricamento dei fornitori",
     "form": {
       "title": "Nuovo Fornitore",

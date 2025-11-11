@@ -173,7 +173,8 @@
     "min": "Min",
     "max": "Max",
     "all": "Alle",
-    "client": "Kunde"
+    "client": "Kunde",
+    "exportSuccess": "Export erfolgreich abgeschlossen"
   },
   "auth": {
     "login": "Anmelden",
@@ -271,6 +272,7 @@
     "restore": "Wiederherstellen",
     "permanentDelete": "Endgültig löschen",
     "permanentDeleteWarning": "WARNUNG: Diese Aktion wird den Kunden endgültig löschen und kann nicht rückgängig gemacht werden. Fortfahren?",
+    "toggleColumns": "Spalten anzeigen/ausblenden",
     "import": {
       "limitReached": "Limit erreicht! Sie können nur noch {remaining} Kunden mit dem {plan}-Plan erstellen.",
       "tooMany": "Sie können maximal {remaining} Kunden importieren. Entfernen Sie {excess} aus der Datei.",
@@ -307,6 +309,7 @@
     "changeStatus": "Status ändern",
     "convertToInvoice": "In Rechnung umwandeln",
     "downloadPDF": "PDF herunterladen",
+    "toggleColumns": "Spalten anzeigen/ausblenden",
     "quote": "Offerte",
     "shareText": "Sehr geehrte/r {clientName}, anbei finden Sie die Offerte {quoteNumber}.",
     "shareNotSupported": "Das Teilen wird auf diesem Gerät nicht unterstützt",
@@ -388,6 +391,7 @@
     "sharedSuccessfully": "Dokument erfolgreich geteilt",
     "shareError": "Fehler beim Teilen des Dokuments",
     "downloadPDF": "PDF herunterladen",
+    "toggleColumns": "Spalten anzeigen/ausblenden",
     "status": {
       "draft": "Entwurf",
       "issued": "Ausgestellt",
@@ -614,7 +618,8 @@
       "invoice": "Rechnungen",
       "quote": "Angebote",
       "product": "Produkte",
-      "order": "Bestellungen"
+      "order": "Bestellungen",
+      "supplier": "Lieferanten"
     },
     "features": {
       "3clients": "3 Kunden",

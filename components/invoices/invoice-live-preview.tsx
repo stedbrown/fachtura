@@ -5,6 +5,7 @@ import { Loader2 } from 'lucide-react'
 import type { Client } from '@/lib/types/database'
 import type { InvoiceItemInput } from '@/lib/validations/invoice'
 import { calculateInvoiceTotals } from '@/lib/utils/invoice-utils'
+import { cn } from '@/lib/utils'
 
 interface InvoiceLivePreviewProps {
   clientId: string

@@ -5,6 +5,7 @@ import { Loader2 } from 'lucide-react'
 import type { Client } from '@/lib/types/database'
 import type { QuoteItemInput } from '@/lib/validations/quote'
 import { calculateQuoteTotals } from '@/lib/utils/quote-utils'
+import { cn } from '@/lib/utils'
 
 interface QuoteLivePreviewProps {
   clientId: string

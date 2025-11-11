@@ -283,6 +283,7 @@ export default function SettingsPage() {
                           src={logoPreview}
                           alt="Logo preview"
                           fill
+                          sizes="(max-width: 640px) 50vw, 8rem"
                           className="object-contain p-2"
                         />
                         <button

@@ -389,7 +389,7 @@ export default function ClientsPage() {
             {t('subtitle')}
           </p>
         </div>
-        <div className="flex flex-col sm:flex-row sm:flex-wrap sm:justify-end gap-2 w-full lg:w-auto">
+        <div className="flex flex-row flex-wrap items-center justify-end gap-2 w-full lg:w-auto">
           <ImportClientsDialog onSuccess={loadClients} className="w-full sm:w-auto" />
           <Button onClick={handleCreate} size="default" className="w-full sm:w-auto">
             <Plus className="mr-2 h-4 w-4" />
@@ -418,19 +418,17 @@ export default function ClientsPage() {
               </Tabs>
 
               {/* Filters and Column Toggle */}
-              <div className="flex flex-col sm:flex-row sm:flex-wrap sm:justify-end gap-2 w-full lg:w-auto">
+              <div className="flex flex-row flex-wrap items-center justify-end gap-2 w-full lg:w-auto">
                 <ClientFilters
                   filters={filters}
                   onFiltersChange={setFilters}
                   onExport={handleExport}
-                  className="w-full sm:w-auto"
                 />
                 <SimpleColumnToggle
                   columns={columns}
                   columnVisibility={columnVisibility}
                   onVisibilityChange={handleVisibilityChange}
-                  label={t('toggleColumns') || 'Mostra/Nascondi colonne'}
-                  className="w-full sm:w-auto sm:max-w-[220px]"
+                  label={tCommon('toggleColumns')}
                 />
               </div>
             </div>

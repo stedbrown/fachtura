@@ -28,6 +28,11 @@ import {
 import { format } from 'date-fns'
 import { useTranslations } from 'next-intl'
 import { cn } from '@/lib/utils'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 
 export interface FilterState {
   dateFrom?: Date
@@ -80,19 +85,31 @@ export function AdvancedFilters({
   }
 
   return (
-    <div className={cn("flex gap-2 flex-wrap items-center", className)}>
+    <div className={cn('flex gap-2 flex-wrap items-center', className)}>
       <Popover open={isOpen} onOpenChange={setIsOpen}>
-        <PopoverTrigger asChild>
-          <Button variant="outline" size="sm">
-            <Filter className="h-4 w-4 mr-2" />
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-9 w-9 sm:w-auto sm:px-3 flex items-center justify-center sm:justify-start gap-0 sm:gap-2"
+              >
+                <Filter className="h-4 w-4" />
+                <span className="sr-only sm:hidden">{t('filter')}</span>
+                <span className="hidden sm:inline">{t('filter')}</span>
+                {hasActiveFilters && (
+                  <span className="ml-1 sm:ml-2 bg-primary text-primary-foreground rounded-full w-4 h-4 text-[10px] flex items-center justify-center">
+                    !
+                  </span>
+                )}
+              </Button>
+            </PopoverTrigger>
+          </TooltipTrigger>
+          <TooltipContent side="bottom" className="hidden md:block">
             {t('filter')}
-            {hasActiveFilters && (
-              <span className="ml-2 bg-primary text-primary-foreground rounded-full w-5 h-5 text-xs flex items-center justify-center">
-                !
-              </span>
-            )}
-          </Button>
-        </PopoverTrigger>
+          </TooltipContent>
+        </Tooltip>
         <PopoverContent className="w-96" align="start">
           <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -260,13 +277,25 @@ export function AdvancedFilters({
 
       {onExport && (
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm">
-              <Download className="h-4 w-4 mr-2" />
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-9 w-9 sm:w-auto sm:px-3 flex items-center justify-center sm:justify-start gap-0 sm:gap-2"
+                >
+                  <Download className="h-4 w-4" />
+                  <span className="sr-only sm:hidden">{t('export')}</span>
+                  <span className="hidden sm:inline">{t('export')}</span>
+                  <ChevronDown className="h-4 w-4 hidden sm:block" />
+                </Button>
+              </DropdownMenuTrigger>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" className="hidden md:block">
               {t('export')}
-              <ChevronDown className="h-4 w-4 ml-2" />
-            </Button>
-          </DropdownMenuTrigger>
+            </TooltipContent>
+          </Tooltip>
           <DropdownMenuContent align="end">
             <DropdownMenuItem onClick={() => onExport('excel')}>
               Excel (.xlsx)
@@ -279,10 +308,23 @@ export function AdvancedFilters({
       )}
 
       {hasActiveFilters && (
-        <Button variant="ghost" size="sm" onClick={clearFilters}>
-          <X className="h-4 w-4 mr-2" />
-          {t('clearFilters')}
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={clearFilters}
+              className="h-9 w-9 sm:w-auto sm:px-3 flex items-center justify-center sm:justify-start gap-0 sm:gap-2"
+            >
+              <X className="h-4 w-4" />
+              <span className="sr-only sm:hidden">{t('clearFilters')}</span>
+              <span className="hidden sm:inline">{t('clearFilters')}</span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="bottom" className="hidden md:block">
+            {t('clearFilters')}
+          </TooltipContent>
+        </Tooltip>
       )}
     </div>
   )

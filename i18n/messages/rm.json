@@ -173,7 +173,8 @@
     "min": "Min",
     "max": "Max",
     "all": "Tuts",
-    "client": "Client"
+    "client": "Client",
+    "exportSuccess": "Export realisà cun success"
   },
   "auth": {
     "login": "S'annunziar",
@@ -271,6 +272,7 @@
     "restore": "Restituir",
     "permanentDelete": "Stizzar definitivamain",
     "permanentDeleteWarning": "ATTENZIUN: Questa acziun stizza definitivamain il client e na po betg vegnir revocada. Cuntinuar?",
+    "toggleColumns": "Mussar/Zuppentar colonnas",
     "import": {
       "limitReached": "Limit cuntanschì! Ti pos be crear anc {remaining} clients cun il plan {plan}.",
       "tooMany": "Ti pos importar maximalmain {remaining} clients. Stizza {excess} dal file.",
@@ -307,6 +309,7 @@
     "changeStatus": "Midar il status",
     "convertToInvoice": "Converter en factura",
     "downloadPDF": "Telechargiar PDF",
+    "toggleColumns": "Mussar/Zuppentar colonnas",
     "quote": "Preventiv",
     "shareText": "Car/Cara {clientName}, in agiunta chattais Vus il preventiv {quoteNumber}.",
     "shareNotSupported": "La cundivisiun n'è betg sustegnida sin quest apparat",
@@ -388,6 +391,7 @@
     "sharedSuccessfully": "Document cundividì cun success",
     "shareError": "Errur tar la cundivisiun dal document",
     "downloadPDF": "Telechargiar PDF",
+    "toggleColumns": "Mussar/Zuppentar colonnas",
     "status": {
       "draft": "Sboz",
       "issued": "Emessa",
@@ -614,7 +618,8 @@
       "invoice": "facturas",
       "quote": "preventivs",
       "product": "products",
-      "order": "ordinaziuns"
+      "order": "ordinaziuns",
+      "supplier": "forniturs"
     },
     "features": {
       "3clients": "3 clients",

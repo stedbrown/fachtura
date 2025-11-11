@@ -173,7 +173,8 @@
     "min": "Min",
     "max": "Max",
     "all": "Tous",
-    "client": "Client"
+    "client": "Client",
+    "exportSuccess": "Export effectué avec succès"
   },
   "auth": {
     "login": "Se connecter",
@@ -271,6 +272,7 @@
     "restore": "Restaurer",
     "permanentDelete": "Supprimer définitivement",
     "permanentDeleteWarning": "ATTENTION: Cette action supprimera définitivement le client et ne pourra pas être annulée. Continuer?",
+    "toggleColumns": "Afficher/Masquer colonnes",
     "import": {
       "limitReached": "Limite atteinte! Vous ne pouvez créer que {remaining} clients supplémentaires avec le plan {plan}.",
       "tooMany": "Vous pouvez importer au maximum {remaining} clients. Supprimez {excess} du fichier.",
@@ -307,6 +309,7 @@
     "changeStatus": "Changer le statut",
     "convertToInvoice": "Convertir en facture",
     "downloadPDF": "Télécharger PDF",
+    "toggleColumns": "Afficher/Masquer colonnes",
     "quote": "Devis",
     "shareText": "Cher/Chère {clientName}, veuillez trouver ci-joint le devis {quoteNumber}.",
     "shareNotSupported": "Le partage n'est pas pris en charge sur cet appareil",
@@ -388,6 +391,7 @@
     "sharedSuccessfully": "Document partagé avec succès",
     "shareError": "Erreur lors du partage du document",
     "downloadPDF": "Télécharger PDF",
+    "toggleColumns": "Afficher/Masquer colonnes",
     "status": {
       "draft": "Brouillon",
       "issued": "Émise",
@@ -614,7 +618,8 @@
       "invoice": "factures",
       "quote": "devis",
       "product": "produits",
-      "order": "commandes"
+      "order": "commandes",
+      "supplier": "fournisseurs"
     },
     "features": {
       "3clients": "3 clients",
@@ -881,6 +886,58 @@
       "shipped": "Expédiée",
       "delivered": "Livrée",
       "cancelled": "Annulée"
+    }
+  },
+  "suppliers": {
+    "title": "Fournisseurs",
+    "subtitle": "Gérez vos fournisseurs",
+    "listTitle": "Liste des fournisseurs",
+    "listDescription": "Tous vos fournisseurs en un seul endroit",
+    "archivedTitle": "Fournisseurs archivés",
+    "archivedDescription": "Fournisseurs supprimés pouvant être restaurés",
+    "newSupplier": "Nouveau fournisseur",
+    "noSuppliers": "Aucun fournisseur",
+    "noArchivedSuppliers": "Aucun fournisseur archivé",
+    "createSuccess": "Fournisseur créé avec succès",
+    "createError": "Erreur lors de la création du fournisseur",
+    "updateSuccess": "Fournisseur mis à jour avec succès",
+    "updateError": "Erreur lors de la mise à jour du fournisseur",
+    "deleteSuccess": "Fournisseur archivé avec succès",
+    "deleteError": "Erreur lors de l'archivage du fournisseur",
+    "deleteTitle": "Archiver le fournisseur",
+    "deleteDescription": "Êtes-vous sûr de vouloir archiver ce fournisseur?",
+    "restoreSuccess": "Fournisseur restauré avec succès",
+    "restoreError": "Erreur lors de la restauration du fournisseur",
+    "permanentDeleteSuccess": "Fournisseur supprimé définitivement",
+    "permanentDeleteError": "Erreur lors de la suppression définitive du fournisseur",
+    "restore": "Restaurer",
+    "permanentDelete": "Supprimer définitivement",
+    "toggleColumns": "Afficher/Masquer colonnes",
+    "loadError": "Erreur lors du chargement des fournisseurs",
+    "form": {
+      "title": "Nouveau fournisseur",
+      "subtitle": "Ajoutez un nouveau fournisseur à votre liste",
+      "editTitle": "Modifier le fournisseur",
+      "editSubtitle": "Mettez à jour les informations du fournisseur",
+      "basicInfo": "Informations de base",
+      "address": "Adresse",
+      "additionalInfo": "Informations supplémentaires",
+      "saving": "Enregistrement...",
+      "createButton": "Créer le fournisseur"
+    },
+    "fields": {
+      "name": "Nom",
+      "contact": "Personne de contact",
+      "email": "Email",
+      "phone": "Téléphone",
+      "address": "Adresse",
+      "city": "Ville",
+      "postalCode": "Code postal",
+      "country": "Pays",
+      "vatNumber": "Numéro de TVA",
+      "website": "Site web",
+      "paymentTerms": "Conditions de paiement",
+      "isActive": "Fournisseur actif"
     }
   }
 }

@@ -27,6 +27,11 @@ import { useSubscription } from '@/hooks/use-subscription'
 import { SubscriptionUpgradeDialog } from '@/components/subscription-upgrade-dialog'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { exportFormattedToCSV, exportFormattedToExcel, formatDateForExport, formatCurrencyForExport } from '@/lib/export-utils'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 
 const localeMap: Record<string, Locale> = {
   it: it,
@@ -195,7 +200,7 @@ export default function OrdersPage() {
       [t('supplier') || 'Fornitore']: order.supplier?.name || '',
       [t('orderDate') || 'Data']: formatDateForExport(order.date),
       [t('deliveryDate') || 'Consegna']: order.expected_delivery_date ? formatDateForExport(order.expected_delivery_date) : '',
-      [t('status') || 'Stato']: tStatus(order.status) || order.status,
+      [tCommon('status') || 'Stato']: tStatus(order.status) || order.status,
       [t('totalAmount') || 'Totale']: formatCurrencyForExport(order.total),
     }))
 
@@ -250,35 +255,48 @@ export default function OrdersPage() {
 
               {/* Column Toggle and Export Buttons */}
               {!showArchived && orders.length > 0 && (
-                <div className="flex flex-col sm:flex-row sm:flex-wrap sm:justify-end gap-2 w-full lg:w-auto">
+                <div className="flex flex-row flex-wrap items-center justify-end gap-2 w-full lg:w-auto">
                   <SimpleColumnToggle
                     columns={orderColumns}
                     columnVisibility={columnVisibility}
                     onVisibilityChange={handleVisibilityChange}
-                    label={t('toggleColumns') || tCommon('toggleColumns') || 'Colonne'}
-                    className="w-full sm:w-auto sm:max-w-[220px]"
+                    label={tCommon('toggleColumns')}
                   />
-                  <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleExport('csv')}
-                      className="w-full sm:w-auto"
-                    >
-                      <Download className="h-4 w-4 mr-2" />
-                      <span className="sm:hidden">CSV</span>
-                      <span className="hidden sm:inline">CSV</span>
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleExport('excel')}
-                      className="w-full sm:w-auto"
-                    >
-                      <Download className="h-4 w-4 mr-2" />
-                      <span className="sm:hidden">Excel</span>
-                      <span className="hidden sm:inline">Excel</span>
-                    </Button>
+                  <div className="flex flex-row flex-wrap items-center gap-2">
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleExport('csv')}
+                          className="h-9 w-9 sm:w-auto sm:px-3 flex items-center justify-center sm:justify-start gap-0 sm:gap-2"
+                        >
+                          <Download className="h-4 w-4" />
+                          <span className="sr-only sm:hidden">CSV</span>
+                          <span className="hidden sm:inline">CSV</span>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="hidden md:block">
+                        CSV
+                      </TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleExport('excel')}
+                          className="h-9 w-9 sm:w-auto sm:px-3 flex items-center justify-center sm:justify-start gap-0 sm:gap-2"
+                        >
+                          <Download className="h-4 w-4" />
+                          <span className="sr-only sm:hidden">Excel</span>
+                          <span className="hidden sm:inline">Excel</span>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="hidden md:block">
+                        Excel
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
                 </div>
               )}

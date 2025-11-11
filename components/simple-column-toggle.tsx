@@ -12,6 +12,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 
 export type ColumnConfig = {
   key: string
@@ -96,19 +101,29 @@ export function SimpleColumnToggle({
 }: SimpleColumnToggleProps) {
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          className={cn(
-            'h-8 w-full sm:w-auto justify-start sm:justify-start gap-2',
-            className
-          )}
-        >
-          <Settings2 className="mr-2 h-4 w-4" />
-          <span className="text-sm font-medium truncate">{label}</span>
-        </Button>
-      </DropdownMenuTrigger>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className={cn(
+                'h-9 w-9 sm:w-auto sm:px-3 flex items-center justify-center sm:justify-start gap-0 sm:gap-2',
+                className
+              )}
+            >
+              <Settings2 className="h-4 w-4" />
+              <span className="sr-only sm:hidden">{label}</span>
+              <span className="hidden sm:inline text-sm font-medium truncate">
+                {label}
+              </span>
+            </Button>
+          </DropdownMenuTrigger>
+        </TooltipTrigger>
+        <TooltipContent side="bottom" className="hidden md:block">
+          {label}
+        </TooltipContent>
+      </Tooltip>
       <DropdownMenuContent align="end" className="w-[200px]">
         <DropdownMenuLabel>{label}</DropdownMenuLabel>
         <DropdownMenuSeparator />

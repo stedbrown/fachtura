@@ -313,8 +313,7 @@ export default function SuppliersPage() {
                   columns={supplierColumns}
                   columnVisibility={columnVisibility}
                   onVisibilityChange={handleVisibilityChange}
-                  label={t('toggleColumns') || tCommon('toggleColumns') || 'Colonne'}
-                  className="w-full sm:w-auto sm:max-w-[220px]"
+                  label={tCommon('toggleColumns')}
                 />
               )}
             </div>
