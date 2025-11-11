@@ -237,7 +237,7 @@ export default function NewInvoicePage() {
   return (
     <div className="h-screen flex flex-col">
       {/* Header */}
-      <div className="border-b bg-background px-3 py-2 sm:px-4 sm:py-3 flex items-center justify-between gap-2">
+      <div className="border-b bg-background px-4 sm:px-6 py-2 sm:py-3 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 sm:gap-3">
           <Button
             variant="ghost"
@@ -411,59 +411,59 @@ export default function NewInvoicePage() {
                             />
                           </div>
 
-                          <div className="grid grid-cols-[1fr_auto_auto_auto] gap-2">
-                            <div className="space-y-1">
-                              <Label className="text-xs font-medium">
-                                {t('form.quantity')} <span className="text-red-500">*</span>
-                              </Label>
-                              <Input
-                                type="number"
-                                min="0.01"
-                                step="0.01"
-                                className="h-8 text-sm w-full"
-                                value={item.quantity}
-                                onChange={(e) => updateItem(index, 'quantity', parseFloat(e.target.value) || 1)}
-                                placeholder="1"
-                              />
-                            </div>
-                            <div className="space-y-1">
-                              <Label className="text-xs font-medium">
-                                {t('form.unitPrice')} <span className="text-red-500">*</span>
-                              </Label>
-                              <Input
-                                type="number"
-                                min="0"
-                                step="0.01"
-                                className="h-8 text-sm w-28 tabular-nums"
-                                value={item.unit_price}
-                                onChange={(e) => updateItem(index, 'unit_price', parseFloat(e.target.value) || 0)}
-                                placeholder="0.00"
-                              />
-                            </div>
-                            <div className="space-y-1">
-                              <Label className="text-xs font-medium">
-                                {t('form.taxRate')}
-                              </Label>
-                              <Input
-                                type="number"
-                                min="0"
-                                max="100"
-                                step="0.1"
-                                className="h-8 text-sm w-20 tabular-nums"
-                                value={item.tax_rate}
-                                onChange={(e) => updateItem(index, 'tax_rate', parseFloat(e.target.value) || 0)}
-                                placeholder="8.1"
-                              />
-                            </div>
-                            <div className="space-y-1">
-                              <Label className="text-xs font-medium text-muted-foreground">
-                                Totale
-                              </Label>
-                              <div className="h-8 flex items-center px-2 text-sm font-medium tabular-nums bg-muted/50 rounded-md border">
-                                {calculateLineTotal(item).toFixed(2)}
-                              </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2">
+                          <div className="space-y-1">
+                            <Label className="text-xs font-medium">
+                              {t('form.quantity')} <span className="text-red-500">*</span>
+                            </Label>
+                            <Input
+                              type="number"
+                              min="0.01"
+                              step="0.01"
+                              className="h-8 text-sm w-full"
+                              value={item.quantity}
+                              onChange={(e) => updateItem(index, 'quantity', parseFloat(e.target.value) || 1)}
+                              placeholder="1"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs font-medium">
+                              {t('form.unitPrice')} <span className="text-red-500">*</span>
+                            </Label>
+                            <Input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              className="h-8 text-sm w-full tabular-nums"
+                              value={item.unit_price}
+                              onChange={(e) => updateItem(index, 'unit_price', parseFloat(e.target.value) || 0)}
+                              placeholder="0.00"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs font-medium">
+                              {t('form.taxRate')}
+                            </Label>
+                            <Input
+                              type="number"
+                              min="0"
+                              max="100"
+                              step="0.1"
+                              className="h-8 text-sm w-full tabular-nums"
+                              value={item.tax_rate}
+                              onChange={(e) => updateItem(index, 'tax_rate', parseFloat(e.target.value) || 0)}
+                              placeholder="8.1"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs font-medium text-muted-foreground">
+                              Totale
+                            </Label>
+                            <div className="h-8 flex items-center px-2 text-sm font-medium tabular-nums bg-muted/50 rounded-md border w-full">
+                              CHF {calculateLineTotal(item).toFixed(2)}
                             </div>
                           </div>
+                        </div>
                         </TabsContent>
 
                         {products.length > 0 && (
