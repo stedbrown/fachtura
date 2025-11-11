@@ -388,15 +388,16 @@ export default function ExpensesPage() {
                 </div>
               )}
             </div>
+          </div>
 
-            <CardTitle className="text-sm font-medium">
-              {showArchived ? t('archivedTitle') : t('listTitle')}
-            </CardTitle>
-            <CardDescription className="text-xs text-muted-foreground">
-              {showArchived ? t('archivedDescription') : t('listDescription')}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
+          <CardTitle className="text-sm font-medium">
+            {showArchived ? t('archivedTitle') : t('listTitle')}
+          </CardTitle>
+          <CardDescription className="text-xs text-muted-foreground">
+            {showArchived ? t('archivedDescription') : t('listDescription')}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
             {filteredExpenses.length === 0 ? (
               <div className="text-center py-12">
                 <Wallet className="mx-auto h-12 w-12 text-muted-foreground" />
@@ -553,7 +554,6 @@ export default function ExpensesPage() {
             )}
           </CardContent>
         </Card>
-      </Tabs>
 
       <DeleteDialog
         open={deleteDialogOpen}
