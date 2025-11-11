@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useMemo } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import {
@@ -12,7 +12,16 @@ import {
   CommandList,
   CommandSeparator,
 } from '@/components/ui/command'
-import { Search, Users, FileText, Receipt, Calendar } from 'lucide-react'
+import {
+  Search,
+  Users,
+  FileText,
+  Receipt,
+  Calendar,
+  Package,
+  Truck,
+  ShoppingCart,
+} from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { format } from 'date-fns'
 import { it, de, fr, enUS, type Locale } from 'date-fns/locale'
@@ -25,12 +34,21 @@ const localeMap: Record<string, Locale> = {
   rm: de,
 }
 
+type SearchResultType =
+  | 'client'
+  | 'quote'
+  | 'invoice'
+  | 'product'
+  | 'order'
+  | 'supplier'
+
 interface SearchResult {
   id: string
-  type: 'client' | 'quote' | 'invoice'
+  type: SearchResultType
   title: string
   subtitle: string
   date?: string
+  meta?: string
   url: string
 }
 
@@ -44,6 +62,23 @@ export function GlobalSearch() {
   const locale = params.locale as string
   const t = useTranslations('navigation')
   const tCommon = useTranslations('common')
+
+  const groupedResults = useMemo(() => {
+    const groups: Record<SearchResultType, SearchResult[]> = {
+      client: [],
+      quote: [],
+      invoice: [],
+      product: [],
+      order: [],
+      supplier: [],
+    }
+
+    results.forEach((result) => {
+      groups[result.type].push(result)
+    })
+
+    return groups
+  }, [results])
 
   // Cmd+K / Ctrl+K shortcut
   useEffect(() => {
@@ -89,42 +124,78 @@ export function GlobalSearch() {
 
     const searchLower = query.toLowerCase()
 
-    // Search clients
-    const { data: clients } = await supabase
-      .from('clients')
-      .select('id, name, email, city')
-      .eq('user_id', user.id)
-      .is('deleted_at', null)
-      .or(`name.ilike.%${query}%,email.ilike.%${query}%,city.ilike.%${query}%`)
-      .limit(5)
+    const [
+      { data: clients },
+      { data: quotes },
+      { data: invoices },
+      { data: products },
+      { data: orders },
+      { data: suppliers },
+    ] = await Promise.all([
+      supabase
+        .from('clients')
+        .select('id, name, email, city')
+        .eq('user_id', user.id)
+        .is('deleted_at', null)
+        .or(`name.ilike.%${query}%,email.ilike.%${query}%,city.ilike.%${query}%`)
+        .limit(5),
+      supabase
+        .from('quotes')
+        .select('id, quote_number, date, total, client:clients(name)')
+        .eq('user_id', user.id)
+        .is('deleted_at', null)
+        .limit(15),
+      supabase
+        .from('invoices')
+        .select('id, invoice_number, date, total, client:clients(name)')
+        .eq('user_id', user.id)
+        .is('deleted_at', null)
+        .limit(15),
+      supabase
+        .from('products')
+        .select('id, name, sku, category, unit_price')
+        .eq('user_id', user.id)
+        .is('deleted_at', null)
+        .or(`name.ilike.%${query}%,sku.ilike.%${query}%,category.ilike.%${query}%`)
+        .limit(5),
+      supabase
+        .from('orders')
+        .select('id, order_number, date, total, supplier:suppliers(name)')
+        .eq('user_id', user.id)
+        .is('deleted_at', null)
+        .limit(15),
+      supabase
+        .from('suppliers')
+        .select('id, name, email, city')
+        .eq('user_id', user.id)
+        .is('deleted_at', null)
+        .or(`name.ilike.%${query}%,email.ilike.%${query}%,city.ilike.%${query}%`)
+        .limit(5),
+    ])
 
-    // Search quotes (by number or client name)
-    const { data: quotes } = await supabase
-      .from('quotes')
-      .select('id, quote_number, date, total, client:clients(name)')
-      .eq('user_id', user.id)
-      .is('deleted_at', null)
-      .limit(10)
-    
-    // Filter quotes locally to include client name search
-    const filteredQuotes = quotes?.filter(quote => 
-      quote.quote_number.toLowerCase().includes(searchLower) ||
-      (quote.client as any)?.name?.toLowerCase().includes(searchLower)
-    ).slice(0, 5)
+    const filteredQuotes = quotes
+      ?.filter(
+        (quote) =>
+          quote.quote_number.toLowerCase().includes(searchLower) ||
+          (quote.client as any)?.name?.toLowerCase().includes(searchLower)
+      )
+      .slice(0, 5)
 
-    // Search invoices (by number or client name)
-    const { data: invoices } = await supabase
-      .from('invoices')
-      .select('id, invoice_number, date, total, client:clients(name)')
-      .eq('user_id', user.id)
-      .is('deleted_at', null)
-      .limit(10)
-    
-    // Filter invoices locally to include client name search
-    const filteredInvoices = invoices?.filter(invoice => 
-      invoice.invoice_number.toLowerCase().includes(searchLower) ||
-      (invoice.client as any)?.name?.toLowerCase().includes(searchLower)
-    ).slice(0, 5)
+    const filteredInvoices = invoices
+      ?.filter(
+        (invoice) =>
+          invoice.invoice_number.toLowerCase().includes(searchLower) ||
+          (invoice.client as any)?.name?.toLowerCase().includes(searchLower)
+      )
+      .slice(0, 5)
+
+    const filteredOrders = orders
+      ?.filter(
+        (order) =>
+          order.order_number?.toLowerCase().includes(searchLower) ||
+          (order.supplier as any)?.name?.toLowerCase().includes(searchLower)
+      )
+      .slice(0, 5)
 
     const searchResults: SearchResult[] = []
 
@@ -139,6 +210,16 @@ export function GlobalSearch() {
       })
     })
 
+    suppliers?.forEach((supplier) => {
+      searchResults.push({
+        id: supplier.id,
+        type: 'supplier',
+        title: supplier.name,
+        subtitle: supplier.email || supplier.city || '',
+        url: `/${locale}/dashboard/suppliers`,
+      })
+    })
+
     // Add quotes to results
     filteredQuotes?.forEach((quote: any) => {
       searchResults.push({
@@ -147,6 +228,7 @@ export function GlobalSearch() {
         title: quote.quote_number,
         subtitle: quote.client?.name || '',
         date: quote.date,
+        meta: quote.total ? `CHF ${quote.total.toFixed(2)}` : undefined,
         url: `/${locale}/dashboard/quotes/${quote.id}`,
       })
     })
@@ -159,7 +241,31 @@ export function GlobalSearch() {
         title: invoice.invoice_number,
         subtitle: invoice.client?.name || '',
         date: invoice.date,
+        meta: invoice.total ? `CHF ${invoice.total.toFixed(2)}` : undefined,
         url: `/${locale}/dashboard/invoices/${invoice.id}`,
+      })
+    })
+
+    products?.forEach((product) => {
+      searchResults.push({
+        id: product.id,
+        type: 'product',
+        title: product.name,
+        subtitle: product.category || product.sku || '',
+        meta: product.unit_price ? `CHF ${product.unit_price.toFixed(2)}` : undefined,
+        url: `/${locale}/dashboard/products`,
+      })
+    })
+
+    filteredOrders?.forEach((order: any) => {
+      searchResults.push({
+        id: order.id,
+        type: 'order',
+        title: order.order_number,
+        subtitle: order.supplier?.name || '',
+        date: order.date,
+        meta: order.total ? `CHF ${order.total.toFixed(2)}` : undefined,
+        url: `/${locale}/dashboard/orders`,
       })
     })
 
@@ -182,38 +288,43 @@ export function GlobalSearch() {
     router.push(url)
   }
 
-  const clientResults = results.filter((r) => r.type === 'client')
-  const quoteResults = results.filter((r) => r.type === 'quote')
-  const invoiceResults = results.filter((r) => r.type === 'invoice')
-
   return (
     <>
       <button
         onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors w-full md:w-64"
+        className="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors w-full sm:w-60 md:w-72"
+        aria-label={tCommon('search')}
       >
-        <Search className="h-4 w-4" />
-        <span className="hidden md:inline">{tCommon('search')}...</span>
+        <Search className="h-4 w-4 flex-shrink-0" />
+        <span className="text-sm font-medium text-muted-foreground md:hidden">
+          {tCommon('search')}
+        </span>
+        <span className="hidden md:inline truncate">{tCommon('search')}...</span>
         <kbd className="pointer-events-none ml-auto hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 md:flex">
           <span className="text-xs">⌘</span>K
         </kbd>
       </button>
 
-      <CommandDialog open={open} onOpenChange={setOpen} shouldFilter={false}>
+      <CommandDialog
+        open={open}
+        onOpenChange={setOpen}
+        shouldFilter={false}
+        className="w-full max-w-[min(100vw-2rem,640px)]"
+      >
         <CommandInput
           placeholder={`${tCommon('search')} ${t('clients').toLowerCase()}, ${t('quotes').toLowerCase()}, ${t('invoices').toLowerCase()}...`}
           value={search}
           onValueChange={setSearch}
         />
-        <CommandList className="max-h-[400px]">
+        <CommandList className="max-h-[60vh] md:max-h-[480px]">
           <CommandEmpty>
             {loading ? tCommon('loading') : tCommon('noResults')}
           </CommandEmpty>
 
-          {clientResults.length > 0 && (
+          {groupedResults.client.length > 0 && (
             <>
               <CommandGroup heading={t('clients')}>
-                {clientResults.map((result) => (
+                {groupedResults.client.map((result) => (
                   <CommandItem
                     key={result.id}
                     onSelect={() => handleSelect(result.url)}
@@ -235,10 +346,35 @@ export function GlobalSearch() {
             </>
           )}
 
-          {quoteResults.length > 0 && (
+          {groupedResults.supplier.length > 0 && (
+            <>
+              <CommandGroup heading={t('suppliers')}>
+                {groupedResults.supplier.map((result) => (
+                  <CommandItem
+                    key={result.id}
+                    onSelect={() => handleSelect(result.url)}
+                    className="cursor-pointer"
+                  >
+                    <Truck className="mr-2 h-4 w-4" />
+                    <div className="flex flex-col">
+                      <span className="font-medium">{result.title}</span>
+                      {result.subtitle && (
+                        <span className="text-xs text-muted-foreground">
+                          {result.subtitle}
+                        </span>
+                      )}
+                    </div>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+              <CommandSeparator />
+            </>
+          )}
+
+          {groupedResults.quote.length > 0 && (
             <>
               <CommandGroup heading={t('quotes')}>
-                {quoteResults.map((result) => (
+                {groupedResults.quote.map((result) => (
                   <CommandItem
                     key={result.id}
                     onSelect={() => handleSelect(result.url)}
@@ -248,12 +384,85 @@ export function GlobalSearch() {
                     <div className="flex flex-col flex-1">
                       <div className="flex items-center justify-between">
                         <span className="font-medium">{result.title}</span>
-                        {result.date && (
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          {result.date && (
+                            <span className="flex items-center gap-1">
+                              <Calendar className="h-3 w-3" />
+                              {format(new Date(result.date), 'dd/MM/yyyy', {
+                                locale: localeMap[locale] || enUS,
+                              })}
+                            </span>
+                          )}
+                          {result.meta && <span>{result.meta}</span>}
+                        </div>
+                      </div>
+                      {result.subtitle && (
+                        <span className="text-xs text-muted-foreground">
+                          {result.subtitle}
+                        </span>
+                      )}
+                    </div>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+              <CommandSeparator />
+            </>
+          )}
+
+          {groupedResults.invoice.length > 0 && (
+            <>
+              <CommandGroup heading={t('invoices')}>
+                {groupedResults.invoice.map((result) => (
+                  <CommandItem
+                    key={result.id}
+                    onSelect={() => handleSelect(result.url)}
+                    className="cursor-pointer"
+                  >
+                    <Receipt className="mr-2 h-4 w-4" />
+                    <div className="flex flex-col flex-1">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium">{result.title}</span>
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          {result.date && (
+                            <span className="flex items-center gap-1">
+                              <Calendar className="h-3 w-3" />
+                              {format(new Date(result.date), 'dd/MM/yyyy', {
+                                locale: localeMap[locale] || enUS,
+                              })}
+                            </span>
+                          )}
+                          {result.meta && <span>{result.meta}</span>}
+                        </div>
+                      </div>
+                      {result.subtitle && (
+                        <span className="text-xs text-muted-foreground">
+                          {result.subtitle}
+                        </span>
+                      )}
+                    </div>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+              <CommandSeparator />
+            </>
+          )}
+
+          {groupedResults.product.length > 0 && (
+            <>
+              <CommandGroup heading={t('products')}>
+                {groupedResults.product.map((result) => (
+                  <CommandItem
+                    key={result.id}
+                    onSelect={() => handleSelect(result.url)}
+                    className="cursor-pointer"
+                  >
+                    <Package className="mr-2 h-4 w-4" />
+                    <div className="flex flex-col flex-1">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium">{result.title}</span>
+                        {result.meta && (
                           <span className="text-xs text-muted-foreground ml-2">
-                            <Calendar className="inline h-3 w-3 mr-1" />
-                            {format(new Date(result.date), 'dd/MM/yyyy', {
-                              locale: localeMap[locale] || enUS,
-                            })}
+                            {result.meta}
                           </span>
                         )}
                       </div>
@@ -270,26 +479,29 @@ export function GlobalSearch() {
             </>
           )}
 
-          {invoiceResults.length > 0 && (
-            <CommandGroup heading={t('invoices')}>
-              {invoiceResults.map((result) => (
+          {groupedResults.order.length > 0 && (
+            <CommandGroup heading={t('orders')}>
+              {groupedResults.order.map((result) => (
                 <CommandItem
                   key={result.id}
                   onSelect={() => handleSelect(result.url)}
                   className="cursor-pointer"
                 >
-                  <Receipt className="mr-2 h-4 w-4" />
+                  <ShoppingCart className="mr-2 h-4 w-4" />
                   <div className="flex flex-col flex-1">
                     <div className="flex items-center justify-between">
                       <span className="font-medium">{result.title}</span>
-                      {result.date && (
-                        <span className="text-xs text-muted-foreground ml-2">
-                          <Calendar className="inline h-3 w-3 mr-1" />
-                          {format(new Date(result.date), 'dd/MM/yyyy', {
-                            locale: localeMap[locale] || enUS,
-                          })}
-                        </span>
-                      )}
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        {result.date && (
+                          <span className="flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            {format(new Date(result.date), 'dd/MM/yyyy', {
+                              locale: localeMap[locale] || enUS,
+                            })}
+                          </span>
+                        )}
+                        {result.meta && <span>{result.meta}</span>}
+                      </div>
                     </div>
                     {result.subtitle && (
                       <span className="text-xs text-muted-foreground">
