@@ -547,6 +547,74 @@ export interface Database {
           created_at?: string | null
         }
       }
+      expenses: {
+        Row: {
+          id: string
+          user_id: string
+          description: string
+          category: string
+          amount: number
+          currency: string
+          expense_date: string
+          payment_method: string | null
+          supplier_id: string | null
+          supplier_name: string | null
+          receipt_url: string | null
+          receipt_number: string | null
+          tax_rate: number
+          tax_amount: number
+          is_deductible: boolean
+          status: string
+          notes: string | null
+          created_at: string | null
+          updated_at: string | null
+          deleted_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          description: string
+          category: string
+          amount: number
+          currency?: string
+          expense_date?: string
+          payment_method?: string | null
+          supplier_id?: string | null
+          supplier_name?: string | null
+          receipt_url?: string | null
+          receipt_number?: string | null
+          tax_rate?: number
+          tax_amount?: number
+          is_deductible?: boolean
+          status?: string
+          notes?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+          deleted_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          description?: string
+          category?: string
+          amount?: number
+          currency?: string
+          expense_date?: string
+          payment_method?: string | null
+          supplier_id?: string | null
+          supplier_name?: string | null
+          receipt_url?: string | null
+          receipt_number?: string | null
+          tax_rate?: number
+          tax_amount?: number
+          is_deductible?: boolean
+          status?: string
+          notes?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+          deleted_at?: string | null
+        }
+      }
       subscription_plans: {
         Row: {
           id: string
@@ -560,6 +628,7 @@ export interface Database {
           max_quotes: number | null
           max_products: number | null
           max_orders: number | null
+          max_expenses: number | null
           features: Json
           is_active: boolean
           created_at: string | null
@@ -577,6 +646,7 @@ export interface Database {
           max_quotes?: number | null
           max_products?: number | null
           max_orders?: number | null
+          max_expenses?: number | null
           features?: Json
           is_active?: boolean
           created_at?: string | null
@@ -594,6 +664,7 @@ export interface Database {
           max_quotes?: number | null
           max_products?: number | null
           max_orders?: number | null
+          max_expenses?: number | null
           features?: Json
           is_active?: boolean
           created_at?: string | null
@@ -652,6 +723,7 @@ export interface Database {
           clients_count: number
           products_count: number
           orders_count: number
+          expenses_count: number
           created_at: string | null
           updated_at: string | null
         }
@@ -665,6 +737,7 @@ export interface Database {
           clients_count?: number
           products_count?: number
           orders_count?: number
+          expenses_count?: number
           created_at?: string | null
           updated_at?: string | null
         }
@@ -678,6 +751,7 @@ export interface Database {
           clients_count?: number
           products_count?: number
           orders_count?: number
+          expenses_count?: number
           created_at?: string | null
           updated_at?: string | null
         }
@@ -771,3 +845,12 @@ export type OrderWithSupplier = Order & {
 export type Supplier = Database['public']['Tables']['suppliers']['Row']
 export type SupplierInsert = Database['public']['Tables']['suppliers']['Insert']
 export type SupplierUpdate = Database['public']['Tables']['suppliers']['Update']
+
+export type Expense = Database['public']['Tables']['expenses']['Row']
+export type ExpenseInsert = Database['public']['Tables']['expenses']['Insert']
+export type ExpenseUpdate = Database['public']['Tables']['expenses']['Update']
+
+// Expense with supplier relationship
+export type ExpenseWithSupplier = Expense & {
+  supplier: Supplier | null
+}
