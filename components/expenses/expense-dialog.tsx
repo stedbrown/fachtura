@@ -81,7 +81,7 @@ export function ExpenseDialog({
   })
 
   const amount = watch('amount')
-  const taxRate = watch('taxRate')
+  const taxRate = watch('tax_rate')
   const isDeductible = watch('is_deductible')
 
   useEffect(() => {
