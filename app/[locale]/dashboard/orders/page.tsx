@@ -146,6 +146,10 @@ export default function OrdersPage() {
     setLoading(false)
   }
 
+  const handleRowClick = (orderId: string) => {
+    router.push(`/${locale}/dashboard/orders/${orderId}`)
+  }
+
   async function handleAddNew() {
     const limitsCheck = await checkLimits('order')
     if (!limitsCheck.allowed) {
@@ -403,7 +407,11 @@ export default function OrdersPage() {
                   </TableHeader>
                   <TableBody>
                     {sortedOrders.map((order) => (
-                      <TableRow key={order.id}>
+                      <TableRow
+                        key={order.id}
+                        className="cursor-pointer hover:bg-muted/50"
+                        onClick={() => handleRowClick(order.id)}
+                      >
                         <TableCell className={getColumnClass('order_number', 'font-medium text-xs md:text-sm')}>{order.order_number}</TableCell>
                         <TableCell className={getColumnClass('supplier', 'text-xs md:text-sm')}>{order.supplier?.name || '-'}</TableCell>
                         <TableCell className={getColumnClass('date', 'hidden md:table-cell text-xs md:text-sm')}>
@@ -423,7 +431,10 @@ export default function OrdersPage() {
                         <TableCell className={getColumnClass('total', 'text-right font-medium text-xs md:text-sm tabular-nums')}>
                           CHF {Number(order.total).toLocaleString('it-CH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </TableCell>
-                        <TableCell className={getColumnClass('actions', 'text-right')}>
+                        <TableCell
+                          className={getColumnClass('actions', 'text-right')}
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button

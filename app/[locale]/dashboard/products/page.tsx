@@ -143,6 +143,10 @@ export default function ProductsPage() {
     setDialogOpen(true)
   }
 
+  function handleRowClick(product: Product) {
+    handleEdit(product)
+  }
+
   async function handleDialogSubmit(data: ProductFormInput) {
     setDialogLoading(true)
     const supabase = createClient()
@@ -419,7 +423,11 @@ export default function ProductsPage() {
                   </TableHeader>
                   <TableBody>
                     {sortedProducts.map((product) => (
-                      <TableRow key={product.id}>
+                      <TableRow
+                        key={product.id}
+                        className="cursor-pointer hover:bg-muted/50"
+                        onClick={() => handleRowClick(product)}
+                      >
                         <TableCell className={getColumnClass('sku', 'font-mono text-xs md:text-sm')}>{product.sku || '-'}</TableCell>
                         <TableCell className={getColumnClass('name', 'font-medium text-xs md:text-sm')}>
                           {product.name}
@@ -447,7 +455,10 @@ export default function ProductsPage() {
                             {product.is_active ? t('active') : t('inactive')}
                           </Badge>
                         </TableCell>
-                        <TableCell className={getColumnClass('actions', 'text-right')}>
+                        <TableCell
+                          className={getColumnClass('actions', 'text-right')}
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                               <Button

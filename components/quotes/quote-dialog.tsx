@@ -327,9 +327,9 @@ export function QuoteDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[1800px] max-h-[92vh] overflow-y-auto w-[98vw]">
+      <DialogContent className="max-w-[1800px] max-h-[92vh] overflow-y-auto w-[98vw] p-3 sm:p-4 md:p-6">
         <DialogHeader>
-          <DialogTitle className="text-xl md:text-2xl">
+          <DialogTitle className="text-base sm:text-lg md:text-xl lg:text-2xl">
             {quote ? t('editQuote') : t('form.title')}
           </DialogTitle>
           <DialogDescription className="text-sm">

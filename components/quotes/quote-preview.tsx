@@ -96,18 +96,18 @@ export function QuotePreview({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-[95vw] sm:max-w-2xl lg:max-w-4xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
-          <div className="flex items-start justify-between">
-            <div>
-              <DialogTitle className="text-2xl font-bold">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+            <div className="flex-1 min-w-0">
+              <DialogTitle className="text-xl sm:text-2xl font-bold truncate">
                 {quote.quote_number}
               </DialogTitle>
-              <DialogDescription className="text-sm mt-1">
+              <DialogDescription className="text-xs sm:text-sm mt-1">
                 {t('preview.subtitle')}
               </DialogDescription>
             </div>
-            <Badge variant={getStatusVariant(quote.status)} className="text-sm">
+            <Badge variant={getStatusVariant(quote.status)} className="text-xs sm:text-sm shrink-0 self-start">
               {tStatus(quote.status as any)}
             </Badge>
           </div>
@@ -159,7 +159,7 @@ export function QuotePreview({
 
           {/* Items */}
           <div>
-            <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+            <h3 className="text-xs sm:text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
               {t('form.items')}
             </h3>
             
@@ -170,23 +170,23 @@ export function QuotePreview({
             ) : (
               <Card>
                 <CardContent className="p-0">
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
+                  <div className="overflow-x-auto -mx-4 sm:mx-0">
+                    <table className="w-full min-w-[600px] sm:min-w-0">
                       <thead className="border-b bg-muted/50">
                         <tr>
-                          <th className="text-left p-3 text-xs font-medium text-muted-foreground uppercase">
+                          <th className="text-left p-2 sm:p-3 text-[10px] sm:text-xs font-medium text-muted-foreground uppercase">
                             {t('form.description')}
                           </th>
-                          <th className="text-right p-3 text-xs font-medium text-muted-foreground uppercase">
+                          <th className="text-right p-2 sm:p-3 text-[10px] sm:text-xs font-medium text-muted-foreground uppercase whitespace-nowrap">
                             {t('form.quantity')}
                           </th>
-                          <th className="text-right p-3 text-xs font-medium text-muted-foreground uppercase">
+                          <th className="text-right p-2 sm:p-3 text-[10px] sm:text-xs font-medium text-muted-foreground uppercase whitespace-nowrap">
                             {t('form.unitPrice')}
                           </th>
-                          <th className="text-right p-3 text-xs font-medium text-muted-foreground uppercase">
+                          <th className="text-right p-2 sm:p-3 text-[10px] sm:text-xs font-medium text-muted-foreground uppercase whitespace-nowrap">
                             {t('form.taxRate')}
                           </th>
-                          <th className="text-right p-3 text-xs font-medium text-muted-foreground uppercase">
+                          <th className="text-right p-2 sm:p-3 text-[10px] sm:text-xs font-medium text-muted-foreground uppercase whitespace-nowrap">
                             {tCommon('total')}
                           </th>
                         </tr>
@@ -194,13 +194,13 @@ export function QuotePreview({
                       <tbody className="divide-y">
                         {items.map((item, index) => (
                           <tr key={item.id} className="hover:bg-muted/30">
-                            <td className="p-3 text-sm">{item.description}</td>
-                            <td className="p-3 text-sm text-right tabular-nums">{item.quantity}</td>
-                            <td className="p-3 text-sm text-right tabular-nums">
+                            <td className="p-2 sm:p-3 text-xs sm:text-sm max-w-[120px] sm:max-w-none truncate">{item.description}</td>
+                            <td className="p-2 sm:p-3 text-xs sm:text-sm text-right tabular-nums whitespace-nowrap">{item.quantity}</td>
+                            <td className="p-2 sm:p-3 text-xs sm:text-sm text-right tabular-nums whitespace-nowrap">
                               CHF {item.unit_price.toFixed(2)}
                             </td>
-                            <td className="p-3 text-sm text-right tabular-nums">{item.tax_rate}%</td>
-                            <td className="p-3 text-sm text-right font-medium tabular-nums">
+                            <td className="p-2 sm:p-3 text-xs sm:text-sm text-right tabular-nums whitespace-nowrap">{item.tax_rate}%</td>
+                            <td className="p-2 sm:p-3 text-xs sm:text-sm text-right font-medium tabular-nums whitespace-nowrap">
                               CHF {item.line_total.toFixed(2)}
                             </td>
                           </tr>
@@ -217,24 +217,24 @@ export function QuotePreview({
 
           {/* Totals */}
           <div className="flex justify-end">
-            <Card className="w-full md:w-96 border-primary/20 bg-primary/5">
-              <CardContent className="pt-6 space-y-3">
-                <div className="flex justify-between text-sm">
+            <Card className="w-full sm:w-auto sm:min-w-[280px] md:min-w-[320px] border-primary/20 bg-primary/5">
+              <CardContent className="pt-4 sm:pt-6 space-y-2 sm:space-y-3">
+                <div className="flex justify-between text-xs sm:text-sm gap-4">
                   <span className="text-muted-foreground">{t('form.subtotal')}</span>
                   <span className="font-semibold tabular-nums">
                     CHF {quote.subtotal.toFixed(2)}
                   </span>
                 </div>
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between text-xs sm:text-sm gap-4">
                   <span className="text-muted-foreground">{t('form.tax')}</span>
                   <span className="font-semibold tabular-nums">
                     CHF {quote.tax_amount.toFixed(2)}
                   </span>
                 </div>
                 <Separator className="bg-primary/20" />
-                <div className="flex justify-between items-center">
-                  <span className="font-bold">{t('form.total')}</span>
-                  <span className="text-2xl font-bold text-primary tabular-nums">
+                <div className="flex justify-between items-center gap-4">
+                  <span className="font-bold text-sm sm:text-base">{t('form.total')}</span>
+                  <span className="text-xl sm:text-2xl font-bold text-primary tabular-nums">
                     CHF {quote.total.toFixed(2)}
                   </span>
                 </div>
@@ -245,12 +245,12 @@ export function QuotePreview({
           {/* Notes */}
           {quote.notes && (
             <div>
-              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+              <h3 className="text-xs sm:text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">
                 {tCommon('notes')}
               </h3>
               <Card>
-                <CardContent className="pt-6">
-                  <p className="text-sm whitespace-pre-wrap">{quote.notes}</p>
+                <CardContent className="pt-4 sm:pt-6">
+                  <p className="text-xs sm:text-sm whitespace-pre-wrap break-words">{quote.notes}</p>
                 </CardContent>
               </Card>
             </div>
@@ -266,21 +266,23 @@ export function QuotePreview({
           >
             {tCommon('close')}
           </Button>
-          <div className="flex gap-2 ml-auto">
+          <div className="flex flex-col sm:flex-row gap-2 sm:ml-auto w-full sm:w-auto">
             {onDownload && (
               <Button
                 variant="outline"
                 onClick={onDownload}
-                className="flex-1 sm:flex-none"
+                className="w-full sm:w-auto"
               >
-                <Download className="h-4 w-4 mr-2" />
-                {tCommon('download')}
+                <Download className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">{tCommon('download')}</span>
+                <span className="sm:hidden">{tCommon('download')}</span>
               </Button>
             )}
             {onEdit && (
-              <Button onClick={onEdit} className="flex-1 sm:flex-none">
-                <Edit3 className="h-4 w-4 mr-2" />
-                {tCommon('edit')}
+              <Button onClick={onEdit} className="w-full sm:w-auto">
+                <Edit3 className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">{tCommon('edit')}</span>
+                <span className="sm:hidden">{tCommon('edit')}</span>
               </Button>
             )}
           </div>

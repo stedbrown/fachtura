@@ -97,9 +97,9 @@ export function ProductDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-[95vw] sm:max-w-xl lg:max-w-2xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
         <DialogHeader>
-          <DialogTitle className="text-xl md:text-2xl">
+          <DialogTitle className="text-lg sm:text-xl md:text-2xl">
             {product ? t('edit') : t('create')}
           </DialogTitle>
           <DialogDescription className="text-sm">
