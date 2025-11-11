@@ -92,14 +92,7 @@ export default function ExpensesPage() {
   const [selectedExpense, setSelectedExpense] = useState<ExpenseWithSupplier | null>(null)
 
   // Filters state
-  const [filters, setFilters] = useState<FilterState>({
-    searchQuery: '',
-    status: 'all',
-    dateFrom: '',
-    dateTo: '',
-    amountFrom: '',
-    amountTo: '',
-  })
+  const [filters, setFilters] = useState<FilterState>({})
 
   // Column visibility configuration
   const expenseColumns: ColumnConfig[] = [
@@ -284,37 +277,31 @@ export default function ExpensesPage() {
   // Apply filters to sorted expenses
   const filteredExpenses = useMemo(() => {
     return sortedExpenses.filter(expense => {
-      // Search query filter
-      if (filters.searchQuery) {
-        const query = filters.searchQuery.toLowerCase()
-        const matchesDescription = expense.description?.toLowerCase().includes(query)
-        const matchesCategory = expense.category?.toLowerCase().includes(query)
-        const matchesSupplier = expense.supplier?.name?.toLowerCase().includes(query) || expense.supplier_name?.toLowerCase().includes(query)
-        if (!matchesDescription && !matchesCategory && !matchesSupplier) return false
-      }
-
       // Status filter
       if (filters.status && filters.status !== 'all' && expense.status !== filters.status) {
         return false
       }
 
       // Date range filter
-      if (filters.dateFrom) {
+      if (filters.dateFrom || filters.dateTo) {
         const expenseDate = new Date(expense.expense_date)
-        const fromDate = new Date(filters.dateFrom)
-        if (expenseDate < fromDate) return false
-      }
-      if (filters.dateTo) {
-        const expenseDate = new Date(expense.expense_date)
-        const toDate = new Date(filters.dateTo)
-        if (expenseDate > toDate) return false
+        if (filters.dateFrom && expenseDate < filters.dateFrom) {
+          return false
+        }
+        if (filters.dateTo) {
+          const toDate = new Date(filters.dateTo)
+          toDate.setHours(23, 59, 59, 999) // Include the entire day
+          if (expenseDate > toDate) {
+            return false
+          }
+        }
       }
 
       // Amount range filter
-      if (filters.amountFrom && Number(expense.amount) < Number(filters.amountFrom)) {
+      if (filters.minAmount && Number(expense.amount) < filters.minAmount) {
         return false
       }
-      if (filters.amountTo && Number(expense.amount) > Number(filters.amountTo)) {
+      if (filters.maxAmount && Number(expense.amount) > filters.maxAmount) {
         return false
       }
 
