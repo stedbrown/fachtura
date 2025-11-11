@@ -160,6 +160,16 @@ export function ExpenseDialog({
   }
 
   const handleFormSubmit = async (data: ExpenseFormInput) => {
+    // Validate receipt_url if provided
+    if (data.receipt_url && data.receipt_url.trim() !== '') {
+      try {
+        new URL(data.receipt_url)
+      } catch {
+        toast.error(t('receiptUrl') + ': URL non valido')
+        return
+      }
+    }
+
     setLoading(true)
     const supabase = createClient()
     const { data: { user } } = await supabase.auth.getUser()
