@@ -28,7 +28,6 @@ import { exportFormattedToCSV, exportFormattedToExcel, formatDateForExport, form
 import { toast } from 'sonner'
 import { useSubscription } from '@/hooks/use-subscription'
 import { SubscriptionUpgradeDialog } from '@/components/subscription-upgrade-dialog'
-import { InvoiceDialog } from '@/components/invoices/invoice-dialog'
 import { InvoicePreview } from '@/components/invoices/invoice-preview'
 
 const localeMap: Record<string, Locale> = {
@@ -78,8 +77,6 @@ export default function InvoicesPage() {
     maxCount: 0,
     planName: 'Free'
   })
-  const [invoiceDialogOpen, setInvoiceDialogOpen] = useState(false)
-  const [editingInvoice, setEditingInvoice] = useState<InvoiceWithClient | null>(null)
   const [previewInvoice, setPreviewInvoice] = useState<InvoiceWithClient | null>(null)
   const [previewOpen, setPreviewOpen] = useState(false)
 
@@ -216,14 +213,12 @@ export default function InvoicesPage() {
       })
     }
     
-    // Apri il dialog di creazione
-    setEditingInvoice(null)
-    setInvoiceDialogOpen(true)
+    // Naviga alla pagina di creazione
+    router.push(`/${locale}/dashboard/invoices/new`)
   }
 
   const handleEditInvoice = (invoice: InvoiceWithClient) => {
-    setEditingInvoice(invoice)
-    setInvoiceDialogOpen(true)
+    router.push(`/${locale}/dashboard/invoices/${invoice.id}`)
   }
 
   // Filter invoices based on active filters
@@ -682,21 +677,6 @@ export default function InvoicesPage() {
         planName={upgradeDialogParams.planName}
       />
 
-      {/* Invoice Dialog */}
-      <InvoiceDialog
-        open={invoiceDialogOpen}
-        onOpenChange={(open) => {
-          setInvoiceDialogOpen(open)
-          if (!open) setEditingInvoice(null)
-        }}
-        invoice={editingInvoice}
-        onSuccess={() => {
-          setInvoiceDialogOpen(false)
-          setEditingInvoice(null)
-          updateOverdueInvoicesAndLoad()
-        }}
-      />
-
       {/* Invoice Preview */}
       <InvoicePreview
         open={previewOpen}
@@ -709,8 +689,7 @@ export default function InvoicesPage() {
         onEdit={() => {
           if (previewInvoice) {
             setPreviewOpen(false)
-            setEditingInvoice(previewInvoice)
-            setInvoiceDialogOpen(true)
+            router.push(`/${locale}/dashboard/invoices/${previewInvoice.id}`)
           }
         }}
         onDownload={() => {

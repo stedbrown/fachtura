@@ -28,7 +28,6 @@ import { exportFormattedToCSV, exportFormattedToExcel, formatDateForExport, form
 import { toast } from 'sonner'
 import { useSubscription } from '@/hooks/use-subscription'
 import { SubscriptionUpgradeDialog } from '@/components/subscription-upgrade-dialog'
-import { QuoteDialog } from '@/components/quotes/quote-dialog'
 import { QuotePreview } from '@/components/quotes/quote-preview'
 
 const localeMap: Record<string, Locale> = {
@@ -77,8 +76,6 @@ export default function QuotesPage() {
     maxCount: 0,
     planName: 'Free'
   })
-  const [quoteDialogOpen, setQuoteDialogOpen] = useState(false)
-  const [editingQuote, setEditingQuote] = useState<QuoteWithClient | null>(null)
   const [previewQuote, setPreviewQuote] = useState<QuoteWithClient | null>(null)
   const [previewOpen, setPreviewOpen] = useState(false)
 
@@ -193,9 +190,8 @@ export default function QuotesPage() {
       })
     }
     
-    // Apri il dialog di creazione
-    setEditingQuote(null)
-    setQuoteDialogOpen(true)
+    // Naviga alla pagina di creazione
+    router.push(`/${locale}/dashboard/quotes/new`)
   }
 
   // Filter quotes based on active filters
@@ -563,8 +559,7 @@ export default function QuotesPage() {
                               size="icon"
                               onClick={(e) => {
                                 e.stopPropagation()
-                                setEditingQuote(quote)
-                                setQuoteDialogOpen(true)
+                                router.push(`/${locale}/dashboard/quotes/${quote.id}`)
                               }}
                               title={tCommon('edit')}
                             >
@@ -638,21 +633,6 @@ export default function QuotesPage() {
         planName={upgradeDialogParams.planName}
       />
 
-      {/* Quote Dialog */}
-      <QuoteDialog
-        open={quoteDialogOpen}
-        onOpenChange={(open) => {
-          setQuoteDialogOpen(open)
-          if (!open) setEditingQuote(null)
-        }}
-        quote={editingQuote}
-        onSuccess={() => {
-          setQuoteDialogOpen(false)
-          setEditingQuote(null)
-          loadQuotes()
-        }}
-      />
-
       {/* Quote Preview */}
       <QuotePreview
         open={previewOpen}
@@ -665,8 +645,7 @@ export default function QuotesPage() {
         onEdit={() => {
           if (previewQuote) {
             setPreviewOpen(false)
-            setEditingQuote(previewQuote)
-            setQuoteDialogOpen(true)
+            router.push(`/${locale}/dashboard/quotes/${previewQuote.id}`)
           }
         }}
         onDownload={() => {
