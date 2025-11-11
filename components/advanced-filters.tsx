@@ -46,6 +46,7 @@ interface AdvancedFiltersProps {
   showStatusFilter?: boolean
   statusOptions?: { value: string; label: string }[]
   clients?: { id: string; name: string }[]
+  className?: string
 }
 
 export function AdvancedFilters({
@@ -56,6 +57,7 @@ export function AdvancedFilters({
   showStatusFilter = false,
   statusOptions = [],
   clients = [],
+  className,
 }: AdvancedFiltersProps) {
   const t = useTranslations('common')
   const [isOpen, setIsOpen] = useState(false)
@@ -78,7 +80,7 @@ export function AdvancedFilters({
   }
 
   return (
-    <div className="flex gap-2 flex-wrap items-center">
+    <div className={cn("flex gap-2 flex-wrap items-center", className)}>
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
           <Button variant="outline" size="sm">

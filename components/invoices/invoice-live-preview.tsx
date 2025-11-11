@@ -16,6 +16,7 @@ interface InvoiceLivePreviewProps {
   items: InvoiceItemInput[]
   locale: string
   invoiceNumber?: string
+  compact?: boolean
 }
 
 export function InvoiceLivePreview({
@@ -28,6 +29,7 @@ export function InvoiceLivePreview({
   items,
   locale,
   invoiceNumber,
+  compact = false,
 }: InvoiceLivePreviewProps) {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null)
   const [isGenerating, setIsGenerating] = useState(false)
@@ -158,7 +160,12 @@ export function InvoiceLivePreview({
   }, [])
 
   const renderOverlay = (message?: string) => (
-    <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/65 backdrop-blur-sm z-10 pointer-events-none px-6 text-center space-y-2">
+    <div
+      className={cn(
+        'absolute inset-0 flex flex-col items-center justify-center bg-background/65 backdrop-blur-sm z-10 pointer-events-none px-6 text-center space-y-2',
+        compact && 'px-4'
+      )}
+    >
       {isGenerating && (
         <>
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mx-auto" />
@@ -173,10 +180,10 @@ export function InvoiceLivePreview({
 
   if (!pdfUrl) {
     return (
-      <div className="relative h-full bg-background">
+      <div className={cn('relative h-full bg-background', compact && 'py-4')}>
         {isGenerating && renderOverlay()}
         <div className="flex items-center justify-center h-full">
-          <div className="text-center space-y-2 max-w-md px-4">
+          <div className={cn('text-center space-y-2 max-w-md px-4', compact && 'px-3')}>
             <p className="text-sm text-muted-foreground">
               Compila il form per vedere l'anteprima del PDF
             </p>
@@ -195,10 +202,13 @@ export function InvoiceLivePreview({
   }
 
   return (
-    <div className="relative h-full bg-background">
+    <div className={cn('relative h-full bg-background', compact && 'py-4')}>
       <iframe
         src={`${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0`}
-        className="w-full h-full border-0"
+        className={cn(
+          'w-full h-full border-0',
+          compact && 'rounded-lg border border-border shadow-sm'
+        )}
         title="Invoice Preview"
       />
       {(isGenerating || error) && renderOverlay(error ?? undefined)}

@@ -17,6 +17,7 @@ import { Upload, Download, CheckCircle, XCircle, AlertCircle, Loader2 } from 'lu
 import Papa from 'papaparse'
 import { toast } from 'sonner'
 import { useTranslations } from 'next-intl'
+import { cn } from '@/lib/utils'
 
 interface ClientImportData {
   name: string
@@ -33,7 +34,7 @@ interface PreviewClient extends ClientImportData {
   errors: string[]
 }
 
-export function ImportClientsDialog({ onSuccess }: { onSuccess?: () => void }) {
+export function ImportClientsDialog({ onSuccess, className }: { onSuccess?: () => void; className?: string }) {
   const t = useTranslations('clients')
   const tCommon = useTranslations('common')
   
@@ -212,7 +213,7 @@ export function ImportClientsDialog({ onSuccess }: { onSuccess?: () => void }) {
       if (!isOpen) resetDialog()
     }}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="gap-2">
+        <Button variant="outline" className={cn("gap-2 w-full sm:w-auto justify-center sm:justify-start", className)}>
           <Upload className="h-4 w-4" />
           Importa Clienti
         </Button>

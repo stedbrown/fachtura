@@ -48,7 +48,7 @@ export function ThemeCustomizer() {
   return (
     <div className="space-y-8">
       {/* Color Theme Selection */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         <div>
           <Label className="text-base">Colore del tema</Label>
           <p className="text-sm text-muted-foreground">
@@ -81,7 +81,7 @@ export function ThemeCustomizer() {
       </div>
 
       {/* Border Radius Selection */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         <div>
           <Label className="text-base">Raggio dei bordi</Label>
           <p className="text-sm text-muted-foreground">
@@ -95,7 +95,7 @@ export function ThemeCustomizer() {
               key={r.value}
               variant={radius === r.value ? 'default' : 'outline'}
               className={cn(
-                'justify-start h-auto py-3 px-4',
+                'justify-start h-auto py-3 px-4 w-full',
                 radius === r.value && 'border-primary'
               )}
               onClick={() => changeRadius(r.value)}
@@ -123,26 +123,28 @@ export function ThemeCustomizer() {
       </div>
 
       {/* Preview Section */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         <Label className="text-base">Anteprima</Label>
-        <div className="rounded-lg border bg-card p-6 space-y-4">
-          <div className="flex items-center gap-3">
-            <Button size="sm">Primario</Button>
-            <Button size="sm" variant="secondary">
+        <div className="rounded-lg border bg-card p-4 sm:p-6 space-y-4">
+          <div className="flex flex-wrap items-center gap-3">
+            <Button size="sm" className="w-full sm:w-auto">
+              Primario
+            </Button>
+            <Button size="sm" variant="secondary" className="w-full sm:w-auto">
               Secondario
             </Button>
-            <Button size="sm" variant="outline">
+            <Button size="sm" variant="outline" className="w-full sm:w-auto">
               Outline
             </Button>
-            <Button size="sm" variant="destructive">
+            <Button size="sm" variant="destructive" className="w-full sm:w-auto">
               Distruttivo
             </Button>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-20 bg-primary rounded animate-pulse" />
-            <div className="h-10 w-20 bg-secondary rounded animate-pulse" />
-            <div className="h-10 w-20 bg-muted rounded animate-pulse" />
-            <div className="h-10 w-20 bg-accent rounded animate-pulse" />
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div className="h-10 w-full bg-primary rounded animate-pulse" />
+            <div className="h-10 w-full bg-secondary rounded animate-pulse" />
+            <div className="h-10 w-full bg-muted rounded animate-pulse" />
+            <div className="h-10 w-full bg-accent rounded animate-pulse" />
           </div>
         </div>
       </div>

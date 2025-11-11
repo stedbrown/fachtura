@@ -18,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useTranslations } from 'next-intl'
+import { cn } from '@/lib/utils'
 
 export interface ClientFilterState {
   searchName?: string
@@ -30,12 +31,14 @@ interface ClientFiltersProps {
   filters: ClientFilterState
   onFiltersChange: (filters: ClientFilterState) => void
   onExport?: (format: 'csv' | 'excel') => void
+  className?: string
 }
 
 export function ClientFilters({
   filters,
   onFiltersChange,
   onExport,
+  className,
 }: ClientFiltersProps) {
   const t = useTranslations('common')
   const tClients = useTranslations('clients')
@@ -57,7 +60,7 @@ export function ClientFilters({
   }
 
   return (
-    <div className="flex gap-2 flex-wrap items-center">
+    <div className={cn("flex gap-2 flex-wrap items-center", className)}>
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
           <Button variant="outline" size="sm">

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Settings2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -83,6 +84,7 @@ interface SimpleColumnToggleProps {
   columnVisibility: Record<string, boolean>
   onVisibilityChange: (columnKey: string, visible: boolean) => void
   label?: string
+  className?: string
 }
 
 export function SimpleColumnToggle({
@@ -90,6 +92,7 @@ export function SimpleColumnToggle({
   columnVisibility,
   onVisibilityChange,
   label = 'Mostra/Nascondi colonne',
+  className,
 }: SimpleColumnToggleProps) {
   return (
     <DropdownMenu>
@@ -97,10 +100,13 @@ export function SimpleColumnToggle({
         <Button
           variant="outline"
           size="sm"
-          className="h-8"
+          className={cn(
+            'h-8 w-full sm:w-auto justify-start sm:justify-start gap-2',
+            className
+          )}
         >
           <Settings2 className="mr-2 h-4 w-4" />
-          <span className="hidden sm:inline">Colonne</span>
+          <span className="text-sm font-medium truncate">{label}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[200px]">

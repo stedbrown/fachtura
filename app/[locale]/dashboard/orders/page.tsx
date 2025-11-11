@@ -216,14 +216,14 @@ export default function OrdersPage() {
   return (
     <div className="space-y-4 md:space-y-6">
       {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight">{t('title')}</h1>
           <p className="text-sm md:text-base text-muted-foreground mt-1">
             {t('description')}
           </p>
         </div>
-        <Button onClick={handleAddNew} size="default" className="w-full sm:w-auto">
+        <Button onClick={handleAddNew} size="default" className="w-full sm:w-auto lg:w-auto">
           <Plus className="h-4 w-4 mr-2" />
           {t('addNew')}
         </Button>
@@ -234,8 +234,8 @@ export default function OrdersPage() {
         <CardHeader className="pb-3 md:pb-4">
           <div className="flex flex-col gap-4">
             {/* Tabs and Export Row */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <Tabs value={showArchived ? 'archived' : 'active'} onValueChange={(v) => setShowArchived(v === 'archived')} className="w-full sm:w-auto">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+              <Tabs value={showArchived ? 'archived' : 'active'} onValueChange={(v) => setShowArchived(v === 'archived')} className="w-full lg:w-auto">
                 <TabsList className="grid w-full sm:w-auto grid-cols-2">
                   <TabsTrigger value="active" className="text-xs md:text-sm">
                     <ShoppingCart className="h-4 w-4 mr-2" />
@@ -250,21 +250,36 @@ export default function OrdersPage() {
 
               {/* Column Toggle and Export Buttons */}
               {!showArchived && orders.length > 0 && (
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row sm:flex-wrap sm:justify-end gap-2 w-full lg:w-auto">
                   <SimpleColumnToggle
                     columns={orderColumns}
                     columnVisibility={columnVisibility}
                     onVisibilityChange={handleVisibilityChange}
                     label={t('toggleColumns') || tCommon('toggleColumns') || 'Colonne'}
+                    className="w-full sm:w-auto sm:max-w-[220px]"
                   />
-                  <Button variant="outline" size="sm" onClick={() => handleExport('csv')} className="flex-1 sm:flex-none">
-                    <Download className="h-4 w-4 mr-2" />
-                    <span className="hidden sm:inline">CSV</span>
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={() => handleExport('excel')} className="flex-1 sm:flex-none">
-                    <Download className="h-4 w-4 mr-2" />
-                    <span className="hidden sm:inline">Excel</span>
-                  </Button>
+                  <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleExport('csv')}
+                      className="w-full sm:w-auto"
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      <span className="sm:hidden">CSV</span>
+                      <span className="hidden sm:inline">CSV</span>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleExport('excel')}
+                      className="w-full sm:w-auto"
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      <span className="sm:hidden">Excel</span>
+                      <span className="hidden sm:inline">Excel</span>
+                    </Button>
+                  </div>
                 </div>
               )}
             </div>

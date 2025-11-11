@@ -217,34 +217,34 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="space-y-6 p-4 sm:p-6">
-      <div>
-        <h1 className="text-3xl font-bold">{t('title')}</h1>
-        <p className="text-muted-foreground">
+    <div className="space-y-6 px-4 sm:px-6 lg:px-8 py-4 max-w-6xl mx-auto">
+      <div className="space-y-2">
+        <h1 className="text-3xl font-bold tracking-tight">{t('title')}</h1>
+        <p className="text-muted-foreground text-sm sm:text-base">
           {t('subtitle')}
         </p>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <Tabs defaultValue="company" className="space-y-6 max-w-5xl">
-          <TabsList className="w-full max-w-5xl grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
-            <TabsTrigger value="company" className="flex items-center gap-2 justify-center sm:justify-start text-xs sm:text-sm">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <Tabs defaultValue="company" className="space-y-6">
+          <TabsList className="w-full flex gap-2 overflow-x-auto sm:flex-wrap sm:items-start rounded-lg border border-border/60 bg-muted/50 p-1">
+            <TabsTrigger value="company" className="flex-shrink-0 sm:flex-initial min-w-[140px] px-3 py-2 flex items-center gap-2 justify-center sm:justify-start text-xs sm:text-sm">
               <Building2 className="h-4 w-4" />
               <span className="hidden sm:inline">Azienda</span>
             </TabsTrigger>
-            <TabsTrigger value="appearance" className="flex items-center gap-2 justify-center sm:justify-start text-xs sm:text-sm">
+            <TabsTrigger value="appearance" className="flex-shrink-0 sm:flex-initial min-w-[140px] px-3 py-2 flex items-center gap-2 justify-center sm:justify-start text-xs sm:text-sm">
               <Palette className="h-4 w-4" />
               <span className="hidden sm:inline">Aspetto</span>
             </TabsTrigger>
-            <TabsTrigger value="quotes" className="flex items-center gap-2 justify-center sm:justify-start text-xs sm:text-sm">
+            <TabsTrigger value="quotes" className="flex-shrink-0 sm:flex-initial min-w-[140px] px-3 py-2 flex items-center gap-2 justify-center sm:justify-start text-xs sm:text-sm">
               <FileText className="h-4 w-4" />
               <span className="hidden sm:inline">Preventivi</span>
             </TabsTrigger>
-            <TabsTrigger value="invoices" className="flex items-center gap-2 justify-center sm:justify-start text-xs sm:text-sm">
+            <TabsTrigger value="invoices" className="flex-shrink-0 sm:flex-initial min-w-[140px] px-3 py-2 flex items-center gap-2 justify-center sm:justify-start text-xs sm:text-sm">
               <Receipt className="h-4 w-4" />
               <span className="hidden sm:inline">Fatture</span>
             </TabsTrigger>
-            <TabsTrigger value="payment" className="flex items-center gap-2 justify-center sm:justify-start text-xs sm:text-sm">
+            <TabsTrigger value="payment" className="flex-shrink-0 sm:flex-initial min-w-[140px] px-3 py-2 flex items-center gap-2 justify-center sm:justify-start text-xs sm:text-sm">
               <CreditCard className="h-4 w-4" />
               <span className="hidden sm:inline">Pagamenti</span>
             </TabsTrigger>
@@ -252,14 +252,15 @@ export default function SettingsPage() {
 
           {/* Company Info Tab */}
           <TabsContent value="company">
-            <Card className="max-w-2xl w-full">
-              <CardHeader>
+            <div className="max-w-3xl mx-auto">
+              <Card className="w-full">
+                <CardHeader>
                 <CardTitle>{t('companyInfo')}</CardTitle>
                 <CardDescription>
                   {t('companyInfoDescription')}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+                <CardContent className="space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="company_name">{t('fields.companyName')} *</Label>
                   <Input
@@ -366,13 +367,15 @@ export default function SettingsPage() {
                   <Input id="website" {...register('website')} placeholder="https://..." />
                 </div>
               </CardContent>
-            </Card>
+              </Card>
+            </div>
           </TabsContent>
 
           {/* Appearance Tab */}
           <TabsContent value="appearance">
-            <Card className="max-w-2xl w-full">
-              <CardHeader>
+            <div className="max-w-3xl mx-auto">
+              <Card className="w-full">
+                <CardHeader>
                 <CardTitle>Personalizzazione Aspetto</CardTitle>
                 <CardDescription>
                   Scegli il tema e lo stile dell'applicazione
@@ -381,19 +384,21 @@ export default function SettingsPage() {
               <CardContent>
                 <ThemeCustomizer />
               </CardContent>
-            </Card>
+              </Card>
+            </div>
           </TabsContent>
 
           {/* Quotes Customization Tab */}
           <TabsContent value="quotes">
-            <Card className="max-w-2xl w-full">
-              <CardHeader>
+            <div className="max-w-3xl mx-auto">
+              <Card className="w-full">
+                <CardHeader>
                 <CardTitle>{t('quoteCustomization')}</CardTitle>
                 <CardDescription>
                   {t('quoteCustomizationDescription')}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+                <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="quote_default_notes">{t('fields.quoteDefaultNotes')}</Label>
                   <Textarea
@@ -447,19 +452,21 @@ export default function SettingsPage() {
                   </p>
                 </div>
               </CardContent>
-            </Card>
+              </Card>
+            </div>
           </TabsContent>
 
           {/* Invoices Customization Tab */}
           <TabsContent value="invoices">
-            <Card className="max-w-2xl w-full">
-              <CardHeader>
-                <CardTitle>{t('invoiceCustomization')}</CardTitle>
-                <CardDescription>
-                  {t('invoiceCustomizationDescription')}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
+            <div className="max-w-3xl mx-auto">
+              <Card className="w-full">
+                <CardHeader>
+                  <CardTitle>{t('invoiceCustomization')}</CardTitle>
+                  <CardDescription>
+                    {t('invoiceCustomizationDescription')}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="invoice_default_notes">{t('fields.invoiceDefaultNotes')}</Label>
                   <Textarea
@@ -513,19 +520,21 @@ export default function SettingsPage() {
                   </p>
                 </div>
               </CardContent>
-            </Card>
+              </Card>
+            </div>
           </TabsContent>
 
           {/* Payment Info Tab */}
           <TabsContent value="payment">
-            <Card className="max-w-2xl w-full">
-              <CardHeader>
-                <CardTitle>{t('paymentInfo')}</CardTitle>
-                <CardDescription>
-                  {t('paymentInfoDescription')}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
+            <div className="max-w-3xl mx-auto">
+              <Card className="w-full">
+                <CardHeader>
+                  <CardTitle>{t('paymentInfo')}</CardTitle>
+                  <CardDescription>
+                    {t('paymentInfoDescription')}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="payment_methods">{t('fields.paymentMethods')}</Label>
                   <Textarea
@@ -552,12 +561,22 @@ export default function SettingsPage() {
                   </p>
                 </div>
               </CardContent>
-            </Card>
+              </Card>
+            </div>
           </TabsContent>
         </Tabs>
 
-        <div className="flex justify-end max-w-2xl mt-6">
-          <Button type="submit" disabled={loading}>
+        <div className="flex flex-col sm:flex-row gap-3 sm:justify-end max-w-3xl mx-auto mt-6">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => loadSettings()}
+            disabled={loading}
+            className="w-full sm:w-auto"
+          >
+            {tCommon('cancel')}
+          </Button>
+          <Button type="submit" disabled={loading} className="w-full sm:w-auto">
             {loading ? tCommon('loading') : tCommon('save')}
           </Button>
         </div>
