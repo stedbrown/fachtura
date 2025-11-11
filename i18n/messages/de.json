@@ -780,6 +780,7 @@
     "lowStockThresholdDescription": "Sie erhalten eine Warnung, wenn die Menge unter diesen Schwellenwert fällt",
     "lowStock": "Niedriger Bestand",
     "notTracked": "Nicht verfolgt",
+    "status": "Status",
     "statusLabel": "Status",
     "statusDescription": "Produktsichtbarkeit verwalten",
     "active": "Aktiv",

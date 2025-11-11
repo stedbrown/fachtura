@@ -13,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Plus, Edit3, Trash2, Archive, ArchiveRestore, Truck } from 'lucide-react'
+import { Plus, Edit3, Trash2, Archive, ArchiveRestore, Truck, MoreHorizontal } from 'lucide-react'
 import { DeleteDialog } from '@/components/delete-dialog'
 import { SimpleColumnToggle, useColumnVisibility, type ColumnConfig } from '@/components/simple-column-toggle'
 import { SortableHeader, useSorting } from '@/components/sortable-header'
@@ -25,6 +25,13 @@ import { SubscriptionUpgradeDialog } from '@/components/subscription-upgrade-dia
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { SupplierDialog } from '@/components/suppliers/supplier-dialog'
 import type { SupplierInput } from '@/lib/validations/supplier'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 export default function SuppliersPage() {
   const router = useRouter()
@@ -394,48 +401,50 @@ export default function SuppliersPage() {
                         <TableCell className={getColumnClass('email', 'hidden lg:table-cell text-xs md:text-sm')}>{supplier.email || '-'}</TableCell>
                         <TableCell className={getColumnClass('phone', 'hidden lg:table-cell text-xs md:text-sm')}>{supplier.phone || '-'}</TableCell>
                         <TableCell className={getColumnClass('actions', 'text-right')} onClick={(e) => e.stopPropagation()}>
-                          <div className="flex justify-end gap-2">
-                            {!showArchived && (
-                              <>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => handleEdit(supplier)}
-                                  title={tCommon('edit')}
-                                >
-                                  <Edit3 className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => confirmDelete(supplier.id)}
-                                  title={tCommon('delete')}
-                                >
-                                  <Trash2 className="h-4 w-4 text-red-600" />
-                                </Button>
-                              </>
-                            )}
-                            {showArchived && (
-                              <>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => handleRestore(supplier.id)}
-                                  title={t('restore')}
-                                >
-                                  <ArchiveRestore className="h-4 w-4 text-green-600" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => handlePermanentDelete(supplier.id)}
-                                  title={t('permanentDelete')}
-                                >
-                                  <Trash2 className="h-4 w-4 text-red-600" />
-                                </Button>
-                              </>
-                            )}
-                          </div>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 data-[state=open]:bg-muted"
+                                aria-label={tCommon('actions')}
+                              >
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-52">
+                              {!showArchived ? (
+                                <>
+                                  <DropdownMenuItem onSelect={() => handleEdit(supplier)}>
+                                    <Edit3 className="mr-2 h-4 w-4" />
+                                    {tCommon('edit')}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onSelect={() => confirmDelete(supplier.id)}
+                                    className="text-destructive focus:text-destructive"
+                                  >
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    {tCommon('delete')}
+                                  </DropdownMenuItem>
+                                </>
+                              ) : (
+                                <>
+                                  <DropdownMenuItem onSelect={() => handleRestore(supplier.id)}>
+                                    <ArchiveRestore className="mr-2 h-4 w-4" />
+                                    {t('restore')}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem
+                                    onSelect={() => handlePermanentDelete(supplier.id)}
+                                    className="text-destructive focus:text-destructive"
+                                  >
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    {t('permanentDelete')}
+                                  </DropdownMenuItem>
+                                </>
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </TableCell>
                       </TableRow>
                     ))}

@@ -780,6 +780,7 @@
     "lowStockThresholdDescription": "Ti retschaivas in avis sche la quantitad sa reducescha sut questa limita",
     "lowStock": "Stock bass",
     "notTracked": "Betg suandà",
+    "status": "Status",
     "statusLabel": "Status",
     "statusDescription": "Administrar la visibilitad dal product",
     "active": "Activ",

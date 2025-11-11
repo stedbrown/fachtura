@@ -14,7 +14,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Edit3, Trash2, Archive, ArchiveRestore, ShoppingCart, Download } from 'lucide-react'
+import { Plus, Edit3, Trash2, Archive, ArchiveRestore, ShoppingCart, Download, MoreHorizontal } from 'lucide-react'
 import { DeleteDialog } from '@/components/delete-dialog'
 import { SimpleColumnToggle, useColumnVisibility, type ColumnConfig } from '@/components/simple-column-toggle'
 import { SortableHeader, useSorting } from '@/components/sortable-header'
@@ -32,6 +32,12 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 const localeMap: Record<string, Locale> = {
   it: it,
@@ -418,40 +424,43 @@ export default function OrdersPage() {
                           CHF {Number(order.total).toLocaleString('it-CH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </TableCell>
                         <TableCell className={getColumnClass('actions', 'text-right')}>
-                          <div className="flex items-center justify-end gap-2">
-                            {showArchived ? (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                onClick={() => handleRestore(order.id)}
-                                title={t('restore')}
+                                className="h-8 w-8 data-[state=open]:bg-muted"
+                                aria-label={tCommon('actions')}
                               >
-                                <ArchiveRestore className="h-4 w-4" />
+                                <MoreHorizontal className="h-4 w-4" />
                               </Button>
-                            ) : (
-                              <>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => router.push(`/${locale}/dashboard/orders/${order.id}`)}
-                                  title={t('edit')}
-                                >
-                                  <Edit3 className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => {
-                                    setOrderToDelete(order.id)
-                                    setDeleteDialogOpen(true)
-                                  }}
-                                  title={t('delete')}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </>
-                            )}
-                          </div>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-48">
+                              {!showArchived ? (
+                                <>
+                                  <DropdownMenuItem onSelect={() => router.push(`/${locale}/dashboard/orders/${order.id}`)}>
+                                    <Edit3 className="mr-2 h-4 w-4" />
+                                    {t('edit')}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onSelect={() => {
+                                      setOrderToDelete(order.id)
+                                      setDeleteDialogOpen(true)
+                                    }}
+                                    className="text-destructive focus:text-destructive"
+                                  >
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    {t('delete')}
+                                  </DropdownMenuItem>
+                                </>
+                              ) : (
+                                <DropdownMenuItem onSelect={() => handleRestore(order.id)}>
+                                  <ArchiveRestore className="mr-2 h-4 w-4" />
+                                  {t('restore')}
+                                </DropdownMenuItem>
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </TableCell>
                       </TableRow>
                     ))}

@@ -12,7 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Plus, Edit3, Trash2, Archive, ArchiveRestore, Users } from 'lucide-react'
+import { Plus, Edit3, Trash2, Archive, ArchiveRestore, Users, MoreHorizontal } from 'lucide-react'
 import { ClientDialog } from '@/components/clients/client-dialog'
 import { ImportClientsDialog } from '@/components/clients/import-clients-dialog'
 import { DeleteDialog } from '@/components/delete-dialog'
@@ -29,6 +29,13 @@ import Link from 'next/link'
 import { useSubscription } from '@/hooks/use-subscription'
 import { SubscriptionUpgradeDialog } from '@/components/subscription-upgrade-dialog'
 import { toast } from 'sonner'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 export default function ClientsPage() {
   const params = useParams()
@@ -509,48 +516,50 @@ export default function ClientsPage() {
                     <TableCell className={getColumnClass('phone', 'hidden lg:table-cell text-xs md:text-sm')}>{client.phone || '-'}</TableCell>
                     <TableCell className={getColumnClass('city', 'hidden md:table-cell text-xs md:text-sm')}>{client.city || '-'}</TableCell>
                     <TableCell className={getColumnClass('actions', 'text-right')} onClick={(e) => e.stopPropagation()}>
-                      <div className="flex justify-end gap-2">
-                        {!showArchived && (
-                          <>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleEdit(client)}
-                              title={tCommon('edit')}
-                            >
-                              <Edit3 className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => confirmDelete(client.id)}
-                              title={tCommon('delete')}
-                            >
-                              <Trash2 className="h-4 w-4 text-red-600" />
-                            </Button>
-                          </>
-                        )}
-                        {showArchived && (
-                          <>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleRestore(client.id)}
-                              title={t('restore')}
-                            >
-                              <ArchiveRestore className="h-4 w-4 text-green-600" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handlePermanentDelete(client.id)}
-                              title={t('permanentDelete')}
-                            >
-                              <Trash2 className="h-4 w-4 text-red-600" />
-                            </Button>
-                          </>
-                        )}
-                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 data-[state=open]:bg-muted"
+                            aria-label={tCommon('actions')}
+                          >
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-48">
+                          {!showArchived ? (
+                            <>
+                              <DropdownMenuItem onSelect={() => handleEdit(client)}>
+                                <Edit3 className="mr-2 h-4 w-4" />
+                                {tCommon('edit')}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onSelect={() => confirmDelete(client.id)}
+                                className="text-destructive focus:text-destructive"
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                {tCommon('delete')}
+                              </DropdownMenuItem>
+                            </>
+                          ) : (
+                            <>
+                              <DropdownMenuItem onSelect={() => handleRestore(client.id)}>
+                                <ArchiveRestore className="mr-2 h-4 w-4" />
+                                {t('restore')}
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                onSelect={() => handlePermanentDelete(client.id)}
+                                className="text-destructive focus:text-destructive"
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                {t('permanentDelete')}
+                              </DropdownMenuItem>
+                            </>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
                 ))}

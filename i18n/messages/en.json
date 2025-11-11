@@ -780,6 +780,7 @@
     "lowStockThresholdDescription": "You will receive a warning when the quantity falls below this threshold",
     "lowStock": "Low stock",
     "notTracked": "Not tracked",
+    "status": "Status",
     "statusLabel": "Status",
     "statusDescription": "Manage product visibility",
     "active": "Active",

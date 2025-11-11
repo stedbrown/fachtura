@@ -781,6 +781,7 @@
     "lowStockThresholdDescription": "Riceverai un avviso quando la quantità scende sotto questa soglia",
     "lowStock": "Scorta bassa",
     "notTracked": "Non tracciato",
+    "status": "Stato",
     "statusLabel": "Stato",
     "statusDescription": "Gestisci la visibilità del prodotto",
     "active": "Attivo",

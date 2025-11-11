@@ -14,7 +14,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Edit3, Trash2, Archive, ArchiveRestore, Package } from 'lucide-react'
+import { Plus, Edit3, Trash2, Archive, ArchiveRestore, Package, MoreHorizontal } from 'lucide-react'
 import { DeleteDialog } from '@/components/delete-dialog'
 import { SimpleColumnToggle, useColumnVisibility, type ColumnConfig } from '@/components/simple-column-toggle'
 import { AdvancedFilters, type FilterState } from '@/components/advanced-filters'
@@ -28,6 +28,12 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { exportFormattedToCSV, exportFormattedToExcel, formatCurrencyForExport } from '@/lib/export-utils'
 import { ProductDialog } from '@/components/products/product-dialog'
 import type { ProductFormInput } from '@/lib/validations/product'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 export default function ProductsPage() {
   const router = useRouter()
@@ -442,40 +448,45 @@ export default function ProductsPage() {
                           </Badge>
                         </TableCell>
                         <TableCell className={getColumnClass('actions', 'text-right')}>
-                          <div className="flex items-center justify-end gap-2">
-                            {showArchived ? (
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                onClick={() => handleRestore(product.id)}
-                                title={t('restore')}
+                                className="h-8 w-8 data-[state=open]:bg-muted"
+                                aria-label={tCommon('actions')}
                               >
-                                <ArchiveRestore className="h-4 w-4" />
+                                <MoreHorizontal className="h-4 w-4" />
                               </Button>
-                            ) : (
-                              <>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => handleEdit(product)}
-                                  title={t('edit')}
-                                >
-                                  <Edit3 className="h-4 w-4" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  onClick={() => {
-                                    setProductToDelete(product.id)
-                                    setDeleteDialogOpen(true)
-                                  }}
-                                  title={t('delete')}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </>
-                            )}
-                          </div>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-48">
+                              {!showArchived ? (
+                                <>
+                                  <DropdownMenuItem onSelect={() => handleEdit(product)}>
+                                    <Edit3 className="mr-2 h-4 w-4" />
+                                    {t('edit')}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onSelect={() => {
+                                      setProductToDelete(product.id)
+                                      setDeleteDialogOpen(true)
+                                    }}
+                                    className="text-destructive focus:text-destructive"
+                                  >
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    {t('delete')}
+                                  </DropdownMenuItem>
+                                </>
+                              ) : (
+                                <>
+                                  <DropdownMenuItem onSelect={() => handleRestore(product.id)}>
+                                    <ArchiveRestore className="mr-2 h-4 w-4" />
+                                    {t('restore')}
+                                  </DropdownMenuItem>
+                                </>
+                              )}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </TableCell>
                       </TableRow>
                     ))}

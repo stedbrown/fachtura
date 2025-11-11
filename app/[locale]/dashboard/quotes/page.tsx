@@ -14,7 +14,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Eye, Trash2, Download, Archive, ArchiveRestore, Receipt, Edit3 } from 'lucide-react'
+import { Plus, Eye, Trash2, Download, Archive, ArchiveRestore, Receipt, Edit3, MoreHorizontal } from 'lucide-react'
 import { DeleteDialog } from '@/components/delete-dialog'
 import { SimpleColumnToggle, useColumnVisibility, type ColumnConfig } from '@/components/simple-column-toggle'
 import { SortableHeader, useSorting } from '@/components/sortable-header'
@@ -29,6 +29,13 @@ import { toast } from 'sonner'
 import { useSubscription } from '@/hooks/use-subscription'
 import { SubscriptionUpgradeDialog } from '@/components/subscription-upgrade-dialog'
 import { QuotePreview } from '@/components/quotes/quote-preview'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 
 const localeMap: Record<string, Locale> = {
   it: it,
@@ -551,59 +558,57 @@ export default function QuotesPage() {
                       </Badge>
                     </TableCell>
                     <TableCell className={getColumnClass('actions', 'text-right')} onClick={(e) => e.stopPropagation()}>
-                      <div className="flex justify-end gap-2">
-                        {!showArchived && (
-                          <>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                router.push(`/${locale}/dashboard/quotes/${quote.id}`)
-                              }}
-                              title={tCommon('edit')}
-                            >
-                              <Edit3 className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleDownloadPDF(quote.id, quote.quote_number)}
-                              title={tCommon('download')}
-                            >
-                              <Download className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => confirmDelete(quote.id)}
-                              title={tCommon('delete')}
-                            >
-                              <Trash2 className="h-4 w-4 text-red-600" />
-                            </Button>
-                          </>
-                        )}
-                        {showArchived && (
-                          <>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleRestore(quote.id)}
-                              title={t('restore')}
-                            >
-                              <ArchiveRestore className="h-4 w-4 text-green-600" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handlePermanentDelete(quote.id)}
-                              title={t('permanentDelete')}
-                            >
-                              <Trash2 className="h-4 w-4 text-red-600" />
-                            </Button>
-                          </>
-                        )}
-                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 data-[state=open]:bg-muted"
+                            aria-label={tCommon('actions')}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-52">
+                          {!showArchived ? (
+                            <>
+                              <DropdownMenuItem
+                                onSelect={() => router.push(`/${locale}/dashboard/quotes/${quote.id}`)}
+                              >
+                                <Edit3 className="mr-2 h-4 w-4" />
+                                {tCommon('edit')}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onSelect={() => handleDownloadPDF(quote.id, quote.quote_number)}>
+                                <Download className="mr-2 h-4 w-4" />
+                                {tCommon('download')}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onSelect={() => confirmDelete(quote.id)}
+                                className="text-destructive focus:text-destructive"
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                {tCommon('delete')}
+                              </DropdownMenuItem>
+                            </>
+                          ) : (
+                            <>
+                              <DropdownMenuItem onSelect={() => handleRestore(quote.id)}>
+                                <ArchiveRestore className="mr-2 h-4 w-4" />
+                                {t('restore')}
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                onSelect={() => handlePermanentDelete(quote.id)}
+                                className="text-destructive focus:text-destructive"
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                {t('permanentDelete')}
+                              </DropdownMenuItem>
+                            </>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
                 ))}
