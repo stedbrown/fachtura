@@ -1,9 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
-import { expenseFormSchema, type ExpenseFormInput, expenseCategories, expensePaymentMethods, expenseStatuses } from '@/lib/validations/expense'
+import { type ExpenseFormInput, expenseCategories, expensePaymentMethods, expenseStatuses } from '@/lib/validations/expense'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -62,7 +61,6 @@ export function ExpenseDialog({
     watch,
     setValue,
   } = useForm<ExpenseFormInput>({
-    resolver: zodResolver(expenseFormSchema),
     defaultValues: {
       description: '',
       category: 'office',
@@ -160,6 +158,27 @@ export function ExpenseDialog({
   }
 
   const handleFormSubmit = async (data: ExpenseFormInput) => {
+    // Manual validation
+    if (!data.description || data.description.trim() === '') {
+      toast.error(t('description') + ': campo obbligatorio')
+      return
+    }
+
+    if (!data.category) {
+      toast.error(t('category') + ': campo obbligatorio')
+      return
+    }
+
+    if (!data.amount || data.amount <= 0) {
+      toast.error(t('amount') + ': deve essere maggiore di zero')
+      return
+    }
+
+    if (!data.expense_date) {
+      toast.error(t('expenseDate') + ': campo obbligatorio')
+      return
+    }
+
     // Validate receipt_url if provided
     if (data.receipt_url && data.receipt_url.trim() !== '') {
       try {
@@ -168,6 +187,12 @@ export function ExpenseDialog({
         toast.error(t('receiptUrl') + ': URL non valido')
         return
       }
+    }
+
+    // Validate supplier_id if provided
+    if (data.supplier_id && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(data.supplier_id)) {
+      toast.error(t('supplier') + ': UUID non valido')
+      return
     }
 
     setLoading(true)
