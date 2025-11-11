@@ -252,10 +252,10 @@ export default function NewInvoicePage() {
         </div>
       </div>
 
-      {/* Main Content - Side by Side */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Form Section - Left */}
-        <div className="w-full lg:w-1/2 border-r overflow-y-auto bg-background">
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
+        {/* Form Section */}
+        <div className="w-full lg:w-1/2 lg:border-r border-border/60 overflow-y-auto bg-background flex-1">
           <div className="p-4 space-y-4">
             <SetupAlert />
 
@@ -521,8 +521,8 @@ export default function NewInvoicePage() {
           </div>
         </div>
 
-        {/* Preview Section - Right */}
-        <div className="hidden lg:block w-1/2 border-l bg-muted/30">
+        {/* Preview Section */}
+        <div className="w-full lg:w-1/2 border-t lg:border-t-0 lg:border-l border-border/60 bg-muted/30 h-[45vh] sm:h-[55vh] lg:h-full flex-shrink-0 overflow-hidden">
           <InvoiceLivePreview
             clientId={clientId}
             clients={clients}
