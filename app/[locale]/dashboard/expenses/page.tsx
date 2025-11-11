@@ -411,7 +411,7 @@ export default function ExpensesPage() {
                           label={t('expenseDate')}
                           sortKey="expense_date"
                           currentSortKey={sortKey}
-                          sortDirection={sortDirection}
+                          currentDirection={sortDirection}
                           onSort={handleSort}
                         />
                       </TableHead>
@@ -420,7 +420,7 @@ export default function ExpensesPage() {
                           label={t('description')}
                           sortKey="description"
                           currentSortKey={sortKey}
-                          sortDirection={sortDirection}
+                          currentDirection={sortDirection}
                           onSort={handleSort}
                         />
                       </TableHead>
@@ -431,7 +431,7 @@ export default function ExpensesPage() {
                           label={t('amount')}
                           sortKey="amount"
                           currentSortKey={sortKey}
-                          sortDirection={sortDirection}
+                          currentDirection={sortDirection}
                           onSort={handleSort}
                         />
                       </TableHead>
