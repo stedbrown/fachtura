@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
@@ -14,9 +14,10 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Edit3, Trash2, ArchiveRestore, Wallet, MoreHorizontal } from 'lucide-react'
+import { Plus, Edit3, Trash2, Archive, ArchiveRestore, Wallet, MoreHorizontal } from 'lucide-react'
 import { DeleteDialog } from '@/components/delete-dialog'
 import { SimpleColumnToggle, useColumnVisibility, type ColumnConfig } from '@/components/simple-column-toggle'
+import { AdvancedFilters, type FilterState } from '@/components/advanced-filters'
 import { SortableHeader, useSorting } from '@/components/sortable-header'
 import type { ExpenseWithSupplier } from '@/lib/types/database'
 import { format } from 'date-fns'
@@ -89,6 +90,16 @@ export default function ExpensesPage() {
   // Dialog state
   const [dialogOpen, setDialogOpen] = useState(false)
   const [selectedExpense, setSelectedExpense] = useState<ExpenseWithSupplier | null>(null)
+
+  // Filters state
+  const [filters, setFilters] = useState<FilterState>({
+    searchQuery: '',
+    status: 'all',
+    dateFrom: '',
+    dateTo: '',
+    amountFrom: '',
+    amountTo: '',
+  })
 
   // Column visibility configuration
   const expenseColumns: ColumnConfig[] = [
@@ -270,6 +281,47 @@ export default function ExpensesPage() {
     .filter(e => !showArchived && e.status === 'approved')
     .length
 
+  // Apply filters to sorted expenses
+  const filteredExpenses = useMemo(() => {
+    return sortedExpenses.filter(expense => {
+      // Search query filter
+      if (filters.searchQuery) {
+        const query = filters.searchQuery.toLowerCase()
+        const matchesDescription = expense.description?.toLowerCase().includes(query)
+        const matchesCategory = expense.category?.toLowerCase().includes(query)
+        const matchesSupplier = expense.supplier?.name?.toLowerCase().includes(query) || expense.supplier_name?.toLowerCase().includes(query)
+        if (!matchesDescription && !matchesCategory && !matchesSupplier) return false
+      }
+
+      // Status filter
+      if (filters.status && filters.status !== 'all' && expense.status !== filters.status) {
+        return false
+      }
+
+      // Date range filter
+      if (filters.dateFrom) {
+        const expenseDate = new Date(expense.expense_date)
+        const fromDate = new Date(filters.dateFrom)
+        if (expenseDate < fromDate) return false
+      }
+      if (filters.dateTo) {
+        const expenseDate = new Date(expense.expense_date)
+        const toDate = new Date(filters.dateTo)
+        if (expenseDate > toDate) return false
+      }
+
+      // Amount range filter
+      if (filters.amountFrom && Number(expense.amount) < Number(filters.amountFrom)) {
+        return false
+      }
+      if (filters.amountTo && Number(expense.amount) > Number(filters.amountTo)) {
+        return false
+      }
+
+      return true
+    })
+  }, [sortedExpenses, filters])
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -279,146 +331,73 @@ export default function ExpensesPage() {
   }
 
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-6 lg:p-8 pt-6">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <div className="space-y-4 md:space-y-6">
+      {/* Header */}
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">{t('title')}</h2>
-          <p className="text-sm text-muted-foreground mt-1">
-            {showArchived ? t('archivedDescription') : t('tableDescription')}
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight">{t('title')}</h1>
+          <p className="text-sm md:text-base text-muted-foreground mt-1">
+            {t('subtitle')}
           </p>
         </div>
-        <Button onClick={handleAddNew} className="w-full sm:w-auto">
+        <Button onClick={handleAddNew} size="default" className="w-full sm:w-auto lg:w-auto">
           <Plus className="mr-2 h-4 w-4" />
           {t('addNew')}
         </Button>
       </div>
 
-      {!showArchived && (
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t('totalExpenses')}</CardTitle>
-              <Wallet className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">CHF {totalExpenses.toFixed(2)}</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                {t('expensesValue')}
-              </p>
-            </CardContent>
-          </Card>
+      {/* Main Content Card */}
+      <Card>
+        <CardHeader className="pb-3 md:pb-4">
+          <div className="flex flex-col gap-4">
+            {/* Tabs and Filters Row */}
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+              <Tabs value={showArchived ? 'archived' : 'active'} onValueChange={(value) => setShowArchived(value === 'archived')} className="w-full lg:w-auto">
+                <TabsList className="grid w-full sm:w-auto grid-cols-2">
+                  <TabsTrigger value="active" className="text-xs md:text-sm">
+                    <Wallet className="h-4 w-4 mr-2" />
+                    {tTabs('active')}
+                  </TabsTrigger>
+                  <TabsTrigger value="archived" className="text-xs md:text-sm">
+                    <Archive className="h-4 w-4 mr-2" />
+                    {tTabs('archived')}
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t('pendingExpenses')}</CardTitle>
-              <Wallet className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{pendingExpenses}</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                {tStatus('pending')}
-              </p>
-            </CardContent>
-          </Card>
+              {/* Filters and Column Toggle */}
+              {!showArchived && (
+                <div className="flex flex-row flex-wrap items-center justify-end gap-2 w-full lg:w-auto">
+                  <AdvancedFilters
+                    filters={filters}
+                    onFiltersChange={setFilters}
+                    onExport={handleExport}
+                    showStatusFilter={true}
+                    statusOptions={[
+                      { value: 'pending', label: tStatus('pending') },
+                      { value: 'approved', label: tStatus('approved') },
+                      { value: 'rejected', label: tStatus('rejected') },
+                    ]}
+                  />
+                  <SimpleColumnToggle
+                    columns={expenseColumns}
+                    columnVisibility={columnVisibility}
+                    onVisibilityChange={handleVisibilityChange}
+                    label={t('toggleColumns')}
+                  />
+                </div>
+              )}
+            </div>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t('approvedExpenses')}</CardTitle>
-              <Wallet className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{approvedExpenses}</div>
-              <p className="text-xs text-muted-foreground mt-1">
-                {tStatus('approved')}
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{t('planLimit')}</CardTitle>
-              <Wallet className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {subscription?.usage?.expenses_count || 0}
-                {subscription?.plan?.max_expenses && ` / ${subscription.plan.max_expenses}`}
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                {t('monthlyExpenses')}
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
-      <Tabs value={showArchived ? 'archived' : 'active'} onValueChange={(value) => setShowArchived(value === 'archived')}>
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <TabsList className="grid w-full sm:w-auto grid-cols-2">
-            <TabsTrigger value="active" className="gap-2">
-              <Wallet className="h-4 w-4" />
-              <span className="hidden sm:inline">{tTabs('active')}</span>
-              <span className="sm:hidden">{tTabs('active')}</span>
-            </TabsTrigger>
-            <TabsTrigger value="archived" className="gap-2">
-              <ArchiveRestore className="h-4 w-4" />
-              <span className="hidden sm:inline">{tTabs('archived')}</span>
-              <span className="sm:hidden">{tTabs('archived')}</span>
-            </TabsTrigger>
-          </TabsList>
-
-          <div className="flex flex-row flex-wrap items-center justify-end gap-2 w-full sm:w-auto">
-            {!showArchived && (
-              <>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-9 w-9 sm:w-auto sm:px-3 flex items-center justify-center sm:justify-start gap-0 sm:gap-2"
-                        >
-                          <Wallet className="h-4 w-4" />
-                          <span className="sr-only sm:hidden">{tCommon('export')}</span>
-                          <span className="hidden sm:inline">{tCommon('export')}</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleExport('csv')}>
-                          {tCommon('exportCSV')}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleExport('excel')}>
-                          {tCommon('exportExcel')}
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom" className="hidden md:block">
-                    {tCommon('export')}
-                  </TooltipContent>
-                </Tooltip>
-              </>
-            )}
-            
-            <SimpleColumnToggle
-              columns={expenseColumns}
-              columnVisibility={columnVisibility}
-              onVisibilityChange={handleVisibilityChange}
-              label={t('toggleColumns')}
-            />
-          </div>
-        </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>{showArchived ? t('archivedTitle') : t('listTitle')}</CardTitle>
-            <CardDescription>
+            <CardTitle className="text-sm font-medium">
+              {showArchived ? t('archivedTitle') : t('listTitle')}
+            </CardTitle>
+            <CardDescription className="text-xs text-muted-foreground">
               {showArchived ? t('archivedDescription') : t('listDescription')}
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {expenses.length === 0 ? (
+            {filteredExpenses.length === 0 ? (
               <div className="text-center py-12">
                 <Wallet className="mx-auto h-12 w-12 text-muted-foreground" />
                 <h3 className="mt-4 text-lg font-semibold">
@@ -473,7 +452,7 @@ export default function ExpensesPage() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {sortedExpenses.map((expense) => (
+                    {filteredExpenses.map((expense) => (
                       <TableRow
                         key={expense.id}
                         className="cursor-pointer hover:bg-muted/50"

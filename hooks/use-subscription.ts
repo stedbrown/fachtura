@@ -21,6 +21,16 @@ export interface SubscriptionPlan {
   is_active: boolean;
 }
 
+export interface UsageTracking {
+  expenses_count?: number;
+  invoices_count?: number;
+  quotes_count?: number;
+  clients_count?: number;
+  products_count?: number;
+  orders_count?: number;
+  suppliers_count?: number;
+}
+
 export interface UserSubscription {
   id: string;
   user_id: string;
@@ -32,6 +42,7 @@ export interface UserSubscription {
   current_period_end: string | null;
   cancel_at_period_end: boolean;
   plan?: SubscriptionPlan;
+  usage?: UsageTracking;
 }
 
 export interface UsageLimits {
