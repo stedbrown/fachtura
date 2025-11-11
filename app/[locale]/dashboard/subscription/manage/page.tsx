@@ -191,7 +191,7 @@ export default function ManageSubscriptionPage() {
 
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">{t('status')}</span>
+                <span className="text-muted-foreground">{t('statusLabel')}</span>
                 <Badge variant={isActive ? 'default' : 'secondary'}>
                   {t(`status.${subscription.status}`)}
                 </Badge>
