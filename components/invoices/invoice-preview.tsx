@@ -96,7 +96,7 @@ export function InvoicePreview({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-2xl lg:max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-2xl lg:max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
             <div className="flex-1 min-w-0">
@@ -170,7 +170,7 @@ export function InvoicePreview({
             ) : (
               <Card>
                 <CardContent className="p-0">
-                  <div className="overflow-x-auto -mx-4 sm:mx-0">
+                  <div className="overflow-x-auto">
                     <table className="w-full min-w-[600px] sm:min-w-0">
                       <thead className="border-b bg-muted/50">
                         <tr>
