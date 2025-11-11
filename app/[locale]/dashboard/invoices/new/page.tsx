@@ -237,8 +237,9 @@ export default function NewInvoicePage() {
   return (
     <div className="h-screen flex flex-col">
       {/* Header */}
-      <div className="border-b bg-background px-4 sm:px-6 py-2 sm:py-3 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 sm:gap-3">
+      <div className="border-b bg-background px-4 sm:px-6 py-2.5 sm:py-3">
+        <div className="flex flex-wrap items-center gap-3 justify-between">
+          <div className="flex items-center gap-2 sm:gap-3">
           <Button
             variant="ghost"
             size="icon"
@@ -246,27 +247,32 @@ export default function NewInvoicePage() {
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <div className="leading-tight">
-            <h1 className="text-lg font-semibold sm:text-xl">{t('form.title')}</h1>
-            <p className="text-xs text-muted-foreground hidden sm:block">{t('form.subtitle')}</p>
+            <div className="leading-tight">
+              <span className="block text-xs font-medium text-muted-foreground uppercase sm:hidden">
+                {t('title')}
+              </span>
+              <h1 className="text-lg font-semibold sm:text-xl">{t('form.title')}</h1>
+              <p className="text-xs text-muted-foreground hidden sm:block">{t('form.subtitle')}</p>
+            </div>
           </div>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => router.push(`/${locale}/dashboard/invoices`)}
-            disabled={loading}
-          >
-            {tCommon('cancel')}
-          </Button>
-          <Button
-            size="sm"
-            onClick={handleSubmit}
-            disabled={loading}
-          >
-            {loading ? tCommon('loading') : t('form.create')}
-          </Button>
+
+          <div className="flex gap-2 w-full sm:w-auto justify-end">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => router.push(`/${locale}/dashboard/invoices`)}
+              disabled={loading}
+            >
+              {tCommon('cancel')}
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleSubmit}
+              disabled={loading}
+            >
+              {loading ? tCommon('loading') : t('form.create')}
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -358,28 +364,28 @@ export default function NewInvoicePage() {
                 {items.map((item, index) => (
                   <Card key={index} className="relative border-border/60">
                     <CardHeader className="pb-2 pt-3 px-3 sm:px-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline" className="text-xs px-1.5 py-0">
-                            #{index + 1}
-                          </Badge>
-                          {calculateLineTotal(item) > 0 && (
-                            <Badge variant="secondary" className="text-xs font-medium px-2 py-0 tabular-nums">
-                              CHF {calculateLineTotal(item).toFixed(2)}
-                            </Badge>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                          #{index + 1}
+                        </span>
+                        {calculateLineTotal(item) > 0 && (
+                          <span className="text-xs font-semibold tabular-nums text-foreground">
+                            CHF {calculateLineTotal(item).toFixed(2)}
+                          </span>
+                        )}
+                        <div className="ml-auto">
+                          {items.length > 1 && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="h-7 w-7 p-0 hover:bg-destructive/10"
+                              onClick={() => removeItem(index)}
+                            >
+                              <Trash2 className="h-3 w-3 text-destructive" />
+                            </Button>
                           )}
                         </div>
-                        {items.length > 1 && (
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="h-7 w-7 p-0 hover:bg-destructive/10"
-                            onClick={() => removeItem(index)}
-                          >
-                            <Trash2 className="h-3 w-3 text-destructive" />
-                          </Button>
-                        )}
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-2.5 px-3 sm:px-4 pb-3">
