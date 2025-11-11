@@ -317,7 +317,9 @@
     "sharedSuccessfully": "Document shared successfully",
     "shareError": "Error sharing document",
     "preview": {
-      "subtitle": "Detailed preview of the quote"
+      "subtitle": "Detailed preview of the quote",
+      "toggleOpen": "Show PDF preview",
+      "toggleClose": "Hide PDF preview"
     },
     "status": {
       "draft": "Draft",
@@ -396,7 +398,9 @@
     "downloadPDF": "Download PDF",
     "toggleColumns": "Show/Hide columns",
     "preview": {
-      "subtitle": "Detailed preview of the invoice"
+      "subtitle": "Detailed preview of the invoice",
+      "toggleOpen": "Show PDF preview",
+      "toggleClose": "Hide PDF preview"
     },
     "status": {
       "draft": "Draft",

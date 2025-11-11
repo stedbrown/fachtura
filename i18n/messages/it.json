@@ -319,7 +319,9 @@
     "sharedSuccessfully": "Documento condiviso con successo",
     "shareError": "Errore durante la condivisione del documento",
     "preview": {
-      "subtitle": "Anteprima dettagliata del preventivo"
+      "subtitle": "Anteprima dettagliata del preventivo",
+      "toggleOpen": "Mostra anteprima PDF",
+      "toggleClose": "Nascondi anteprima PDF"
     },
     "status": {
       "draft": "Bozza",
@@ -397,7 +399,9 @@
     "shareError": "Errore durante la condivisione del documento",
     "downloadPDF": "Scarica PDF",
     "preview": {
-      "subtitle": "Anteprima dettagliata della fattura"
+      "subtitle": "Anteprima dettagliata della fattura",
+      "toggleOpen": "Mostra anteprima PDF",
+      "toggleClose": "Nascondi anteprima PDF"
     },
     "status": {
       "draft": "Bozza",

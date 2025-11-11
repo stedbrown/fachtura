@@ -18,7 +18,7 @@ import {
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Plus, Trash2, Package, Edit3, ArrowLeft } from 'lucide-react'
+import { Plus, Trash2, Package, Edit3, ArrowLeft, ChevronDown } from 'lucide-react'
 import type { Client, Product } from '@/lib/types/database'
 import type { InvoiceItemInput } from '@/lib/validations/invoice'
 import { calculateInvoiceTotals, generateInvoiceNumber } from '@/lib/utils/invoice-utils'
@@ -47,11 +47,27 @@ export default function NewInvoicePage() {
   const [items, setItems] = useState<InvoiceItemInput[]>([
     { description: '', quantity: 1, unit_price: 0, tax_rate: 8.1 },
   ])
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const [invoiceNumber] = useState(generateInvoiceNumber())
 
   useEffect(() => {
     loadClients()
     loadProducts()
+  }, [])
+
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 1280px)')
+    const handlePreview = (event: MediaQueryListEvent) => {
+      setIsPreviewOpen(event.matches)
+    }
+    setIsPreviewOpen(mq.matches)
+    if (typeof mq.addEventListener === 'function') {
+      mq.addEventListener('change', handlePreview)
+      return () => mq.removeEventListener('change', handlePreview)
+    } else {
+      mq.addListener(handlePreview)
+      return () => mq.removeListener(handlePreview)
+    }
   }, [])
 
   const loadClients = async () => {
@@ -221,8 +237,8 @@ export default function NewInvoicePage() {
   return (
     <div className="h-screen flex flex-col">
       {/* Header */}
-      <div className="border-b bg-background px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-3">
+      <div className="border-b bg-background px-3 py-2 sm:px-4 sm:py-3 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 sm:gap-3">
           <Button
             variant="ghost"
             size="icon"
@@ -230,20 +246,22 @@ export default function NewInvoicePage() {
           >
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <div>
-            <h1 className="text-xl font-semibold">{t('form.title')}</h1>
-            <p className="text-sm text-muted-foreground">{t('form.subtitle')}</p>
+          <div className="leading-tight">
+            <h1 className="text-lg font-semibold sm:text-xl">{t('form.title')}</h1>
+            <p className="text-xs text-muted-foreground hidden sm:block">{t('form.subtitle')}</p>
           </div>
         </div>
         <div className="flex gap-2">
           <Button
             variant="outline"
+            size="sm"
             onClick={() => router.push(`/${locale}/dashboard/invoices`)}
             disabled={loading}
           >
             {tCommon('cancel')}
           </Button>
           <Button
+            size="sm"
             onClick={handleSubmit}
             disabled={loading}
           >
@@ -521,8 +539,29 @@ export default function NewInvoicePage() {
           </div>
         </div>
 
+        {/* Mobile Preview Toggle */}
+        <div className="xl:hidden border-t border-border/60 bg-muted/30 px-4 py-2 flex-shrink-0">
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full justify-between"
+            onClick={() => setIsPreviewOpen((prev) => !prev)}
+          >
+            <span className="text-sm font-medium">
+              {isPreviewOpen ? t('preview.toggleClose') : t('preview.toggleOpen')}
+            </span>
+            <ChevronDown
+              className={`h-4 w-4 transition-transform ${isPreviewOpen ? 'rotate-180' : ''}`}
+            />
+          </Button>
+        </div>
+
         {/* Preview Section */}
-        <div className="w-full xl:w-1/2 border-t xl:border-t-0 xl:border-l border-border/60 bg-muted/30 h-[45vh] sm:h-[55vh] lg:h-[60vh] xl:h-full flex-shrink-0 overflow-hidden">
+        <div
+          className={`border-border/60 bg-muted/30 flex-shrink-0 overflow-hidden xl:w-1/2 xl:border-l xl:border-t-0 xl:h-full xl:block ${
+            isPreviewOpen ? 'block border-t h-[45vh] sm:h-[55vh] lg:h-[60vh]' : 'hidden border-t'
+          }`}
+        >
           <InvoiceLivePreview
             clientId={clientId}
             clients={clients}

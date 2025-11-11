@@ -317,7 +317,9 @@
     "sharedSuccessfully": "Document partagé avec succès",
     "shareError": "Erreur lors du partage du document",
     "preview": {
-      "subtitle": "Aperçu détaillé du devis"
+      "subtitle": "Aperçu détaillé du devis",
+      "toggleOpen": "Afficher l'aperçu PDF",
+      "toggleClose": "Masquer l'aperçu PDF"
     },
     "status": {
       "draft": "Brouillon",
@@ -396,7 +398,9 @@
     "downloadPDF": "Télécharger PDF",
     "toggleColumns": "Afficher/Masquer colonnes",
     "preview": {
-      "subtitle": "Aperçu détaillé de la facture"
+      "subtitle": "Aperçu détaillé de la facture",
+      "toggleOpen": "Afficher l'aperçu PDF",
+      "toggleClose": "Masquer l'aperçu PDF"
     },
     "status": {
       "draft": "Brouillon",

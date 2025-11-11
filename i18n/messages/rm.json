@@ -317,7 +317,9 @@
     "sharedSuccessfully": "Document cundividì cun success",
     "shareError": "Errur tar la cundivisiun dal document",
     "preview": {
-      "subtitle": "Prevista detagliada dal preventiv"
+      "subtitle": "Prevista detagliada dal preventiv",
+      "toggleOpen": "Mussar prevista PDF",
+      "toggleClose": "Zuppentar prevista PDF"
     },
     "status": {
       "draft": "Sboz",
@@ -396,7 +398,9 @@
     "downloadPDF": "Telechargiar PDF",
     "toggleColumns": "Mussar/Zuppentar colonnas",
     "preview": {
-      "subtitle": "Prevista detagliada da la factura"
+      "subtitle": "Prevista detagliada da la factura",
+      "toggleOpen": "Mussar prevista PDF",
+      "toggleClose": "Zuppentar prevista PDF"
     },
     "status": {
       "draft": "Sboz",

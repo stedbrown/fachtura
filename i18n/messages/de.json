@@ -317,7 +317,9 @@
     "sharedSuccessfully": "Dokument erfolgreich geteilt",
     "shareError": "Fehler beim Teilen des Dokuments",
     "preview": {
-      "subtitle": "Detaillierte Vorschau des Angebots"
+      "subtitle": "Detaillierte Vorschau des Angebots",
+      "toggleOpen": "PDF-Vorschau anzeigen",
+      "toggleClose": "PDF-Vorschau ausblenden"
     },
     "status": {
       "draft": "Entwurf",
@@ -396,7 +398,9 @@
     "downloadPDF": "PDF herunterladen",
     "toggleColumns": "Spalten anzeigen/ausblenden",
     "preview": {
-      "subtitle": "Detaillierte Vorschau der Rechnung"
+      "subtitle": "Detaillierte Vorschau der Rechnung",
+      "toggleOpen": "PDF-Vorschau anzeigen",
+      "toggleClose": "PDF-Vorschau ausblenden"
     },
     "status": {
       "draft": "Entwurf",
