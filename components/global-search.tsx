@@ -21,6 +21,7 @@ import {
   Package,
   Truck,
   ShoppingCart,
+  Wallet,
 } from 'lucide-react'
 import { useTranslations } from 'next-intl'
 import { format } from 'date-fns'
@@ -41,6 +42,7 @@ type SearchResultType =
   | 'product'
   | 'order'
   | 'supplier'
+  | 'expense'
 
 interface SearchResult {
   id: string
@@ -62,6 +64,7 @@ export function GlobalSearch() {
   const locale = params.locale as string
   const t = useTranslations('navigation')
   const tCommon = useTranslations('common')
+  const tExpenses = useTranslations('expenses')
 
   const groupedResults = useMemo(() => {
     const groups: Record<SearchResultType, SearchResult[]> = {
@@ -71,6 +74,7 @@ export function GlobalSearch() {
       product: [],
       order: [],
       supplier: [],
+      expense: [],
     }
 
     results.forEach((result) => {
@@ -131,6 +135,7 @@ export function GlobalSearch() {
       { data: products },
       { data: orders },
       { data: suppliers },
+      { data: expenses },
     ] = await Promise.all([
       supabase
         .from('clients')
@@ -170,6 +175,13 @@ export function GlobalSearch() {
         .eq('user_id', user.id)
         .is('deleted_at', null)
         .or(`name.ilike.%${query}%,email.ilike.%${query}%,city.ilike.%${query}%`)
+        .limit(5),
+      supabase
+        .from('expenses')
+        .select('id, description, category, amount, expense_date, supplier:suppliers(name)')
+        .eq('user_id', user.id)
+        .is('deleted_at', null)
+        .or(`description.ilike.%${query}%,category.ilike.%${query}%,supplier_name.ilike.%${query}%`)
         .limit(5),
     ])
 
@@ -269,9 +281,21 @@ export function GlobalSearch() {
       })
     })
 
+    expenses?.forEach((expense: any) => {
+      searchResults.push({
+        id: expense.id,
+        type: 'expense',
+        title: expense.description,
+        subtitle: expense.supplier?.name || tExpenses('categories.' + expense.category) || expense.category,
+        date: expense.expense_date,
+        meta: expense.amount ? `CHF ${expense.amount.toFixed(2)}` : undefined,
+        url: `/${locale}/dashboard/expenses`,
+      })
+    })
+
     setResults(searchResults)
     setLoading(false)
-  }, [locale])
+  }, [locale, tExpenses])
 
   // Debounce search
   useEffect(() => {
@@ -501,6 +525,41 @@ export function GlobalSearch() {
                           </span>
                         )}
                         {result.meta && <span>{result.meta}</span>}
+                      </div>
+                    </div>
+                    {result.subtitle && (
+                      <span className="text-xs text-muted-foreground">
+                        {result.subtitle}
+                      </span>
+                    )}
+                  </div>
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          )}
+
+          {groupedResults.expense.length > 0 && (
+            <CommandGroup heading={t('expenses')}>
+              {groupedResults.expense.map((result) => (
+                <CommandItem
+                  key={result.id}
+                  onSelect={() => handleSelect(result.url)}
+                  className="cursor-pointer"
+                >
+                  <Wallet className="mr-2 h-4 w-4" />
+                  <div className="flex flex-col flex-1">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium">{result.title}</span>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        {result.date && (
+                          <span className="flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            {format(new Date(result.date), 'dd/MM/yyyy', {
+                              locale: localeMap[locale] || enUS,
+                            })}
+                          </span>
+                        )}
+                        {result.meta && <span className="font-medium">{result.meta}</span>}
                       </div>
                     </div>
                     {result.subtitle && (
