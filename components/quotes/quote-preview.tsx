@@ -170,43 +170,69 @@ export function QuotePreview({
             ) : (
               <Card>
                 <CardContent className="p-0">
-                  <div className="overflow-x-auto">
-                    <table className="w-full min-w-[600px] sm:min-w-0">
-                      <thead className="border-b bg-muted/50">
-                        <tr>
-                          <th className="text-left p-2 sm:p-3 text-[10px] sm:text-xs font-medium text-muted-foreground uppercase">
-                            {t('form.description')}
-                          </th>
-                          <th className="text-right p-2 sm:p-3 text-[10px] sm:text-xs font-medium text-muted-foreground uppercase whitespace-nowrap">
-                            {t('form.quantity')}
-                          </th>
-                          <th className="text-right p-2 sm:p-3 text-[10px] sm:text-xs font-medium text-muted-foreground uppercase whitespace-nowrap">
-                            {t('form.unitPrice')}
-                          </th>
-                          <th className="text-right p-2 sm:p-3 text-[10px] sm:text-xs font-medium text-muted-foreground uppercase whitespace-nowrap">
-                            {t('form.taxRate')}
-                          </th>
-                          <th className="text-right p-2 sm:p-3 text-[10px] sm:text-xs font-medium text-muted-foreground uppercase whitespace-nowrap">
-                            {tCommon('total')}
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y">
-                        {items.map((item, index) => (
-                          <tr key={item.id} className="hover:bg-muted/30">
-                            <td className="p-2 sm:p-3 text-xs sm:text-sm max-w-[120px] sm:max-w-none truncate">{item.description}</td>
-                            <td className="p-2 sm:p-3 text-xs sm:text-sm text-right tabular-nums whitespace-nowrap">{item.quantity}</td>
-                            <td className="p-2 sm:p-3 text-xs sm:text-sm text-right tabular-nums whitespace-nowrap">
-                              CHF {item.unit_price.toFixed(2)}
-                            </td>
-                            <td className="p-2 sm:p-3 text-xs sm:text-sm text-right tabular-nums whitespace-nowrap">{item.tax_rate}%</td>
-                            <td className="p-2 sm:p-3 text-xs sm:text-sm text-right font-medium tabular-nums whitespace-nowrap">
-                              CHF {item.line_total.toFixed(2)}
-                            </td>
+                  <div className="hidden sm:block">
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead className="border-b bg-muted/50">
+                          <tr>
+                            <th className="text-left p-3 text-xs font-medium text-muted-foreground uppercase">
+                              {t('form.description')}
+                            </th>
+                            <th className="text-right p-3 text-xs font-medium text-muted-foreground uppercase whitespace-nowrap">
+                              {t('form.quantity')}
+                            </th>
+                            <th className="text-right p-3 text-xs font-medium text-muted-foreground uppercase whitespace-nowrap">
+                              {t('form.unitPrice')}
+                            </th>
+                            <th className="text-right p-3 text-xs font-medium text-muted-foreground uppercase whitespace-nowrap">
+                              {t('form.taxRate')}
+                            </th>
+                            <th className="text-right p-3 text-xs font-medium text-muted-foreground uppercase whitespace-nowrap">
+                              {tCommon('total')}
+                            </th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+                        <tbody className="divide-y">
+                          {items.map((item) => (
+                            <tr key={item.id} className="hover:bg-muted/30">
+                              <td className="p-3 text-sm">{item.description}</td>
+                              <td className="p-3 text-sm text-right tabular-nums whitespace-nowrap">{item.quantity}</td>
+                              <td className="p-3 text-sm text-right tabular-nums whitespace-nowrap">
+                                CHF {item.unit_price.toFixed(2)}
+                              </td>
+                              <td className="p-3 text-sm text-right tabular-nums whitespace-nowrap">{item.tax_rate}%</td>
+                              <td className="p-3 text-sm text-right font-medium tabular-nums whitespace-nowrap">
+                                CHF {item.line_total.toFixed(2)}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  <div className="sm:hidden divide-y">
+                    {items.map((item) => (
+                      <div key={item.id} className="p-3 space-y-3">
+                        <div className="text-sm font-medium">{item.description}</div>
+                        <div className="flex justify-between text-xs uppercase text-muted-foreground">
+                          <span>{t('form.quantity')}</span>
+                          <span className="tabular-nums text-foreground">{item.quantity}</span>
+                        </div>
+                        <div className="flex justify-between text-xs uppercase text-muted-foreground">
+                          <span>{t('form.unitPrice')}</span>
+                          <span className="tabular-nums text-foreground">CHF {item.unit_price.toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between text-xs uppercase text-muted-foreground">
+                          <span>{t('form.taxRate')}</span>
+                          <span className="tabular-nums text-foreground">{item.tax_rate}%</span>
+                        </div>
+                        <div className="flex justify-between text-xs font-semibold text-muted-foreground">
+                          <span>{tCommon('total')}</span>
+                          <span className="tabular-nums text-foreground">CHF {item.line_total.toFixed(2)}</span>
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </CardContent>
               </Card>
