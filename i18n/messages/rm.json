@@ -316,6 +316,9 @@
     "shareFilesNotSupported": "La cundivisiun da datotecas n'è betg sustegnida sin quest apparat",
     "sharedSuccessfully": "Document cundividì cun success",
     "shareError": "Errur tar la cundivisiun dal document",
+    "preview": {
+      "subtitle": "Prevista detagliada dal preventiv"
+    },
     "status": {
       "draft": "Sboz",
       "sent": "Tramess",
@@ -392,6 +395,9 @@
     "shareError": "Errur tar la cundivisiun dal document",
     "downloadPDF": "Telechargiar PDF",
     "toggleColumns": "Mussar/Zuppentar colonnas",
+    "preview": {
+      "subtitle": "Prevista detagliada da la factura"
+    },
     "status": {
       "draft": "Sboz",
       "issued": "Emessa",

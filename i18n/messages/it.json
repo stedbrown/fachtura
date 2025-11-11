@@ -318,6 +318,9 @@
     "shareFilesNotSupported": "La condivisione di file non è supportata su questo dispositivo",
     "sharedSuccessfully": "Documento condiviso con successo",
     "shareError": "Errore durante la condivisione del documento",
+    "preview": {
+      "subtitle": "Anteprima dettagliata del preventivo"
+    },
     "status": {
       "draft": "Bozza",
       "sent": "Inviato",
@@ -393,6 +396,9 @@
     "sharedSuccessfully": "Documento condiviso con successo",
     "shareError": "Errore durante la condivisione del documento",
     "downloadPDF": "Scarica PDF",
+    "preview": {
+      "subtitle": "Anteprima dettagliata della fattura"
+    },
     "status": {
       "draft": "Bozza",
       "issued": "Emessa",

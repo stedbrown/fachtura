@@ -316,6 +316,9 @@
     "shareFilesNotSupported": "File sharing is not supported on this device",
     "sharedSuccessfully": "Document shared successfully",
     "shareError": "Error sharing document",
+    "preview": {
+      "subtitle": "Detailed preview of the quote"
+    },
     "status": {
       "draft": "Draft",
       "sent": "Sent",
@@ -392,6 +395,9 @@
     "shareError": "Error sharing document",
     "downloadPDF": "Download PDF",
     "toggleColumns": "Show/Hide columns",
+    "preview": {
+      "subtitle": "Detailed preview of the invoice"
+    },
     "status": {
       "draft": "Draft",
       "issued": "Issued",

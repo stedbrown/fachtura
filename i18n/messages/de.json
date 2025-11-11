@@ -316,6 +316,9 @@
     "shareFilesNotSupported": "Das Teilen von Dateien wird auf diesem Gerät nicht unterstützt",
     "sharedSuccessfully": "Dokument erfolgreich geteilt",
     "shareError": "Fehler beim Teilen des Dokuments",
+    "preview": {
+      "subtitle": "Detaillierte Vorschau des Angebots"
+    },
     "status": {
       "draft": "Entwurf",
       "sent": "Gesendet",
@@ -392,6 +395,9 @@
     "shareError": "Fehler beim Teilen des Dokuments",
     "downloadPDF": "PDF herunterladen",
     "toggleColumns": "Spalten anzeigen/ausblenden",
+    "preview": {
+      "subtitle": "Detaillierte Vorschau der Rechnung"
+    },
     "status": {
       "draft": "Entwurf",
       "issued": "Ausgestellt",

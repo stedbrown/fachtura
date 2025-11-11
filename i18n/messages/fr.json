@@ -316,6 +316,9 @@
     "shareFilesNotSupported": "Le partage de fichiers n'est pas pris en charge sur cet appareil",
     "sharedSuccessfully": "Document partagé avec succès",
     "shareError": "Erreur lors du partage du document",
+    "preview": {
+      "subtitle": "Aperçu détaillé du devis"
+    },
     "status": {
       "draft": "Brouillon",
       "sent": "Envoyé",
@@ -392,6 +395,9 @@
     "shareError": "Erreur lors du partage du document",
     "downloadPDF": "Télécharger PDF",
     "toggleColumns": "Afficher/Masquer colonnes",
+    "preview": {
+      "subtitle": "Aperçu détaillé de la facture"
+    },
     "status": {
       "draft": "Brouillon",
       "issued": "Émise",
