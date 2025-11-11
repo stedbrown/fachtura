@@ -591,7 +591,7 @@ export default function ExpensesPage() {
         currentCount={upgradeDialogParams.currentCount}
         maxCount={upgradeDialogParams.maxCount}
         planName={upgradeDialogParams.planName}
-        resourceType="expense"
+        limitType="expense"
       />
 
       <ExpenseDialog

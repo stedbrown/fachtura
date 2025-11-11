@@ -603,7 +603,8 @@
       "unlimited": "Illimitati",
       "clients": "clienti/mese",
       "invoices": "fatture/mese",
-      "quotes": "preventivi/mese"
+      "quotes": "preventivi/mese",
+      "expenses": "spese/mese"
     },
     "toast": {
       "limitReached": "Limite raggiunto",

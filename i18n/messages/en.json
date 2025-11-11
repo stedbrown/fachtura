@@ -602,7 +602,8 @@
       "unlimited": "Unlimited",
       "clients": "clients/month",
       "invoices": "invoices/month",
-      "quotes": "quotes/month"
+      "quotes": "quotes/month",
+      "expenses": "expenses/month"
     },
     "toast": {
       "limitReached": "Limit reached",

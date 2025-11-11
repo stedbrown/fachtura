@@ -20,7 +20,7 @@ import { getFeatureTranslationKey } from '@/lib/utils/feature-translator'
 interface SubscriptionUpgradeDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  limitType: 'client' | 'invoice' | 'quote' | 'product' | 'order' | 'supplier'
+  limitType: 'client' | 'invoice' | 'quote' | 'product' | 'order' | 'supplier' | 'expense'
   currentCount: number
   maxCount: number
   planName: string
@@ -116,6 +116,12 @@ export function SubscriptionUpgradeDialog({
                       <Check className="h-4 w-4 text-green-500" />
                       <span className="text-sm">
                         <strong>{plan.max_quotes === null ? t('upgradeDialog.unlimited') : plan.max_quotes}</strong> {t('upgradeDialog.quotes')}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Check className="h-4 w-4 text-green-500" />
+                      <span className="text-sm">
+                        <strong>{plan.max_expenses === null ? t('upgradeDialog.unlimited') : plan.max_expenses}</strong> {t('upgradeDialog.expenses')}
                       </span>
                     </div>
                   </div>

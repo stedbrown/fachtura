@@ -602,7 +602,8 @@
       "unlimited": "Illimità",
       "clients": "clients/mais",
       "invoices": "facturas/mais",
-      "quotes": "preventivs/mais"
+      "quotes": "preventivs/mais",
+      "expenses": "custs/mais"
     },
     "toast": {
       "limitReached": "Limit cuntanschì",
