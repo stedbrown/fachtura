@@ -67,8 +67,8 @@ export function ExpenseDialog({
       amount: 0,
       currency: 'CHF',
       expense_date: new Date().toISOString().split('T')[0],
-      payment_method: null,
-      supplier_id: null,
+      payment_method: '',
+      supplier_id: '',
       supplier_name: '',
       receipt_url: '',
       receipt_number: '',
@@ -93,20 +93,20 @@ export function ExpenseDialog({
   useEffect(() => {
     if (expense) {
       reset({
-        description: expense.description,
+        description: expense.description || '',
         category: expense.category as any,
-        amount: Number(expense.amount),
-        currency: expense.currency,
-        expense_date: expense.expense_date,
-        payment_method: expense.payment_method as any,
-        supplier_id: expense.supplier_id,
-        supplier_name: expense.supplier_name || '',
+        amount: Number(expense.amount) || 0,
+        currency: expense.currency || 'CHF',
+        expense_date: expense.expense_date ? new Date(expense.expense_date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+        payment_method: (expense.payment_method as any) || '',
+        supplier_id: expense.supplier_id || '',
+        supplier_name: expense.supplier_name || expense.supplier?.name || '',
         receipt_url: expense.receipt_url || '',
         receipt_number: expense.receipt_number || '',
-        tax_rate: Number(expense.tax_rate),
-        tax_amount: Number(expense.tax_amount),
-        is_deductible: expense.is_deductible,
-        status: expense.status as any,
+        tax_rate: Number(expense.tax_rate) || 8.1,
+        tax_amount: Number(expense.tax_amount) || 0,
+        is_deductible: expense.is_deductible ?? true,
+        status: (expense.status as any) || 'pending',
         notes: expense.notes || '',
       })
     } else {
@@ -116,8 +116,8 @@ export function ExpenseDialog({
         amount: 0,
         currency: 'CHF',
         expense_date: new Date().toISOString().split('T')[0],
-        payment_method: null,
-        supplier_id: null,
+        payment_method: '',
+        supplier_id: '',
         supplier_name: '',
         receipt_url: '',
         receipt_number: '',
@@ -190,9 +190,20 @@ export function ExpenseDialog({
     }
 
     // Validate supplier_id if provided
-    if (data.supplier_id && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(data.supplier_id)) {
+    if (data.supplier_id && data.supplier_id !== '' && data.supplier_id !== 'none' && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(data.supplier_id)) {
       toast.error(t('supplier') + ': UUID non valido')
       return
+    }
+
+    // Convert empty strings to null for database
+    const processedData = {
+      ...data,
+      payment_method: data.payment_method && data.payment_method !== '' ? data.payment_method : null,
+      supplier_id: data.supplier_id && data.supplier_id !== '' && data.supplier_id !== 'none' ? data.supplier_id : null,
+      supplier_name: data.supplier_name && data.supplier_name !== '' ? data.supplier_name : null,
+      receipt_url: data.receipt_url && data.receipt_url !== '' ? data.receipt_url : null,
+      receipt_number: data.receipt_number && data.receipt_number !== '' ? data.receipt_number : null,
+      notes: data.notes && data.notes !== '' ? data.notes : null,
     }
 
     setLoading(true)
@@ -211,21 +222,21 @@ export function ExpenseDialog({
         const { error } = await supabase
           .from('expenses')
           .update({
-            description: data.description,
-            category: data.category,
-            amount: data.amount,
-            currency: data.currency,
-            expense_date: data.expense_date,
-            payment_method: data.payment_method,
-            supplier_id: data.supplier_id,
-            supplier_name: data.supplier_name,
-            receipt_url: data.receipt_url,
-            receipt_number: data.receipt_number,
-            tax_rate: data.tax_rate,
-            tax_amount: data.tax_amount,
-            is_deductible: data.is_deductible,
-            status: data.status,
-            notes: data.notes,
+            description: processedData.description,
+            category: processedData.category,
+            amount: processedData.amount,
+            currency: processedData.currency,
+            expense_date: processedData.expense_date,
+            payment_method: processedData.payment_method,
+            supplier_id: processedData.supplier_id,
+            supplier_name: processedData.supplier_name,
+            receipt_url: processedData.receipt_url,
+            receipt_number: processedData.receipt_number,
+            tax_rate: processedData.tax_rate,
+            tax_amount: processedData.tax_amount,
+            is_deductible: processedData.is_deductible,
+            status: processedData.status,
+            notes: processedData.notes,
           })
           .eq('id', expense.id)
 
@@ -237,21 +248,21 @@ export function ExpenseDialog({
           .from('expenses')
           .insert({
             user_id: user.id,
-            description: data.description,
-            category: data.category,
-            amount: data.amount,
-            currency: data.currency,
-            expense_date: data.expense_date,
-            payment_method: data.payment_method,
-            supplier_id: data.supplier_id,
-            supplier_name: data.supplier_name,
-            receipt_url: data.receipt_url,
-            receipt_number: data.receipt_number,
-            tax_rate: data.tax_rate,
-            tax_amount: data.tax_amount,
-            is_deductible: data.is_deductible,
-            status: data.status,
-            notes: data.notes,
+            description: processedData.description,
+            category: processedData.category,
+            amount: processedData.amount,
+            currency: processedData.currency,
+            expense_date: processedData.expense_date,
+            payment_method: processedData.payment_method,
+            supplier_id: processedData.supplier_id,
+            supplier_name: processedData.supplier_name,
+            receipt_url: processedData.receipt_url,
+            receipt_number: processedData.receipt_number,
+            tax_rate: processedData.tax_rate,
+            tax_amount: processedData.tax_amount,
+            is_deductible: processedData.is_deductible,
+            status: processedData.status,
+            notes: processedData.notes,
           })
 
         if (error) throw error
@@ -366,7 +377,7 @@ export function ExpenseDialog({
                   {t('paymentMethod')}
                 </Label>
                 <Select
-                  value={watch('payment_method') || undefined}
+                  value={watch('payment_method') || ''}
                   onValueChange={(value) => setValue('payment_method', value as any)}
                 >
                   <SelectTrigger id="payment_method" className="h-10">
@@ -396,11 +407,11 @@ export function ExpenseDialog({
                   {t('selectSupplier')}
                 </Label>
                 <Select
-                  value={watch('supplier_id') || undefined}
+                  value={watch('supplier_id') || ''}
                   onValueChange={(value) => {
-                    setValue('supplier_id', value || null)
+                    setValue('supplier_id', value || '')
                     // Clear supplier name when selecting from list
-                    if (value) {
+                    if (value && value !== 'none') {
                       setValue('supplier_name', '')
                     }
                   }}
