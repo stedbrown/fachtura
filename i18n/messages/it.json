@@ -832,7 +832,12 @@
       "stockQuantity": "Quantità in Magazzino",
       "lowStockThreshold": "Soglia Scorta Minima",
       "isActive": "Prodotto Attivo"
-    }
+    },
+    "detail": "Dettaglio prodotto",
+    "notFound": "Prodotto non trovato",
+    "information": "Informazioni",
+    "inventory": "Inventario",
+    "lowStockWarning": "Attenzione: la scorta è bassa!"
   },
   "orders": {
     "title": "Ordini Fornitori",
@@ -908,7 +913,14 @@
       "partial": "Parziale",
       "received": "Ricevuto",
       "cancelled": "Annullato"
-    }
+    },
+    "detail": "Dettaglio ordine",
+    "notFound": "Ordine non trovato",
+    "information": "Informazioni Ordine",
+    "totals": "Totali",
+    "items": "Articoli",
+    "item": "articolo",
+    "noItems": "Nessun articolo"
   },
   "expenses": {
     "title": "Spese",
@@ -1006,6 +1018,23 @@
       "pending": "In Attesa",
       "approved": "Approvata",
       "rejected": "Rifiutata"
+    },
+    "detail": "Dettaglio spesa",
+    "notFound": "Spesa non trovata",
+    "information": "Informazioni",
+    "financialDetails": "Dettagli finanziari",
+    "viewReceipt": "Visualizza ricevuta",
+    "fields": {
+      "category": "Categoria",
+      "supplier": "Fornitore",
+      "expenseDate": "Data Spesa",
+      "paymentMethod": "Metodo di Pagamento",
+      "receiptNumber": "Numero Ricevuta",
+      "receipt": "Ricevuta",
+      "amount": "Importo",
+      "taxRate": "IVA %",
+      "taxAmount": "Importo IVA",
+      "isDeductible": "Deducibile"
     }
   },
   "suppliers": {
@@ -1048,6 +1077,7 @@
     "fields": {
       "name": "Nome",
       "contact": "Persona di Contatto",
+      "contactPerson": "Persona di Contatto",
       "email": "Email",
       "phone": "Telefono",
       "address": "Indirizzo",
@@ -1058,7 +1088,15 @@
       "website": "Sito Web",
       "paymentTerms": "Termini di Pagamento",
       "isActive": "Fornitore Attivo"
-    }
+    },
+    "detail": "Dettaglio fornitore",
+    "notFound": "Fornitore non trovato",
+    "information": "Informazioni",
+    "active": "Attivo",
+    "inactive": "Inattivo",
+    "statistics": "Statistiche",
+    "order": "ordine",
+    "orders": "ordini"
   }
 }
 

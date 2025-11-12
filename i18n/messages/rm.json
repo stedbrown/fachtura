@@ -831,7 +831,12 @@
       "stockQuantity": "Quantitad en magazin",
       "lowStockThreshold": "Limita da rezerva minimala",
       "isActive": "Product activ"
-    }
+    },
+    "detail": "Detagls dal product",
+    "notFound": "Product betg chattà",
+    "information": "Infurmaziuns",
+    "inventory": "Inventari",
+    "lowStockWarning": "Attenziun: la rezerva è bassa!"
   },
   "orders": {
     "title": "Ordinaziuns",
@@ -899,12 +904,19 @@
     "restore": "Restaurar",
     "status": {
       "draft": "Sboz",
-      "confirmed": "Confermà",
-      "processing": "En lavuraziun",
-      "shipped": "Spedì",
-      "delivered": "Livrà",
+      "ordered": "Ordinà",
+      "partial": "Parzial",
+      "received": "Retschavì",
       "cancelled": "Annullà"
-    }
+    },
+    "detail": "Detagls da l'ordinaziun",
+    "notFound": "Ordinaziun betg chattada",
+    "information": "Infurmaziuns da l'ordinaziun",
+    "totals": "Totals",
+    "items": "Puschs",
+    "item": "pusch",
+    "noItems": "Nagins puschs",
+    "supplier": "Furnitur"
   },
   "expenses": {
     "title": "Custs",
@@ -1002,7 +1014,85 @@
       "pending": "En Spetga",
       "approved": "Approvà",
       "rejected": "Refusà"
+    },
+    "detail": "Detagls dal cust",
+    "notFound": "Cust betg chattà",
+    "information": "Infurmaziuns",
+    "financialDetails": "Detagls finanzials",
+    "viewReceipt": "Mussar ricevuta",
+    "fields": {
+      "category": "Categoria",
+      "supplier": "Furnitur",
+      "expenseDate": "Data dal Cust",
+      "paymentMethod": "Metoda da Pajament",
+      "receiptNumber": "Num da la Ricevuta",
+      "receipt": "Ricevuta",
+      "amount": "Impurt",
+      "taxRate": "IVA %",
+      "taxAmount": "Impurt IVA",
+      "isDeductible": "Deducibel"
     }
+  },
+  "suppliers": {
+    "title": "Furniturs",
+    "subtitle": "Administrescha tes furniturs",
+    "listTitle": "Glista dals Furniturs",
+    "listDescription": "Tuts tes furniturs in in lieu",
+    "archivedTitle": "Furniturs Archivads",
+    "archivedDescription": "Furniturs stizzads che pon vegnir restaurads",
+    "newSupplier": "Nov Furnitur",
+    "noSuppliers": "Nagins furniturs",
+    "noArchivedSuppliers": "Nagins furniturs archivads",
+    "createSuccess": "Furnitur creà cun success",
+    "createError": "Errur tar crear il furnitur",
+    "updateSuccess": "Furnitur actualisà cun success",
+    "updateError": "Errur tar actualisar il furnitur",
+    "deleteSuccess": "Furnitur archivà cun success",
+    "deleteError": "Errur tar archivar il furnitur",
+    "deleteTitle": "Archivar Furnitur",
+    "deleteDescription": "Es ti segir da vulair archivar quest furnitur?",
+    "restoreSuccess": "Furnitur restaurà cun success",
+    "restoreError": "Errur tar restaurar il furnitur",
+    "permanentDeleteSuccess": "Furnitur stizzà definitivamain",
+    "permanentDeleteError": "Errur tar stizzar definitivamain il furnitur",
+    "restore": "Restaurar",
+    "permanentDelete": "Stizzar Definitivamain",
+    "toggleColumns": "Mussar/Zuppentar colonnas",
+    "loadError": "Errur tar chargiar ils furniturs",
+    "form": {
+      "title": "Nov Furnitur",
+      "subtitle": "Agiuntescha in nov furnitur a tia glista",
+      "editTitle": "Modifitgar Furnitur",
+      "editSubtitle": "Actualisar datas dal furnitur",
+      "basicInfo": "Infurmaziuns fundamentalas",
+      "address": "Adressa",
+      "additionalInfo": "Infurmaziuns supplementaras",
+      "saving": "Memorisar...",
+      "createButton": "Crear Furnitur"
+    },
+    "fields": {
+      "name": "Num",
+      "contact": "Persuna da contact",
+      "contactPerson": "Persuna da contact",
+      "email": "E-mail",
+      "phone": "Telefon",
+      "address": "Adressa",
+      "city": "Lieu",
+      "postalCode": "Code postal",
+      "country": "Pajais",
+      "vatNumber": "Num da l'IVA",
+      "website": "Website",
+      "paymentTerms": "Cundiziuns da pajament",
+      "isActive": "Furnitur activ"
+    },
+    "detail": "Detagls dal furnitur",
+    "notFound": "Furnitur betg chattà",
+    "information": "Infurmaziuns",
+    "active": "Activ",
+    "inactive": "Inactiv",
+    "statistics": "Statisticas",
+    "order": "ordinaziun",
+    "orders": "ordinaziuns"
   }
 }
 

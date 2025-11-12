@@ -831,7 +831,12 @@
       "stockQuantity": "Quantité en stock",
       "lowStockThreshold": "Seuil de stock faible",
       "isActive": "Produit actif"
-    }
+    },
+    "detail": "Détail du produit",
+    "notFound": "Produit non trouvé",
+    "information": "Informations",
+    "inventory": "Inventaire",
+    "lowStockWarning": "Attention: le stock est faible!"
   },
   "orders": {
     "title": "Commandes",
@@ -900,12 +905,19 @@
     "restore": "Restaurer",
     "status": {
       "draft": "Brouillon",
-      "confirmed": "Confirmée",
-      "processing": "En traitement",
-      "shipped": "Expédiée",
-      "delivered": "Livrée",
+      "ordered": "Commandée",
+      "partial": "Partielle",
+      "received": "Reçue",
       "cancelled": "Annulée"
-    }
+    },
+    "detail": "Détail de la commande",
+    "notFound": "Commande non trouvée",
+    "information": "Informations de commande",
+    "totals": "Totaux",
+    "items": "Articles",
+    "item": "article",
+    "noItems": "Aucun article",
+    "supplier": "Fournisseur"
   },
   "expenses": {
     "title": "Dépenses",
@@ -1003,6 +1015,23 @@
       "pending": "En Attente",
       "approved": "Approuvée",
       "rejected": "Refusée"
+    },
+    "detail": "Détail de la dépense",
+    "notFound": "Dépense non trouvée",
+    "information": "Informations",
+    "financialDetails": "Détails financiers",
+    "viewReceipt": "Voir le reçu",
+    "fields": {
+      "category": "Catégorie",
+      "supplier": "Fournisseur",
+      "expenseDate": "Date Dépense",
+      "paymentMethod": "Méthode de Paiement",
+      "receiptNumber": "Numéro Reçu",
+      "receipt": "Reçu",
+      "amount": "Montant",
+      "taxRate": "TVA %",
+      "taxAmount": "Montant TVA",
+      "isDeductible": "Déductible"
     }
   },
   "suppliers": {
@@ -1045,6 +1074,7 @@
     "fields": {
       "name": "Nom",
       "contact": "Personne de contact",
+      "contactPerson": "Personne de contact",
       "email": "Email",
       "phone": "Téléphone",
       "address": "Adresse",
@@ -1055,7 +1085,15 @@
       "website": "Site web",
       "paymentTerms": "Conditions de paiement",
       "isActive": "Fournisseur actif"
-    }
+    },
+    "detail": "Détail du fournisseur",
+    "notFound": "Fournisseur non trouvé",
+    "information": "Informations",
+    "active": "Actif",
+    "inactive": "Inactif",
+    "statistics": "Statistiques",
+    "order": "commande",
+    "orders": "commandes"
   }
 }
 

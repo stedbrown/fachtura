@@ -831,7 +831,12 @@
       "stockQuantity": "Stock Quantity",
       "lowStockThreshold": "Low Stock Threshold",
       "isActive": "Active Product"
-    }
+    },
+    "detail": "Product detail",
+    "notFound": "Product not found",
+    "information": "Information",
+    "inventory": "Inventory",
+    "lowStockWarning": "Warning: stock is low!"
   },
   "orders": {
     "title": "Orders",
@@ -899,12 +904,19 @@
     "restore": "Restore",
     "status": {
       "draft": "Draft",
-      "confirmed": "Confirmed",
-      "processing": "Processing",
-      "shipped": "Shipped",
-      "delivered": "Delivered",
+      "ordered": "Ordered",
+      "partial": "Partial",
+      "received": "Received",
       "cancelled": "Cancelled"
-    }
+    },
+    "detail": "Order detail",
+    "notFound": "Order not found",
+    "information": "Order Information",
+    "totals": "Totals",
+    "items": "Items",
+    "item": "item",
+    "noItems": "No items",
+    "supplier": "Supplier"
   },
   "expenses": {
     "title": "Expenses",
@@ -1002,7 +1014,85 @@
       "pending": "Pending",
       "approved": "Approved",
       "rejected": "Rejected"
+    },
+    "detail": "Expense detail",
+    "notFound": "Expense not found",
+    "information": "Information",
+    "financialDetails": "Financial Details",
+    "viewReceipt": "View receipt",
+    "fields": {
+      "category": "Category",
+      "supplier": "Supplier",
+      "expenseDate": "Expense Date",
+      "paymentMethod": "Payment Method",
+      "receiptNumber": "Receipt Number",
+      "receipt": "Receipt",
+      "amount": "Amount",
+      "taxRate": "Tax %",
+      "taxAmount": "Tax Amount",
+      "isDeductible": "Deductible"
     }
+  },
+  "suppliers": {
+    "title": "Suppliers",
+    "subtitle": "Manage your suppliers",
+    "listTitle": "Suppliers List",
+    "listDescription": "All your suppliers in one place",
+    "archivedTitle": "Archived Suppliers",
+    "archivedDescription": "Deleted suppliers that can be restored",
+    "newSupplier": "New Supplier",
+    "noSuppliers": "No suppliers",
+    "noArchivedSuppliers": "No archived suppliers",
+    "createSuccess": "Supplier created successfully",
+    "createError": "Error creating supplier",
+    "updateSuccess": "Supplier updated successfully",
+    "updateError": "Error updating supplier",
+    "deleteSuccess": "Supplier archived successfully",
+    "deleteError": "Error archiving supplier",
+    "deleteTitle": "Archive Supplier",
+    "deleteDescription": "Are you sure you want to archive this supplier?",
+    "restoreSuccess": "Supplier restored successfully",
+    "restoreError": "Error restoring supplier",
+    "permanentDeleteSuccess": "Supplier permanently deleted",
+    "permanentDeleteError": "Error permanently deleting supplier",
+    "restore": "Restore",
+    "permanentDelete": "Delete Permanently",
+    "toggleColumns": "Show/Hide columns",
+    "loadError": "Error loading suppliers",
+    "form": {
+      "title": "New Supplier",
+      "subtitle": "Add a new supplier to your list",
+      "editTitle": "Edit Supplier",
+      "editSubtitle": "Update supplier data",
+      "basicInfo": "Basic Information",
+      "address": "Address",
+      "additionalInfo": "Additional Information",
+      "saving": "Saving...",
+      "createButton": "Create Supplier"
+    },
+    "fields": {
+      "name": "Name",
+      "contact": "Contact Person",
+      "contactPerson": "Contact Person",
+      "email": "Email",
+      "phone": "Phone",
+      "address": "Address",
+      "city": "City",
+      "postalCode": "Postal Code",
+      "country": "Country",
+      "vatNumber": "VAT Number",
+      "website": "Website",
+      "paymentTerms": "Payment Terms",
+      "isActive": "Active Supplier"
+    },
+    "detail": "Supplier detail",
+    "notFound": "Supplier not found",
+    "information": "Information",
+    "active": "Active",
+    "inactive": "Inactive",
+    "statistics": "Statistics",
+    "order": "order",
+    "orders": "orders"
   }
 }
 

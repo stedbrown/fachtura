@@ -831,7 +831,12 @@
       "stockQuantity": "Lagerbestand",
       "lowStockThreshold": "Mindestbestandsgrenze",
       "isActive": "Produkt aktiv"
-    }
+    },
+    "detail": "Produktdetails",
+    "notFound": "Produkt nicht gefunden",
+    "information": "Informationen",
+    "inventory": "Inventar",
+    "lowStockWarning": "Warnung: Der Lagerbestand ist niedrig!"
   },
   "orders": {
     "title": "Bestellungen",
@@ -899,12 +904,19 @@
     "restore": "Wiederherstellen",
     "status": {
       "draft": "Entwurf",
-      "confirmed": "Bestätigt",
-      "processing": "In Bearbeitung",
-      "shipped": "Versendet",
-      "delivered": "Geliefert",
+      "ordered": "Bestellt",
+      "partial": "Teilweise",
+      "received": "Erhalten",
       "cancelled": "Storniert"
-    }
+    },
+    "detail": "Bestelldetails",
+    "notFound": "Bestellung nicht gefunden",
+    "information": "Bestellinformationen",
+    "totals": "Summen",
+    "items": "Artikel",
+    "item": "Artikel",
+    "noItems": "Keine Artikel",
+    "supplier": "Lieferant"
   },
   "expenses": {
     "title": "Ausgaben",
@@ -1002,7 +1014,85 @@
       "pending": "Ausstehend",
       "approved": "Genehmigt",
       "rejected": "Abgelehnt"
+    },
+    "detail": "Ausgabedetails",
+    "notFound": "Ausgabe nicht gefunden",
+    "information": "Informationen",
+    "financialDetails": "Finanzdetails",
+    "viewReceipt": "Beleg anzeigen",
+    "fields": {
+      "category": "Kategorie",
+      "supplier": "Lieferant",
+      "expenseDate": "Ausgabedatum",
+      "paymentMethod": "Zahlungsmethode",
+      "receiptNumber": "Belegsnummer",
+      "receipt": "Beleg",
+      "amount": "Betrag",
+      "taxRate": "MwSt. %",
+      "taxAmount": "MwSt.-Betrag",
+      "isDeductible": "Abzugsfähig"
     }
+  },
+  "suppliers": {
+    "title": "Lieferanten",
+    "subtitle": "Verwalten Sie Ihre Lieferanten",
+    "listTitle": "Lieferantenliste",
+    "listDescription": "Alle Ihre Lieferanten an einem Ort",
+    "archivedTitle": "Archivierte Lieferanten",
+    "archivedDescription": "Gelöschte Lieferanten, die wiederhergestellt werden können",
+    "newSupplier": "Neuer Lieferant",
+    "noSuppliers": "Keine Lieferanten",
+    "noArchivedSuppliers": "Keine archivierten Lieferanten",
+    "createSuccess": "Lieferant erfolgreich erstellt",
+    "createError": "Fehler beim Erstellen des Lieferanten",
+    "updateSuccess": "Lieferant erfolgreich aktualisiert",
+    "updateError": "Fehler beim Aktualisieren des Lieferanten",
+    "deleteSuccess": "Lieferant erfolgreich archiviert",
+    "deleteError": "Fehler beim Archivieren des Lieferanten",
+    "deleteTitle": "Lieferant archivieren",
+    "deleteDescription": "Sind Sie sicher, dass Sie diesen Lieferanten archivieren möchten?",
+    "restoreSuccess": "Lieferant erfolgreich wiederhergestellt",
+    "restoreError": "Fehler beim Wiederherstellen des Lieferanten",
+    "permanentDeleteSuccess": "Lieferant dauerhaft gelöscht",
+    "permanentDeleteError": "Fehler beim dauerhaften Löschen des Lieferanten",
+    "restore": "Wiederherstellen",
+    "permanentDelete": "Dauerhaft löschen",
+    "toggleColumns": "Spalten anzeigen/ausblenden",
+    "loadError": "Fehler beim Laden der Lieferanten",
+    "form": {
+      "title": "Neuer Lieferant",
+      "subtitle": "Fügen Sie einen neuen Lieferanten zu Ihrer Liste hinzu",
+      "editTitle": "Lieferant bearbeiten",
+      "editSubtitle": "Lieferantendaten aktualisieren",
+      "basicInfo": "Grundinformationen",
+      "address": "Adresse",
+      "additionalInfo": "Zusätzliche Informationen",
+      "saving": "Speichern...",
+      "createButton": "Lieferant erstellen"
+    },
+    "fields": {
+      "name": "Name",
+      "contact": "Kontaktperson",
+      "contactPerson": "Kontaktperson",
+      "email": "E-Mail",
+      "phone": "Telefon",
+      "address": "Adresse",
+      "city": "Stadt",
+      "postalCode": "Postleitzahl",
+      "country": "Land",
+      "vatNumber": "Umsatzsteuer-ID",
+      "website": "Website",
+      "paymentTerms": "Zahlungsbedingungen",
+      "isActive": "Aktiver Lieferant"
+    },
+    "detail": "Lieferantendetails",
+    "notFound": "Lieferant nicht gefunden",
+    "information": "Informationen",
+    "active": "Aktiv",
+    "inactive": "Inaktiv",
+    "statistics": "Statistiken",
+    "order": "Bestellung",
+    "orders": "Bestellungen"
   }
 }
 
