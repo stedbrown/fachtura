@@ -28,6 +28,9 @@ import { useTranslations } from 'next-intl'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 import { useParams } from 'next/navigation'
+import { expenseFormSchema } from '@/lib/validations/expense'
+import { logger } from '@/lib/logger'
+import { safeAsync, getSupabaseErrorMessage } from '@/lib/error-handler'
 
 interface ExpenseDialogProps {
   open: boolean
@@ -158,40 +161,12 @@ export function ExpenseDialog({
   }
 
   const handleFormSubmit = async (data: ExpenseFormInput) => {
-    // Manual validation
-    if (!data.description || data.description.trim() === '') {
-      toast.error(t('description') + ': campo obbligatorio')
-      return
-    }
-
-    if (!data.category) {
-      toast.error(t('category') + ': campo obbligatorio')
-      return
-    }
-
-    if (!data.amount || data.amount <= 0) {
-      toast.error(t('amount') + ': deve essere maggiore di zero')
-      return
-    }
-
-    if (!data.expense_date) {
-      toast.error(t('expenseDate') + ': campo obbligatorio')
-      return
-    }
-
-    // Validate receipt_url if provided
-    if (data.receipt_url) {
-      try {
-        new URL(data.receipt_url)
-      } catch {
-        toast.error(t('receiptUrl') + ': URL non valido')
-        return
-      }
-    }
-
-    // Validate supplier_id if provided
-    if (data.supplier_id && data.supplier_id !== 'none' && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(data.supplier_id)) {
-      toast.error(t('supplier') + ': UUID non valido')
+    // Validate with Zod
+    const validationResult = expenseFormSchema.safeParse(data)
+    
+    if (!validationResult.success) {
+      const firstError = validationResult.error.issues[0]
+      toast.error(firstError.message || tCommon('error'))
       return
     }
 
@@ -207,16 +182,15 @@ export function ExpenseDialog({
     }
 
     setLoading(true)
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
     
-    if (!user) {
-      toast.error(tCommon('error') || 'Errore')
-      setLoading(false)
-      return
-    }
+    const result = await safeAsync(async () => {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (!user) {
+        throw new Error(tCommon('error') || 'Errore: utente non autenticato')
+      }
 
-    try {
       if (expense) {
         // Update existing expense
         const { error } = await supabase
@@ -241,7 +215,7 @@ export function ExpenseDialog({
           .eq('id', expense.id)
 
         if (error) throw error
-        toast.success(t('updateSuccess') || 'Spesa aggiornata con successo')
+        return { isUpdate: true }
       } else {
         // Create new expense
         const { error } = await supabase
@@ -266,18 +240,24 @@ export function ExpenseDialog({
           })
 
         if (error) throw error
-        toast.success(t('createSuccess') || 'Spesa creata con successo')
+        return { isUpdate: false }
       }
+    }, 'Error saving expense')
 
+    if (result.success) {
+      toast.success(result.data.isUpdate 
+        ? (t('updateSuccess') || 'Spesa aggiornata con successo')
+        : (t('createSuccess') || 'Spesa creata con successo')
+      )
       onSuccess()
       onOpenChange(false)
       reset()
-    } catch (error: any) {
-      console.error('Error saving expense:', error)
-      toast.error(expense ? t('updateError') : t('createError'))
-    } finally {
-      setLoading(false)
+    } else {
+      const errorMessage = getSupabaseErrorMessage(result.error)
+      toast.error(errorMessage || (expense ? t('updateError') : t('createError')))
     }
+    
+    setLoading(false)
   }
 
   return (

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 interface ToolProps extends React.HTMLAttributes<HTMLDivElement> {
   name: string
   status?: 'input-streaming' | 'processing' | 'output-available' | 'error'
-  result?: any
+  result?: { message?: string; [key: string]: unknown }
   error?: string
 }
 

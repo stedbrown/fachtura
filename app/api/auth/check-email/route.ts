@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/logger';
 
 export async function POST(req: NextRequest) {
   try {
@@ -20,7 +21,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (error) {
-      console.error('Error checking email:', error);
+      logger.error('Error checking email', error, { email });
       return NextResponse.json(
         { error: 'Errore durante la verifica dell\'email' },
         { status: 500 }
@@ -29,7 +30,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(data);
   } catch (error) {
-    console.error('Error in check-email route:', error);
+    logger.error('Error in check-email route', error);
     return NextResponse.json(
       { error: 'Errore interno del server' },
       { status: 500 }

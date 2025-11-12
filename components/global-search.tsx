@@ -146,13 +146,13 @@ export function GlobalSearch() {
         .limit(5),
       supabase
         .from('quotes')
-        .select('id, quote_number, date, total, client:clients(name)')
+        .select('id, quote_number, date, total, clients!quotes_client_id_fkey(name)')
         .eq('user_id', user.id)
         .is('deleted_at', null)
         .limit(15),
       supabase
         .from('invoices')
-        .select('id, invoice_number, date, total, client:clients(name)')
+        .select('id, invoice_number, date, total, clients!invoices_client_id_fkey(name)')
         .eq('user_id', user.id)
         .is('deleted_at', null)
         .limit(15),
@@ -165,7 +165,7 @@ export function GlobalSearch() {
         .limit(5),
       supabase
         .from('orders')
-        .select('id, order_number, date, total, supplier:suppliers(name)')
+        .select('id, order_number, date, total, suppliers!orders_supplier_id_fkey(name)')
         .eq('user_id', user.id)
         .is('deleted_at', null)
         .limit(15),
@@ -178,7 +178,7 @@ export function GlobalSearch() {
         .limit(5),
       supabase
         .from('expenses')
-        .select('id, description, category, amount, expense_date, supplier:suppliers(name)')
+        .select('id, description, category, amount, expense_date, suppliers!expenses_supplier_id_fkey(name)')
         .eq('user_id', user.id)
         .is('deleted_at', null)
         .or(`description.ilike.%${query}%,category.ilike.%${query}%,supplier_name.ilike.%${query}%`)
@@ -187,25 +187,37 @@ export function GlobalSearch() {
 
     const filteredQuotes = quotes
       ?.filter(
-        (quote) =>
-          quote.quote_number.toLowerCase().includes(searchLower) ||
-          (quote.client as any)?.name?.toLowerCase().includes(searchLower)
+        (quote) => {
+          const clientName = quote.clients && Array.isArray(quote.clients) && quote.clients[0] 
+            ? (quote.clients[0] as { name?: string }).name 
+            : (quote.clients as { name?: string })?.name
+          return quote.quote_number.toLowerCase().includes(searchLower) ||
+            clientName?.toLowerCase().includes(searchLower)
+        }
       )
       .slice(0, 5)
 
     const filteredInvoices = invoices
       ?.filter(
-        (invoice) =>
-          invoice.invoice_number.toLowerCase().includes(searchLower) ||
-          (invoice.client as any)?.name?.toLowerCase().includes(searchLower)
+        (invoice) => {
+          const clientName = invoice.clients && Array.isArray(invoice.clients) && invoice.clients[0] 
+            ? (invoice.clients[0] as { name?: string }).name 
+            : (invoice.clients as { name?: string })?.name
+          return invoice.invoice_number.toLowerCase().includes(searchLower) ||
+            clientName?.toLowerCase().includes(searchLower)
+        }
       )
       .slice(0, 5)
 
     const filteredOrders = orders
       ?.filter(
-        (order) =>
-          order.order_number?.toLowerCase().includes(searchLower) ||
-          (order.supplier as any)?.name?.toLowerCase().includes(searchLower)
+        (order) => {
+          const supplierName = order.suppliers && Array.isArray(order.suppliers) && order.suppliers[0] 
+            ? (order.suppliers[0] as { name?: string }).name 
+            : (order.suppliers as { name?: string })?.name
+          return order.order_number?.toLowerCase().includes(searchLower) ||
+            supplierName?.toLowerCase().includes(searchLower)
+        }
       )
       .slice(0, 5)
 
@@ -233,12 +245,15 @@ export function GlobalSearch() {
     })
 
     // Add quotes to results
-    filteredQuotes?.forEach((quote: any) => {
+    filteredQuotes?.forEach((quote) => {
+      const clientName = quote.clients && Array.isArray(quote.clients) && quote.clients[0] 
+        ? (quote.clients[0] as { name?: string }).name 
+        : (quote.clients as { name?: string })?.name
       searchResults.push({
         id: quote.id,
         type: 'quote',
         title: quote.quote_number,
-        subtitle: quote.client?.name || '',
+        subtitle: clientName || '',
         date: quote.date,
         meta: quote.total ? `CHF ${quote.total.toFixed(2)}` : undefined,
         url: `/${locale}/dashboard/quotes/${quote.id}`,
@@ -246,12 +261,15 @@ export function GlobalSearch() {
     })
 
     // Add invoices to results
-    filteredInvoices?.forEach((invoice: any) => {
+    filteredInvoices?.forEach((invoice) => {
+      const clientName = invoice.clients && Array.isArray(invoice.clients) && invoice.clients[0] 
+        ? (invoice.clients[0] as { name?: string }).name 
+        : (invoice.clients as { name?: string })?.name
       searchResults.push({
         id: invoice.id,
         type: 'invoice',
         title: invoice.invoice_number,
-        subtitle: invoice.client?.name || '',
+        subtitle: clientName || '',
         date: invoice.date,
         meta: invoice.total ? `CHF ${invoice.total.toFixed(2)}` : undefined,
         url: `/${locale}/dashboard/invoices/${invoice.id}`,
@@ -269,24 +287,30 @@ export function GlobalSearch() {
       })
     })
 
-    filteredOrders?.forEach((order: any) => {
+    filteredOrders?.forEach((order) => {
+      const supplierName = order.suppliers && Array.isArray(order.suppliers) && order.suppliers[0] 
+        ? (order.suppliers[0] as { name?: string }).name 
+        : (order.suppliers as { name?: string })?.name
       searchResults.push({
         id: order.id,
         type: 'order',
         title: order.order_number,
-        subtitle: order.supplier?.name || '',
+        subtitle: supplierName || '',
         date: order.date,
         meta: order.total ? `CHF ${order.total.toFixed(2)}` : undefined,
         url: `/${locale}/dashboard/orders`,
       })
     })
 
-    expenses?.forEach((expense: any) => {
+    expenses?.forEach((expense) => {
+      const supplierName = expense.suppliers && Array.isArray(expense.suppliers) && expense.suppliers[0] 
+        ? (expense.suppliers[0] as { name?: string }).name 
+        : (expense.suppliers as { name?: string })?.name
       searchResults.push({
         id: expense.id,
         type: 'expense',
         title: expense.description,
-        subtitle: expense.supplier?.name || tExpenses('categories.' + expense.category) || expense.category,
+        subtitle: supplierName || tExpenses('categories.' + expense.category) || expense.category,
         date: expense.expense_date,
         meta: expense.amount ? `CHF ${expense.amount.toFixed(2)}` : undefined,
         url: `/${locale}/dashboard/expenses`,

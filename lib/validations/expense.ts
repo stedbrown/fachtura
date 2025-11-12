@@ -20,7 +20,10 @@ export const expenseFormSchema = z.object({
   payment_method: z.enum(['cash', 'card', 'bank_transfer', 'other']).nullable().optional(),
   supplier_id: z.string().uuid().nullable().optional(),
   supplier_name: z.string().nullable().optional(),
-  receipt_url: z.string().optional(),
+  receipt_url: z.union([
+    z.string().url('URL non valido'),
+    z.literal(''),
+  ]).optional(),
   receipt_number: z.string().nullable().optional(),
   tax_rate: z.number().min(0).max(100).default(8.1),
   tax_amount: z.number().min(0).default(0),

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/logger';
 
 export async function POST(req: NextRequest) {
   try {
@@ -31,7 +32,7 @@ export async function POST(req: NextRequest) {
     });
 
     if (error) {
-      console.error('Errore verifica limiti:', error);
+      logger.error('Errore verifica limiti', error, { resourceType });
       return NextResponse.json(
         { error: 'Errore durante la verifica dei limiti' },
         { status: 500 }
@@ -40,7 +41,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(data);
   } catch (error) {
-    console.error('Errore verifica limiti:', error);
+    logger.error('Errore verifica limiti', error);
     return NextResponse.json(
       { error: 'Errore durante la verifica dei limiti' },
       { status: 500 }

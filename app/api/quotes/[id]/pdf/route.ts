@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { logger } from '@/lib/logger'
 import PDFDocument from 'pdfkit'
 import { format } from 'date-fns'
 import { it, de, fr, enUS } from 'date-fns/locale'
@@ -39,12 +40,12 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
-    const { id } = await params
     const { searchParams } = new URL(request.url)
     const locale = searchParams.get('locale') || 'it'
     
-    console.log(`Generating PDF for quote ${id} with locale ${locale}`)
+    logger.debug(`Generating PDF for quote ${id}`, { quoteId: id, locale })
 
     const supabase = await createClient()
 
@@ -81,7 +82,7 @@ export async function GET(
       .single()
 
     if (quoteError || !quote) {
-      console.error('Quote error:', quoteError)
+      logger.error('Quote error', quoteError, { quoteId: id })
       return NextResponse.json({ error: 'Quote not found' }, { status: 404 })
     }
 
@@ -98,7 +99,7 @@ export async function GET(
     const t = getPDFTranslations(locale)
     const dateLocale = localeMap[locale] || it
 
-    console.log('Quote data loaded successfully')
+    logger.debug('Quote data loaded successfully', { quoteId: id })
 
     // Create PDF with PDFKit
     const pdf = new PDFDocument({ 
@@ -112,7 +113,7 @@ export async function GET(
     // Logo (if exists) - Top right
     if (company.logo_url) {
       try {
-        console.log('Loading logo from:', company.logo_url)
+        logger.debug('Loading logo', { logoUrl: company.logo_url })
         const logoResponse = await fetch(company.logo_url)
         const logoBuffer = await logoResponse.arrayBuffer()
         
@@ -131,10 +132,10 @@ export async function GET(
             })
           }
         } catch (imgError) {
-          console.error('Error embedding logo:', imgError)
+          logger.error('Error embedding logo', imgError)
         }
       } catch (error) {
-        console.error('Error loading logo:', error)
+        logger.error('Error loading logo', error, { logoUrl: company.logo_url })
       }
     }
 
@@ -378,7 +379,7 @@ export async function GET(
     // Convert stream to buffer
     const pdfBuffer = await streamToBuffer(pdf)
 
-    console.log('PDF generated successfully, size:', pdfBuffer.length)
+    logger.debug('PDF generated successfully', { quoteId: id, size: pdfBuffer.length })
 
     // Convert Buffer to Uint8Array for NextResponse compatibility
     const pdfUint8Array = new Uint8Array(pdfBuffer)
@@ -391,7 +392,7 @@ export async function GET(
       },
     })
   } catch (error) {
-    console.error('Error generating PDF:', error)
+    logger.error('Error generating PDF', error, { quoteId: id })
     return NextResponse.json(
       { error: 'Error generating PDF', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }

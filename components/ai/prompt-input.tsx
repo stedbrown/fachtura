@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Send, StopCircle, Mic, MicOff } from 'lucide-react'
+import { logger } from '@/lib/logger'
 
 interface PromptInputProps {
   value: string
@@ -29,22 +30,28 @@ export function PromptInput({
 }: PromptInputProps) {
   const textareaRef = React.useRef<HTMLTextAreaElement>(null)
   const [isListening, setIsListening] = React.useState(false)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const recognitionRef = React.useRef<any>(null)
 
   // Initialize Speech Recognition
   React.useEffect(() => {
     if (typeof window === 'undefined') return
 
+    // SpeechRecognition is a browser API that may not be fully typed
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
     if (!SpeechRecognition) return
 
-    const recognition = new SpeechRecognition()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const recognition = new SpeechRecognition() as any
     recognition.continuous = false
     recognition.interimResults = false
     recognition.lang = 'it-IT' // Italian
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     recognition.onresult = (event: any) => {
-      const transcript = event.results[0][0].transcript
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const transcript = (event.results[0]?.[0] as any)?.transcript || ''
       const currentValue = textareaRef.current?.value || ''
       const newValue = currentValue ? currentValue + ' ' + transcript : transcript
       onChange(newValue)
@@ -54,8 +61,9 @@ export function PromptInput({
       setIsListening(false)
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     recognition.onerror = (event: any) => {
-      console.error('Speech recognition error:', event.error)
+      logger.error('Speech recognition error', new Error(event.error || 'Unknown error'), { errorType: event.error })
       setIsListening(false)
     }
 

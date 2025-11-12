@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { generateInvoiceNumber } from '@/lib/utils/invoice-utils'
+import { logger } from '@/lib/logger'
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
-    const { id } = await params
     const supabase = await createClient()
 
     // Get user
@@ -83,7 +84,7 @@ export async function POST(
       .single()
 
     if (invoiceError || !invoice) {
-      console.error('Error creating invoice:', invoiceError)
+      logger.error('Error creating invoice', invoiceError, { quoteId: id })
       return NextResponse.json(
         { error: 'Error creating invoice' },
         { status: 500 }
@@ -105,7 +106,7 @@ export async function POST(
       .insert(invoiceItems)
 
     if (itemsError) {
-      console.error('Error creating invoice items:', itemsError)
+      logger.error('Error creating invoice items', itemsError, { invoiceId: invoice.id, quoteId: id })
       // Rollback: delete the invoice
       await supabase.from('invoices').delete().eq('id', invoice.id)
       return NextResponse.json(
@@ -120,7 +121,7 @@ export async function POST(
       invoice_number: invoice.invoice_number,
     })
   } catch (error) {
-    console.error('Error converting quote to invoice:', error)
+    logger.error('Error converting quote to invoice', error, { quoteId: id })
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

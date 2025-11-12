@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { useNotifications } from '@/hooks/use-notifications'
+import { useNotifications, type Notification } from '@/hooks/use-notifications'
 import { formatDistanceToNow } from 'date-fns'
 import { it, de, fr, enUS, type Locale } from 'date-fns/locale'
 import { useParams, useRouter } from 'next/navigation'
@@ -25,7 +25,7 @@ const localeMap: Record<string, Locale> = {
   rm: it,
 }
 
-const typeIcons: Record<string, any> = {
+const typeIcons: Record<string, React.ComponentType<{ className?: string }>> = {
   client_added: Users,
   quote_sent: FileText,
   quote_accepted: FileText,
@@ -62,7 +62,7 @@ export function NotificationsDropdown() {
     deleteNotification,
   } = useNotifications()
 
-  const handleNotificationClick = (notification: any) => {
+  const handleNotificationClick = (notification: Notification) => {
     markAsRead(notification.id)
     
     // Navigate based on entity type

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { logger } from '@/lib/logger'
 import PDFDocument from 'pdfkit'
 import { SwissQRBill } from 'swissqrbill/pdf'
 import { format } from 'date-fns'
@@ -128,7 +129,7 @@ export async function POST(request: NextRequest) {
           })
         }
       } catch (error) {
-        console.error('Error loading logo:', error)
+        logger.error('Error loading logo', error)
       }
     }
 
@@ -371,7 +372,7 @@ export async function POST(request: NextRequest) {
 
         swissQRBill.attachTo(pdf)
       } catch (error) {
-        console.error('Error creating QR Bill:', error)
+        logger.error('Error creating QR Bill', error)
       }
     }
 
@@ -387,7 +388,7 @@ export async function POST(request: NextRequest) {
       },
     })
   } catch (error) {
-    console.error('Error generating preview PDF:', error)
+    logger.error('Error generating preview PDF', error)
     return NextResponse.json(
       { error: 'Error generating PDF', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }

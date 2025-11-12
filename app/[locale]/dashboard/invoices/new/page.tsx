@@ -26,6 +26,9 @@ import { SetupAlert } from '@/components/setup-alert'
 import { useCompanySettings } from '@/hooks/use-company-settings'
 import { toast } from 'sonner'
 import { InvoiceLivePreview } from '@/components/invoices/invoice-live-preview'
+import { invoiceSchema } from '@/lib/validations/invoice'
+import { logger } from '@/lib/logger'
+import { safeAsync, getSupabaseErrorMessage } from '@/lib/error-handler'
 
 export default function NewInvoicePage() {
   const router = useRouter()
@@ -139,52 +142,32 @@ export default function NewInvoicePage() {
   }
 
   const handleSubmit = async () => {
-    if (!clientId) {
-      toast.error(t('form.errorSelectClient'))
-      return
-    }
+    // Validate with Zod
+    const validationResult = invoiceSchema.safeParse({
+      client_id: clientId,
+      date,
+      due_date: dueDate || undefined,
+      status,
+      items,
+      notes: notes || undefined,
+    })
 
-    // Validate items
-    if (items.length === 0) {
-      toast.error('Aggiungi almeno un articolo alla fattura')
-      return
-    }
-
-    const emptyDescriptions = items.filter(item => !item.description?.trim())
-    if (emptyDescriptions.length > 0) {
-      toast.error('Compila la descrizione per tutti gli articoli')
-      return
-    }
-
-    const invalidQuantity = items.filter(item => item.quantity <= 0)
-    if (invalidQuantity.length > 0) {
-      toast.error('La quantità deve essere maggiore di 0 per tutti gli articoli')
-      return
-    }
-
-    const invalidPrice = items.filter(item => item.unit_price <= 0)
-    if (invalidPrice.length > 0) {
-      toast.error('Il prezzo unitario deve essere maggiore di 0 per tutti gli articoli')
-      return
-    }
-
-    const invalidTax = items.filter(item => item.tax_rate < 0)
-    if (invalidTax.length > 0) {
-      toast.error('L\'IVA non può essere negativa')
+    if (!validationResult.success) {
+      const firstError = validationResult.error.issues[0]
+      toast.error(firstError.message || tCommon('error'))
       return
     }
 
     setLoading(true)
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
 
-    if (!user) {
-      toast.error(tCommon('error'))
-      setLoading(false)
-      return
-    }
+    const result = await safeAsync(async () => {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
 
-    try {
+      if (!user) {
+        throw new Error(tCommon('error') || 'Errore: utente non autenticato')
+      }
+
       const totals = calculateInvoiceTotals(items)
 
       const { data: invoiceData, error: invoiceError } = await supabase
@@ -222,14 +205,18 @@ export default function NewInvoicePage() {
         throw new Error(`Errore inserimento articoli: ${itemsError.message}`)
       }
 
+      return invoiceData
+    }, 'Error saving invoice')
+
+    if (result.success) {
       toast.success(t('createSuccess') || 'Fattura creata con successo')
       router.push(`/${locale}/dashboard/invoices`)
-    } catch (error: any) {
-      console.error('Error saving invoice:', error)
-      toast.error(error?.message || t('createError'))
-    } finally {
-      setLoading(false)
+    } else {
+      const errorMessage = getSupabaseErrorMessage(result.error)
+      toast.error(errorMessage || t('createError'))
     }
+
+    setLoading(false)
   }
 
   const totals = calculateInvoiceTotals(items)

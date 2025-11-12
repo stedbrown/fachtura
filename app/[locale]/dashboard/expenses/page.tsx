@@ -28,6 +28,7 @@ import { useSubscription } from '@/hooks/use-subscription'
 import { SubscriptionUpgradeDialog } from '@/components/subscription-upgrade-dialog'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { exportFormattedToCSV, exportFormattedToExcel, formatDateForExport, formatCurrencyForExport } from '@/lib/export-utils'
+import { logger } from '@/lib/logger'
 import {
   Tooltip,
   TooltipContent,
@@ -148,7 +149,7 @@ export default function ExpensesPage() {
     const { data, error } = await query
 
     if (error) {
-      console.error('Error loading expenses:', error)
+      logger.error('Error loading expenses', error)
       toast.error(t('loadError') || 'Errore nel caricamento delle spese')
     } else {
       setExpenses(data || [])
@@ -196,7 +197,7 @@ export default function ExpensesPage() {
       .eq('id', id)
 
     if (error) {
-      console.error('Error deleting expense:', error)
+      logger.error('Error deleting expense', error, { expenseId: id })
       toast.error(t('deleteError') || 'Errore nell\'eliminazione della spesa')
     } else {
       toast.success(t('deleteSuccess') || 'Spesa eliminata con successo')
@@ -217,7 +218,7 @@ export default function ExpensesPage() {
       .eq('id', id)
 
     if (error) {
-      console.error('Error restoring expense:', error)
+      logger.error('Error restoring expense', error, { expenseId: id })
       toast.error(t('restoreError') || 'Errore nel ripristino della spesa')
     } else {
       toast.success(t('restoreSuccess') || 'Spesa ripristinata con successo')
@@ -234,7 +235,7 @@ export default function ExpensesPage() {
       .eq('id', id)
 
     if (error) {
-      console.error('Error permanently deleting expense:', error)
+      logger.error('Error permanently deleting expense', error, { expenseId: id })
       toast.error(t('permanentDeleteError') || 'Errore nell\'eliminazione definitiva')
     } else {
       toast.success(t('permanentDeleteSuccess') || 'Spesa eliminata definitivamente')
@@ -386,17 +387,17 @@ export default function ExpensesPage() {
         </CardHeader>
         <CardContent>
             {filteredExpenses.length === 0 ? (
-              <div className="text-center py-12">
-                <Wallet className="mx-auto h-12 w-12 text-muted-foreground" />
-                <h3 className="mt-4 text-lg font-semibold">
+              <div className="text-center py-8 md:py-12">
+                <Wallet className="h-12 w-12 md:h-16 md:w-16 mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-base md:text-lg font-semibold mb-2">
                   {showArchived ? t('noArchivedExpenses') : t('noExpenses')}
                 </h3>
-                <p className="mt-2 text-sm text-muted-foreground">
+                <p className="text-sm text-muted-foreground mb-4">
                   {showArchived ? t('noArchivedDescription') : t('noExpensesDescription')}
                 </p>
                 {!showArchived && (
-                  <Button onClick={handleAddNew} className="mt-4">
-                    <Plus className="mr-2 h-4 w-4" />
+                  <Button onClick={handleAddNew}>
+                    <Plus className="h-4 w-4 mr-2" />
                     {t('createFirst')}
                   </Button>
                 )}

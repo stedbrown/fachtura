@@ -474,8 +474,20 @@ export default function QuotesPage() {
               {tCommon('loading')}...
             </div>
           ) : sortedQuotes.length === 0 ? (
-            <div className="text-center py-8 md:py-12 text-muted-foreground">
-              {quotes.length === 0 ? t('noQuotes') : tCommon('noResults')}
+            <div className="text-center py-8 md:py-12">
+              <Receipt className="h-12 w-12 md:h-16 md:w-16 mx-auto text-muted-foreground mb-4" />
+              <h3 className="text-base md:text-lg font-semibold mb-2">
+                {showArchived ? t('noArchivedQuotes') : t('noQuotes')}
+              </h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                {showArchived ? t('noArchivedDescription') : t('noQuotesDescription')}
+              </p>
+              {!showArchived && (
+                <Button onClick={handleCreateQuote}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  {t('createFirst')}
+                </Button>
+              )}
             </div>
           ) : (
             <div className="overflow-x-auto -mx-4 sm:mx-0">

@@ -83,8 +83,8 @@ export function useSorting<T>(
     if (!sortKey || !sortDirection) return data
 
     return [...data].sort((a, b) => {
-      const aValue = getNestedValue(a, sortKey)
-      const bValue = getNestedValue(b, sortKey)
+      const aValue = getNestedValue(a as Record<string, unknown>, sortKey)
+      const bValue = getNestedValue(b as Record<string, unknown>, sortKey)
 
       // Handle null/undefined
       if (aValue == null && bValue == null) return 0
@@ -125,7 +125,12 @@ export function useSorting<T>(
 }
 
 // Helper to get nested object values (e.g., "client.name")
-function getNestedValue(obj: any, path: string): any {
-  return path.split('.').reduce((current, key) => current?.[key], obj)
+function getNestedValue(obj: Record<string, unknown>, path: string): unknown {
+  return path.split('.').reduce((current, key) => {
+    if (current && typeof current === 'object' && key in current) {
+      return (current as Record<string, unknown>)[key]
+    }
+    return undefined
+  }, obj as unknown)
 }
 

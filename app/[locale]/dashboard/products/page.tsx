@@ -24,6 +24,8 @@ import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 import { useSubscription } from '@/hooks/use-subscription'
 import { SubscriptionUpgradeDialog } from '@/components/subscription-upgrade-dialog'
+import { logger } from '@/lib/logger'
+import { getErrorMessage } from '@/lib/logger'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { exportFormattedToCSV, exportFormattedToExcel, formatCurrencyForExport } from '@/lib/export-utils'
 import { ProductDialog } from '@/components/products/product-dialog'
@@ -113,7 +115,7 @@ export default function ProductsPage() {
     const { data, error } = await query
 
     if (error) {
-      console.error('Error loading products:', error)
+      logger.error('Error loading products', error)
       toast.error(t('loadError') || 'Errore nel caricamento dei prodotti')
     } else {
       setProducts(data || [])
@@ -203,8 +205,8 @@ export default function ProductsPage() {
       setDialogOpen(false)
       setSelectedProduct(null)
       loadProducts()
-    } catch (error: any) {
-      console.error('Error saving product:', error)
+    } catch (error) {
+      logger.error('Error saving product', error, { productId: selectedProduct?.id })
       toast.error(selectedProduct ? t('updateError') : t('createError'))
     } finally {
       setDialogLoading(false)
@@ -222,7 +224,7 @@ export default function ProductsPage() {
       .eq('id', id)
 
     if (error) {
-      console.error('Error deleting product:', error)
+      logger.error('Error deleting product', error, { productId: id })
       toast.error(t('deleteError') || 'Errore nell\'eliminazione del prodotto')
     } else {
       toast.success(t('deleteSuccess') || 'Prodotto eliminato con successo')
@@ -243,7 +245,7 @@ export default function ProductsPage() {
       .eq('id', id)
 
     if (error) {
-      console.error('Error restoring product:', error)
+      logger.error('Error restoring product', error, { productId: id })
       toast.error(t('restoreError') || 'Errore nel ripristino del prodotto')
     } else {
       toast.success(t('restoreSuccess') || 'Prodotto ripristinato con successo')

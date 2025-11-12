@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { logger } from '@/lib/logger';
 
 export async function POST(req: NextRequest) {
   try {
@@ -22,7 +23,7 @@ export async function POST(req: NextRequest) {
     const { error: deleteError } = await supabase.rpc('delete_user');
 
     if (deleteError) {
-      console.error('Error deleting account:', deleteError);
+      logger.error('Error deleting account', deleteError, { userId: user.id });
       
       // Fallback: usa Admin API se la funzione RPC non esiste
       // Nota: questo richiede che la funzione delete_user sia creata in Supabase
@@ -39,7 +40,7 @@ export async function POST(req: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Error in delete-account route:', error);
+    logger.error('Error in delete-account route', error);
     return NextResponse.json(
       { error: 'Errore interno del server' },
       { status: 500 }

@@ -177,8 +177,8 @@ export default function ChatPage() {
                           <Tool
                             key={index}
                             name={toolName}
-                            status={toolState as any}
-                            result={toolOutput}
+                            status={toolState as 'input-streaming' | 'processing' | 'output-available' | 'error'}
+                            result={toolOutput as { message?: string; [key: string]: unknown } | undefined}
                             error={toolError}
                           />
                         )

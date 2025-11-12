@@ -80,7 +80,7 @@ export function AdvancedFilters({
     onFiltersChange({})
   }
 
-  function updateFilter(key: keyof FilterState, value: any) {
+  function updateFilter(key: keyof FilterState, value: FilterState[keyof FilterState]) {
     onFiltersChange({ ...filters, [key]: value })
   }
 

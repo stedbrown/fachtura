@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { logger } from '@/lib/logger'
 
 export interface Notification {
   id: string
@@ -50,7 +51,7 @@ export function useNotifications() {
         .eq('is_read', false)
 
       if (countError) {
-        console.error('Error counting unread notifications:', countError)
+        logger.error('Error counting unread notifications', countError)
         // Fallback to counting loaded notifications
         if (data) {
           setNotifications(data)
@@ -63,7 +64,7 @@ export function useNotifications() {
         }
       }
     } catch (error) {
-      console.error('Error loading notifications:', error)
+      logger.error('Error loading notifications', error)
     } finally {
       setLoading(false)
     }
@@ -91,14 +92,14 @@ export function useNotifications() {
             filter: `user_id=eq.${user.id}`, // Filter by user_id for real-time
           },
           (payload) => {
-            console.log('Real-time notification change:', payload)
+            logger.debug('Real-time notification change', { payload })
             loadNotifications()
           }
         )
         .subscribe((status) => {
-          console.log('Subscription status:', status)
+          logger.debug('Subscription status', { status })
           if (status === 'SUBSCRIBED') {
-            console.log('Successfully subscribed to notifications')
+            logger.debug('Successfully subscribed to notifications')
           }
         })
     })
@@ -128,7 +129,7 @@ export function useNotifications() {
       )
       setUnreadCount((prev) => Math.max(0, prev - 1))
     } catch (error) {
-      console.error('Error marking notification as read:', error)
+      logger.error('Error marking notification as read', error, { notificationId })
     }
   }
 
@@ -152,7 +153,7 @@ export function useNotifications() {
       setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })))
       setUnreadCount(0)
     } catch (error) {
-      console.error('Error marking all as read:', error)
+      logger.error('Error marking all as read', error)
     }
   }
 
@@ -172,7 +173,7 @@ export function useNotifications() {
         return notification && !notification.is_read ? prev - 1 : prev
       })
     } catch (error) {
-      console.error('Error deleting notification:', error)
+      logger.error('Error deleting notification', error, { notificationId })
     }
   }
 

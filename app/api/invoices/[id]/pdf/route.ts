@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { logger } from '@/lib/logger'
 import PDFDocument from 'pdfkit'
 import { SwissQRBill } from 'swissqrbill/pdf'
 import { format } from 'date-fns'
@@ -70,12 +71,12 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   try {
-    const { id } = await params
     const { searchParams } = new URL(request.url)
     const locale = searchParams.get('locale') || 'it'
     
-    console.log(`Generating PDF for invoice ${id} with locale ${locale}`)
+    logger.debug(`Generating PDF for invoice ${id}`, { invoiceId: id, locale })
 
     const supabase = await createClient()
 
@@ -112,7 +113,7 @@ export async function GET(
       .single()
 
     if (invoiceError || !invoice) {
-      console.error('Invoice error:', invoiceError)
+      logger.error('Invoice error', invoiceError, { invoiceId: id })
       return NextResponse.json({ error: 'Invoice not found' }, { status: 404 })
     }
 
@@ -129,7 +130,7 @@ export async function GET(
     const t = getPDFTranslations(locale)
     const dateLocale = localeMap[locale] || it
 
-    console.log('Invoice data loaded successfully')
+    logger.debug('Invoice data loaded successfully', { invoiceId: id })
 
     // Create PDF with PDFKit
     const pdf = new PDFDocument({ 
@@ -143,7 +144,7 @@ export async function GET(
     // Logo (if exists) - Top right
     if (company.logo_url) {
       try {
-        console.log('Loading logo from:', company.logo_url)
+        logger.debug('Loading logo', { logoUrl: company.logo_url })
         const logoResponse = await fetch(company.logo_url)
         const logoBuffer = await logoResponse.arrayBuffer()
         
@@ -162,10 +163,10 @@ export async function GET(
             })
           }
         } catch (imgError) {
-          console.error('Error embedding logo:', imgError)
+          logger.error('Error embedding logo', imgError)
         }
       } catch (error) {
-        console.error('Error loading logo:', error)
+        logger.error('Error loading logo', error, { logoUrl: company.logo_url })
       }
     }
 
@@ -413,24 +414,22 @@ export async function GET(
     }
 
     // Swiss QR Bill - Using OFFICIAL swissqrbill library
-    console.log('=== Starting Swiss QR Bill generation with official library ===')
-    console.log('Company IBAN:', company.iban)
-    console.log('Invoice total:', invoice.total)
-    console.log('Currency:', invoice.currency)
+    logger.debug('Starting Swiss QR Bill generation', { 
+      hasIban: !!company.iban, 
+      total: invoice.total, 
+      currency: invoice.currency 
+    })
 
     try {
       // Check if we have minimum required data
       if (!company.iban || company.iban.trim() === '') {
-        console.error('❌ IBAN missing! QR Bill cannot be generated without IBAN.')
-        console.error('Go to Settings → Payment Information and enter the IBAN')
+        logger.warn('IBAN missing - QR Bill cannot be generated', { invoiceId: id })
       } else if (!company.postal_code || company.postal_code.toString().trim() === '') {
-        console.error('❌ Postal code missing! QR Bill requires company postal code.')
-        console.error('Go to Settings → Company Data and enter the postal code')
+        logger.warn('Postal code missing - QR Bill requires company postal code', { invoiceId: id })
       } else if (!company.company_name || company.company_name.trim() === '') {
-        console.error('❌ Company name missing! QR Bill requires company name.')
-        console.error('Go to Settings → Company Data and enter the company name')
+        logger.warn('Company name missing - QR Bill requires company name', { invoiceId: id })
       } else {
-        console.log('✅ IBAN present, generating Swiss QR Bill with official library...')
+        logger.debug('IBAN present, generating Swiss QR Bill', { invoiceId: id })
         
         // Prepare data for SwissQRBill (official library format)
         const qrBillData: any = {
@@ -469,7 +468,7 @@ export async function GET(
           rm: 'IT', // Romansh uses Italian (not supported by Swiss banking standard)
         }
 
-        console.log('Creating SwissQRBill with data:', JSON.stringify(qrBillData, null, 2))
+        logger.debug('Creating SwissQRBill', { invoiceId: id, locale })
 
         // Create SwissQRBill instance with official library
         const swissQRBill = new SwissQRBill(qrBillData, {
@@ -477,19 +476,15 @@ export async function GET(
           scissors: true,
         })
 
-        console.log('SwissQRBill instance created successfully')
+        logger.debug('SwissQRBill instance created successfully', { invoiceId: id })
 
         // Attach QR Bill to PDF (creates new page automatically)
         swissQRBill.attachTo(pdf)
 
-        console.log('=== ✅ Swiss QR Bill OFFICIAL (swissqrbill library) attached successfully! ===')
+        logger.debug('Swiss QR Bill attached successfully', { invoiceId: id })
       }
     } catch (error) {
-      console.error('=== ❌ ERROR creating Swiss QR Bill ===')
-      console.error('Error type:', error instanceof Error ? error.constructor.name : typeof error)
-      console.error('Error message:', error instanceof Error ? error.message : String(error))
-      console.error('Error stack:', error instanceof Error ? error.stack : 'No stack')
-      console.error('Continuing without QR Bill...')
+      logger.error('Error creating Swiss QR Bill', error, { invoiceId: id })
     }
 
     // Finalize PDF
@@ -498,7 +493,7 @@ export async function GET(
     // Convert stream to buffer
     const pdfBuffer = await streamToBuffer(pdf)
 
-    console.log('PDF generated successfully, size:', pdfBuffer.length)
+    logger.debug('PDF generated successfully', { invoiceId: id, size: pdfBuffer.length })
 
     // Convert Buffer to Uint8Array for NextResponse compatibility
     const pdfUint8Array = new Uint8Array(pdfBuffer)
@@ -511,7 +506,7 @@ export async function GET(
       },
     })
   } catch (error) {
-    console.error('Error generating PDF:', error)
+    logger.error('Error generating PDF', error, { invoiceId: id })
     return NextResponse.json(
       { error: 'Error generating PDF', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }

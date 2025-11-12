@@ -36,6 +36,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { logger } from '@/lib/logger'
 
 export default function ClientsPage() {
   const params = useParams()
@@ -248,10 +249,10 @@ export default function ClientsPage() {
       } else {
         // Verifica limiti prima di creare
         const limitsResult = await checkLimits('client')
-        console.log('[ClientsPage] Limits check result:', limitsResult) // 🔍 DEBUG
+        logger.debug('Limits check result', { limitsResult })
         
         if (!limitsResult.allowed) {
-          console.log('[ClientsPage] Limit reached, showing upgrade dialog') // 🔍 DEBUG
+          logger.debug('Limit reached, showing upgrade dialog')
           // Aggiorna i parametri per il dialog
           setUpgradeDialogParams({
             currentCount: limitsResult.current_count,
@@ -280,7 +281,7 @@ export default function ClientsPage() {
         
         if (insertError) {
           // Se il database trigger blocca l'inserimento
-          console.error('Errore inserimento cliente:', insertError)
+          logger.error('Errore inserimento cliente', insertError, { clientName: data.name })
           // Aggiorna i parametri per il dialog
           setUpgradeDialogParams({
             currentCount: limitsResult.current_count,
@@ -309,7 +310,7 @@ export default function ClientsPage() {
       setDialogOpen(false)
       loadClients()
     } catch (error) {
-      console.error('Errore durante il salvataggio del cliente:', error)
+      logger.error('Errore durante il salvataggio del cliente', error)
       toast.error(tCommon('error'), {
         description: tErrors('clientSaveError'),
       })
@@ -454,8 +455,20 @@ export default function ClientsPage() {
               {tCommon('loading')}...
             </div>
           ) : sortedClients.length === 0 ? (
-            <div className="text-center py-8 md:py-12 text-muted-foreground">
-              {clients.length === 0 ? t('noClients') : tCommon('noResults')}
+            <div className="text-center py-8 md:py-12">
+              <Users className="h-12 w-12 md:h-16 md:w-16 mx-auto text-muted-foreground mb-4" />
+              <h3 className="text-base md:text-lg font-semibold mb-2">
+                {showArchived ? t('noArchivedClients') : t('noClients')}
+              </h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                {showArchived ? t('noArchivedDescription') : t('noClientsDescription')}
+              </p>
+              {!showArchived && (
+                <Button onClick={handleCreate}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  {t('createFirst')}
+                </Button>
+              )}
             </div>
           ) : (
             <div className="overflow-x-auto -mx-4 sm:mx-0">
