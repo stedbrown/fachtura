@@ -67,16 +67,16 @@ export function ExpenseDialog({
       amount: 0,
       currency: 'CHF',
       expense_date: new Date().toISOString().split('T')[0],
-      payment_method: '',
-      supplier_id: '',
-      supplier_name: '',
-      receipt_url: '',
-      receipt_number: '',
+      payment_method: undefined,
+      supplier_id: undefined,
+      supplier_name: undefined,
+      receipt_url: undefined,
+      receipt_number: undefined,
       tax_rate: 8.1,
       tax_amount: 0,
       is_deductible: true,
       status: 'pending',
-      notes: '',
+      notes: undefined,
     }
   })
 
@@ -116,16 +116,16 @@ export function ExpenseDialog({
         amount: 0,
         currency: 'CHF',
         expense_date: new Date().toISOString().split('T')[0],
-        payment_method: '',
-        supplier_id: '',
-        supplier_name: '',
-        receipt_url: '',
-        receipt_number: '',
+        payment_method: undefined,
+        supplier_id: undefined,
+        supplier_name: undefined,
+        receipt_url: undefined,
+        receipt_number: undefined,
         tax_rate: 8.1,
         tax_amount: 0,
         is_deductible: true,
         status: 'pending',
-        notes: '',
+        notes: undefined,
       })
     }
   }, [expense, reset])
@@ -377,7 +377,7 @@ export function ExpenseDialog({
                   {t('paymentMethod')}
                 </Label>
                 <Select
-                  value={watch('payment_method') || ''}
+                  value={watch('payment_method') || undefined}
                   onValueChange={(value) => setValue('payment_method', value as any)}
                 >
                   <SelectTrigger id="payment_method" className="h-10">
@@ -407,12 +407,12 @@ export function ExpenseDialog({
                   {t('selectSupplier')}
                 </Label>
                 <Select
-                  value={watch('supplier_id') || ''}
+                  value={watch('supplier_id') || undefined}
                   onValueChange={(value) => {
-                    setValue('supplier_id', value || '')
+                    setValue('supplier_id', value || undefined)
                     // Clear supplier name when selecting from list
                     if (value && value !== 'none') {
-                      setValue('supplier_name', '')
+                      setValue('supplier_name', undefined)
                     }
                   }}
                 >
