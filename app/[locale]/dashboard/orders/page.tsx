@@ -14,7 +14,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Edit3, Trash2, Archive, ArchiveRestore, ShoppingCart, Download, MoreHorizontal, ChevronDown } from 'lucide-react'
+import { Plus, Trash2, Archive, ArchiveRestore, ShoppingCart, Download, MoreHorizontal, ChevronDown } from 'lucide-react'
 import { DeleteDialog } from '@/components/delete-dialog'
 import { SimpleColumnToggle, useColumnVisibility, type ColumnConfig } from '@/components/simple-column-toggle'
 import { AdvancedFilters } from '@/components/advanced-filters'
@@ -147,9 +147,7 @@ export default function OrdersPage() {
     setLoading(false)
   }
 
-  const handleRowClick = (orderId: string) => {
-    router.push(`/${locale}/dashboard/orders/${orderId}`)
-  }
+  // Removed handleRowClick - orders don't have detail pages
 
   async function handleAddNew() {
     const limitsCheck = await checkLimits('order')
@@ -379,8 +377,7 @@ export default function OrdersPage() {
                     {sortedOrders.map((order) => (
                       <TableRow
                         key={order.id}
-                        className="cursor-pointer hover:bg-muted/50"
-                        onClick={() => handleRowClick(order.id)}
+                        className="hover:bg-muted/50"
                       >
                         <TableCell className={getColumnClass('order_number', 'font-medium text-xs md:text-sm')}>{order.order_number}</TableCell>
                         <TableCell className={getColumnClass('supplier', 'text-xs md:text-sm')}>{order.supplier?.name || '-'}</TableCell>
@@ -418,22 +415,16 @@ export default function OrdersPage() {
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-48">
                               {!showArchived ? (
-                                <>
-                                  <DropdownMenuItem onSelect={() => router.push(`/${locale}/dashboard/orders/${order.id}`)}>
-                                    <Edit3 className="mr-2 h-4 w-4" />
-                                    {t('edit')}
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem
-                                    onSelect={() => {
-                                      setOrderToDelete(order.id)
-                                      setDeleteDialogOpen(true)
-                                    }}
-                                    className="text-destructive focus:text-destructive"
-                                  >
-                                    <Trash2 className="mr-2 h-4 w-4" />
-                                    {t('delete')}
-                                  </DropdownMenuItem>
-                                </>
+                                <DropdownMenuItem
+                                  onSelect={() => {
+                                    setOrderToDelete(order.id)
+                                    setDeleteDialogOpen(true)
+                                  }}
+                                  className="text-destructive focus:text-destructive"
+                                >
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  {t('delete')}
+                                </DropdownMenuItem>
                               ) : (
                                 <DropdownMenuItem onSelect={() => handleRestore(order.id)}>
                                   <ArchiveRestore className="mr-2 h-4 w-4" />
