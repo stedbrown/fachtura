@@ -13,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Plus, Edit3, Trash2, Archive, ArchiveRestore, Truck, MoreHorizontal } from 'lucide-react'
+import { Plus, Edit3, Trash2, Archive, ArchiveRestore, Truck, MoreHorizontal, Download, ChevronDown } from 'lucide-react'
 import { DeleteDialog } from '@/components/delete-dialog'
 import { SimpleColumnToggle, useColumnVisibility, type ColumnConfig } from '@/components/simple-column-toggle'
 import { SortableHeader, useSorting } from '@/components/sortable-header'
@@ -25,6 +25,12 @@ import { SubscriptionUpgradeDialog } from '@/components/subscription-upgrade-dia
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { SupplierDialog } from '@/components/suppliers/supplier-dialog'
 import type { SupplierInput } from '@/lib/validations/supplier'
+import { exportFormattedToCSV, exportFormattedToExcel, formatDateForExport } from '@/lib/export-utils'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -273,6 +279,27 @@ export default function SuppliersPage() {
     }
   }
 
+  function handleExport(formatType: 'csv' | 'excel') {
+    const dataToExport = suppliers.map(supplier => ({
+      [t('name') || 'Nome']: supplier.name,
+      [t('email') || 'Email']: supplier.email || '',
+      [t('phone') || 'Telefono']: supplier.phone || '',
+      [t('website') || 'Sito Web']: supplier.website || '',
+      [t('vatNumber') || 'Partita IVA']: supplier.vat_number || '',
+      [t('address') || 'Indirizzo']: supplier.address || '',
+      [t('city') || 'Città']: supplier.city || '',
+      [t('postalCode') || 'CAP']: supplier.postal_code || '',
+      [t('country') || 'Paese']: supplier.country || '',
+    }))
+
+    if (formatType === 'csv') {
+      exportFormattedToCSV(dataToExport, `fornitori-${new Date().toISOString().split('T')[0]}`)
+    } else {
+      exportFormattedToExcel(dataToExport, `fornitori-${new Date().toISOString().split('T')[0]}`)
+    }
+    toast.success(tCommon('exportSuccess') || 'Esportazione completata')
+  }
+
   function handleRowClick(supplier: Supplier) {
     if (!showArchived) {
       handleEdit(supplier)
@@ -314,14 +341,45 @@ export default function SuppliersPage() {
                 </TabsList>
               </Tabs>
 
-              {/* Column Toggle */}
+              {/* Export and Column Toggle */}
               {!showArchived && suppliers.length > 0 && (
-                <SimpleColumnToggle
-                  columns={supplierColumns}
-                  columnVisibility={columnVisibility}
-                  onVisibilityChange={handleVisibilityChange}
-                  label={tCommon('toggleColumns')}
-                />
+                <div className="flex flex-row flex-wrap items-center justify-end gap-2 w-full lg:w-auto">
+                  <DropdownMenu>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-9 w-9 sm:w-auto sm:px-3 flex items-center justify-center sm:justify-start gap-0 sm:gap-2"
+                          >
+                            <Download className="h-4 w-4" />
+                            <span className="sr-only sm:hidden">{tCommon('export')}</span>
+                            <span className="hidden sm:inline">{tCommon('export')}</span>
+                            <ChevronDown className="h-4 w-4 ml-1" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="hidden md:block">
+                        {tCommon('export')}
+                      </TooltipContent>
+                    </Tooltip>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => handleExport('csv')}>
+                        CSV
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleExport('excel')}>
+                        Excel
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  <SimpleColumnToggle
+                    columns={supplierColumns}
+                    columnVisibility={columnVisibility}
+                    onVisibilityChange={handleVisibilityChange}
+                    label={tCommon('toggleColumns')}
+                  />
+                </div>
               )}
             </div>
           </div>

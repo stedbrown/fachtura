@@ -14,7 +14,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Edit3, Trash2, Archive, ArchiveRestore, ShoppingCart, Download, MoreHorizontal } from 'lucide-react'
+import { Plus, Edit3, Trash2, Archive, ArchiveRestore, ShoppingCart, Download, MoreHorizontal, ChevronDown } from 'lucide-react'
 import { DeleteDialog } from '@/components/delete-dialog'
 import { SimpleColumnToggle, useColumnVisibility, type ColumnConfig } from '@/components/simple-column-toggle'
 import { SortableHeader, useSorting } from '@/components/sortable-header'
@@ -266,48 +266,41 @@ export default function OrdersPage() {
               {/* Column Toggle and Export Buttons */}
               {!showArchived && orders.length > 0 && (
                 <div className="flex flex-row flex-wrap items-center justify-end gap-2 w-full lg:w-auto">
+                  <DropdownMenu>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-9 w-9 sm:w-auto sm:px-3 flex items-center justify-center sm:justify-start gap-0 sm:gap-2"
+                          >
+                            <Download className="h-4 w-4" />
+                            <span className="sr-only sm:hidden">{tCommon('export')}</span>
+                            <span className="hidden sm:inline">{tCommon('export')}</span>
+                            <ChevronDown className="h-4 w-4 ml-1" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="hidden md:block">
+                        {tCommon('export')}
+                      </TooltipContent>
+                    </Tooltip>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => handleExport('csv')}>
+                        CSV
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleExport('excel')}>
+                        Excel
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                   <SimpleColumnToggle
                     columns={orderColumns}
                     columnVisibility={columnVisibility}
                     onVisibilityChange={handleVisibilityChange}
                     label={tCommon('toggleColumns')}
                   />
-                  <div className="flex flex-row flex-wrap items-center gap-2">
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleExport('csv')}
-                          className="h-9 w-9 sm:w-auto sm:px-3 flex items-center justify-center sm:justify-start gap-0 sm:gap-2"
-                        >
-                          <Download className="h-4 w-4" />
-                          <span className="sr-only sm:hidden">CSV</span>
-                          <span className="hidden sm:inline">CSV</span>
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent side="bottom" className="hidden md:block">
-                        CSV
-                      </TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleExport('excel')}
-                          className="h-9 w-9 sm:w-auto sm:px-3 flex items-center justify-center sm:justify-start gap-0 sm:gap-2"
-                        >
-                          <Download className="h-4 w-4" />
-                          <span className="sr-only sm:hidden">Excel</span>
-                          <span className="hidden sm:inline">Excel</span>
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent side="bottom" className="hidden md:block">
-                        Excel
-                      </TooltipContent>
-                    </Tooltip>
-                  </div>
                 </div>
               )}
             </div>
