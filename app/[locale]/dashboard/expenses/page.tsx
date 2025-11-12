@@ -377,10 +377,10 @@ export default function ExpensesPage() {
             </div>
           </div>
 
-          <CardTitle className="text-lg md:text-xl">
+          <CardTitle className="mt-4 text-lg md:text-xl">
             {showArchived ? t('archivedTitle') : t('listTitle')}
           </CardTitle>
-          <CardDescription className="text-sm text-muted-foreground">
+          <CardDescription className="text-xs md:text-sm">
             {showArchived ? t('archivedDescription') : t('listDescription')}
           </CardDescription>
         </CardHeader>
