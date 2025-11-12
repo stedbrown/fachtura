@@ -321,7 +321,7 @@ export function ExpenseDialog({
                   {t('category')} <span className="text-red-500">*</span>
                 </Label>
                 <Select
-                  value={watch('category')}
+                  value={watch('category') || 'office'}
                   onValueChange={(value) => setValue('category', value as any)}
                 >
                   <SelectTrigger id="category" className="h-10">
@@ -516,7 +516,7 @@ export function ExpenseDialog({
                   {tCommon('status')}
                 </Label>
                 <Select
-                  value={watch('status')}
+                  value={watch('status') || 'pending'}
                   onValueChange={(value) => setValue('status', value as any)}
                 >
                   <SelectTrigger id="status" className="h-10">
