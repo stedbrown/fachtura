@@ -13,7 +13,7 @@ export const expenseFormSchema = z.object({
     'insurance',
     'professional_services',
     'other',
-  ], { required_error: 'La categoria è obbligatoria' }),
+  ]),
   amount: z.number().positive('L\'importo deve essere maggiore di zero'),
   currency: z.string().default('CHF'),
   expense_date: z.string().min(1, 'La data è obbligatoria'),
