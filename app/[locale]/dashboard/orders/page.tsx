@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/badge'
 import { Plus, Edit3, Trash2, Archive, ArchiveRestore, ShoppingCart, Download, MoreHorizontal, ChevronDown } from 'lucide-react'
 import { DeleteDialog } from '@/components/delete-dialog'
 import { SimpleColumnToggle, useColumnVisibility, type ColumnConfig } from '@/components/simple-column-toggle'
+import { AdvancedFilters } from '@/components/advanced-filters'
 import { SortableHeader, useSorting } from '@/components/sortable-header'
 import type { OrderWithSupplier } from '@/lib/types/database'
 import { format } from 'date-fns'
@@ -263,38 +264,14 @@ export default function OrdersPage() {
                 </TabsList>
               </Tabs>
 
-              {/* Column Toggle and Export Buttons */}
-              {!showArchived && orders.length > 0 && (
+              {/* Filters and Column Toggle */}
+              {!showArchived && (
                 <div className="flex flex-row flex-wrap items-center justify-end gap-2 w-full lg:w-auto">
-                  <DropdownMenu>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-9 w-9 sm:w-auto sm:px-3 flex items-center justify-center sm:justify-start gap-0 sm:gap-2"
-                          >
-                            <Download className="h-4 w-4" />
-                            <span className="sr-only sm:hidden">{tCommon('export')}</span>
-                            <span className="hidden sm:inline">{tCommon('export')}</span>
-                            <ChevronDown className="h-4 w-4 ml-1" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                      </TooltipTrigger>
-                      <TooltipContent side="bottom" className="hidden md:block">
-                        {tCommon('export')}
-                      </TooltipContent>
-                    </Tooltip>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => handleExport('csv')}>
-                        CSV
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => handleExport('excel')}>
-                        Excel
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  <AdvancedFilters
+                    filters={{}}
+                    onFiltersChange={() => {}}
+                    onExport={handleExport}
+                  />
                   <SimpleColumnToggle
                     columns={orderColumns}
                     columnVisibility={columnVisibility}

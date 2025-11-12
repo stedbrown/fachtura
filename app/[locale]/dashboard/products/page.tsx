@@ -309,19 +309,19 @@ export default function ProductsPage() {
                 </TabsList>
               </Tabs>
 
-              {/* Column Toggle and Export */}
-              {!showArchived && products.length > 0 && (
+              {/* Filters and Column Toggle */}
+              {!showArchived && (
                 <div className="flex flex-row flex-wrap items-center justify-end gap-2 w-full lg:w-auto">
+                  <AdvancedFilters
+                    filters={{}}
+                    onFiltersChange={() => {}}
+                    onExport={handleExport}
+                  />
                   <SimpleColumnToggle
                     columns={productColumns}
                     columnVisibility={columnVisibility}
                     onVisibilityChange={handleVisibilityChange}
                     label={tCommon('toggleColumns')}
-                  />
-                  <AdvancedFilters
-                    filters={{}}
-                    onFiltersChange={() => {}}
-                    onExport={handleExport}
                   />
                 </div>
               )}
