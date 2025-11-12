@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
 import { ArrowLeft, ShoppingCart, Calendar, Package, Building, FileText, Loader2 } from 'lucide-react'
+import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { format } from 'date-fns'
 import { it, de, fr, enUS, type Locale } from 'date-fns/locale'
@@ -165,9 +166,19 @@ export default function OrderDetailPage() {
                 <Building className="h-4 w-4 mt-1 text-muted-foreground" />
                 <div className="flex-1">
                   <p className="text-sm font-medium">{t('supplier')}</p>
-                  <p className="text-sm text-muted-foreground">{order.supplier.name}</p>
+                  <Link
+                    href={`/${locale}/dashboard/suppliers/${order.supplier.id}`}
+                    className="text-sm text-primary hover:underline font-medium"
+                  >
+                    {order.supplier.name}
+                  </Link>
                   {order.supplier.email && (
-                    <p className="text-xs text-muted-foreground mt-1">{order.supplier.email}</p>
+                    <a
+                      href={`mailto:${order.supplier.email}`}
+                      className="text-xs text-muted-foreground mt-1 hover:text-primary block"
+                    >
+                      {order.supplier.email}
+                    </a>
                   )}
                 </div>
               </div>

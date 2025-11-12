@@ -188,7 +188,12 @@ export default function ClientDetailPage() {
                 <Mail className="h-4 w-4 mt-1 text-muted-foreground" />
                 <div>
                   <p className="text-sm font-medium">Email</p>
-                  <p className="text-sm text-muted-foreground">{client.email}</p>
+                  <a
+                    href={`mailto:${client.email}`}
+                    className="text-sm text-primary hover:underline"
+                  >
+                    {client.email}
+                  </a>
                 </div>
               </div>
             )}
@@ -197,7 +202,12 @@ export default function ClientDetailPage() {
                 <Phone className="h-4 w-4 mt-1 text-muted-foreground" />
                 <div>
                   <p className="text-sm font-medium">{t('fields.phone')}</p>
-                  <p className="text-sm text-muted-foreground">{client.phone}</p>
+                  <a
+                    href={`tel:${client.phone}`}
+                    className="text-sm text-primary hover:underline"
+                  >
+                    {client.phone}
+                  </a>
                 </div>
               </div>
             )}

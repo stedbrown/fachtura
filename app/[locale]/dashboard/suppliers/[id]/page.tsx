@@ -174,7 +174,12 @@ export default function SupplierDetailPage() {
                 <Mail className="h-4 w-4 mt-1 text-muted-foreground" />
                 <div>
                   <p className="text-sm font-medium">Email</p>
-                  <p className="text-sm text-muted-foreground">{supplier.email}</p>
+                  <a
+                    href={`mailto:${supplier.email}`}
+                    className="text-sm text-primary hover:underline"
+                  >
+                    {supplier.email}
+                  </a>
                 </div>
               </div>
             )}
@@ -183,7 +188,12 @@ export default function SupplierDetailPage() {
                 <Phone className="h-4 w-4 mt-1 text-muted-foreground" />
                 <div>
                   <p className="text-sm font-medium">{t('fields.phone')}</p>
-                  <p className="text-sm text-muted-foreground">{supplier.phone}</p>
+                  <a
+                    href={`tel:${supplier.phone}`}
+                    className="text-sm text-primary hover:underline"
+                  >
+                    {supplier.phone}
+                  </a>
                 </div>
               </div>
             )}
