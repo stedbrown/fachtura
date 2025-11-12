@@ -14,7 +14,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Eye, Trash2, Download, Archive, ArchiveRestore, Receipt, Edit3, MoreHorizontal } from 'lucide-react'
+import { Plus, Eye, Trash2, Download, Archive, ArchiveRestore, Receipt, FileText, Edit3, MoreHorizontal } from 'lucide-react'
 import { DeleteDialog } from '@/components/delete-dialog'
 import { SimpleColumnToggle, useColumnVisibility, type ColumnConfig } from '@/components/simple-column-toggle'
 import { SortableHeader, useSorting } from '@/components/sortable-header'
@@ -475,7 +475,7 @@ export default function QuotesPage() {
             </div>
           ) : sortedQuotes.length === 0 ? (
             <div className="text-center py-8 md:py-12">
-              <Receipt className="h-12 w-12 md:h-16 md:w-16 mx-auto text-muted-foreground mb-4" />
+              <FileText className="h-12 w-12 md:h-16 md:w-16 mx-auto text-muted-foreground mb-4" />
               <h3 className="text-base md:text-lg font-semibold mb-2">
                 {showArchived ? t('noArchivedQuotes') : t('noQuotes')}
               </h3>
