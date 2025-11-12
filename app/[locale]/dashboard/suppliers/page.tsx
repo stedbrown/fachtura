@@ -303,7 +303,7 @@ export default function SuppliersPage() {
 
   function handleRowClick(supplier: Supplier) {
     if (!showArchived) {
-      handleEdit(supplier)
+      router.push(`/${locale}/dashboard/suppliers/${supplier.id}`)
     }
   }
 

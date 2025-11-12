@@ -178,7 +178,7 @@ export default function ExpensesPage() {
   }
 
   function handleRowClick(expense: ExpenseWithSupplier) {
-    handleEdit(expense)
+    router.push(`/${locale}/dashboard/expenses/${expense.id}`)
   }
 
   function confirmDelete(id: string) {

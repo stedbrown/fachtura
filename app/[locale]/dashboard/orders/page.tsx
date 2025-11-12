@@ -147,7 +147,9 @@ export default function OrdersPage() {
     setLoading(false)
   }
 
-  // Removed handleRowClick - orders don't have detail pages
+  const handleRowClick = (orderId: string) => {
+    router.push(`/${locale}/dashboard/orders/${orderId}`)
+  }
 
   async function handleAddNew() {
     const limitsCheck = await checkLimits('order')
@@ -377,7 +379,8 @@ export default function OrdersPage() {
                     {sortedOrders.map((order) => (
                       <TableRow
                         key={order.id}
-                        className="hover:bg-muted/50"
+                        className="cursor-pointer hover:bg-muted/50"
+                        onClick={() => handleRowClick(order.id)}
                       >
                         <TableCell className={getColumnClass('order_number', 'font-medium text-xs md:text-sm')}>{order.order_number}</TableCell>
                         <TableCell className={getColumnClass('supplier', 'text-xs md:text-sm')}>{order.supplier?.name || '-'}</TableCell>

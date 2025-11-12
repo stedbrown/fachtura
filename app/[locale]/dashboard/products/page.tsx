@@ -144,7 +144,7 @@ export default function ProductsPage() {
   }
 
   function handleRowClick(product: Product) {
-    handleEdit(product)
+    router.push(`/${locale}/dashboard/products/${product.id}`)
   }
 
   async function handleDialogSubmit(data: ProductFormInput) {
