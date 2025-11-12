@@ -180,7 +180,7 @@ export function ExpenseDialog({
     }
 
     // Validate receipt_url if provided
-    if (data.receipt_url && data.receipt_url.trim() !== '') {
+    if (data.receipt_url) {
       try {
         new URL(data.receipt_url)
       } catch {
@@ -190,20 +190,20 @@ export function ExpenseDialog({
     }
 
     // Validate supplier_id if provided
-    if (data.supplier_id && data.supplier_id !== '' && data.supplier_id !== 'none' && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(data.supplier_id)) {
+    if (data.supplier_id && data.supplier_id !== 'none' && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(data.supplier_id)) {
       toast.error(t('supplier') + ': UUID non valido')
       return
     }
 
-    // Convert empty strings to null for database
+    // Convert undefined/empty to null for database
     const processedData = {
       ...data,
-      payment_method: data.payment_method && data.payment_method !== '' ? data.payment_method : null,
-      supplier_id: data.supplier_id && data.supplier_id !== '' && data.supplier_id !== 'none' ? data.supplier_id : null,
-      supplier_name: data.supplier_name && data.supplier_name !== '' ? data.supplier_name : null,
-      receipt_url: data.receipt_url && data.receipt_url !== '' ? data.receipt_url : null,
-      receipt_number: data.receipt_number && data.receipt_number !== '' ? data.receipt_number : null,
-      notes: data.notes && data.notes !== '' ? data.notes : null,
+      payment_method: data.payment_method || null,
+      supplier_id: data.supplier_id && data.supplier_id !== 'none' ? data.supplier_id : null,
+      supplier_name: data.supplier_name || null,
+      receipt_url: data.receipt_url || null,
+      receipt_number: data.receipt_number || null,
+      notes: data.notes || null,
     }
 
     setLoading(true)
