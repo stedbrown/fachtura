@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
@@ -33,6 +33,8 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false)
   const [resending, setResending] = useState(false)
   const [googleAuthLoading, setGoogleAuthLoading] = useState(false)
+
+  const supabase = useMemo(() => createClient(), [])
 
   const {
     register,
@@ -70,7 +72,6 @@ export default function RegisterPage() {
     setGoogleAuthLoading(true)
 
     const result = await safeAsync(async () => {
-      const supabase = createClient()
       const { error: oauthError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -96,7 +97,6 @@ export default function RegisterPage() {
     setResending(true)
 
     const result = await safeAsync(async () => {
-      const supabase = createClient()
       const { error: resendError } = await supabase.auth.resend({
         type: 'signup',
         email: registeredEmail,
@@ -142,8 +142,6 @@ export default function RegisterPage() {
         setError(emailCheck.message)
         return
       }
-
-      const supabase = createClient()
 
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: data.email,
@@ -270,8 +268,6 @@ export default function RegisterPage() {
   const registerImage = process.env.NEXT_PUBLIC_REGISTER_IMAGE_URL ?? process.env.NEXT_PUBLIC_LOGIN_IMAGE_URL
 
   useEffect(() => {
-    const supabase = createClient()
-
     const handleSession = async () => {
       const { data } = await supabase.auth.getSession()
       if (data.session) {

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
@@ -29,6 +29,8 @@ export default function LoginPage() {
   const [error, setError] = useState<string>('')
   const [loading, setLoading] = useState(false)
   const [googleAuthLoading, setGoogleAuthLoading] = useState<'login' | 'signup' | null>(null)
+
+  const supabase = useMemo(() => createClient(), [])
 
   const {
     register,
@@ -60,8 +62,6 @@ export default function LoginPage() {
   }
 
   useEffect(() => {
-    const supabase = createClient()
-
     const handleSession = async () => {
       const { data } = await supabase.auth.getSession()
       if (data.session) {
@@ -85,9 +85,7 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginInput) => {
     setLoading(true)
     setError('')
-
     const result = await safeAsync(async () => {
-      const supabase = createClient()
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: data.email,
         password: data.password,
@@ -98,14 +96,13 @@ export default function LoginPage() {
       }
     }, 'Error signing in with email')
 
-    setLoading(false)
-
     if (result.success) {
-      router.push(`/${locale}/dashboard`)
+      router.replace(`/${locale}/dashboard`)
       router.refresh()
       return
     }
 
+    setLoading(false)
     const message = extractErrorMessage(result.error, result.details)
 
     if (message.includes('Invalid login credentials')) {
@@ -126,7 +123,6 @@ export default function LoginPage() {
     setGoogleAuthLoading(action)
 
     const result = await safeAsync(async () => {
-      const supabase = createClient()
       const { error: oauthError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
