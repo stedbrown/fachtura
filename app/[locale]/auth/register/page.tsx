@@ -1,8 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter, useParams } from 'next/navigation'
+import Image from 'next/image'
 import Link from 'next/link'
+import { useParams, useRouter } from 'next/navigation'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { createClient } from '@/lib/supabase/client'
@@ -53,6 +54,15 @@ export default function RegisterPage() {
     return fallback
   }
 
+  const getRedirectUrl = () => {
+    if (typeof window === 'undefined') {
+      return `${process.env.NEXT_PUBLIC_SITE_URL ?? ''}/${locale}/dashboard`
+    }
+
+    const base = process.env.NEXT_PUBLIC_SITE_URL ?? window.location.origin
+    return `${base.replace(/\/$/, '')}/${locale}/dashboard`
+  }
+
   const handleGoogleAuth = async () => {
     if (typeof window === 'undefined') return
 
@@ -64,7 +74,7 @@ export default function RegisterPage() {
       const { error: oauthError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/${locale}/dashboard`,
+          redirectTo: getRedirectUrl(),
         },
       })
 
@@ -257,145 +267,159 @@ export default function RegisterPage() {
     )
   }
 
+  const registerImage = process.env.NEXT_PUBLIC_REGISTER_IMAGE_URL ?? process.env.NEXT_PUBLIC_LOGIN_IMAGE_URL
+
   return (
-    <div className="bg-muted flex min-h-svh flex-col items-center justify-center p-6 md:p-10">
-      <div className="w-full max-w-lg space-y-6">
-        <div className="flex items-center justify-center gap-2">
-          <div className="bg-primary text-primary-foreground flex h-10 w-10 items-center justify-center rounded-lg">
-            <Receipt className="h-5 w-5" />
-          </div>
-          <span className="text-3xl font-bold tracking-tight">Fatturup</span>
+    <div className="grid min-h-svh lg:grid-cols-2">
+      <div className="flex flex-col gap-6 p-6 md:p-10">
+        <div className="flex justify-center gap-2 md:justify-start">
+          <Link href={`/${locale}`} className="flex items-center gap-2 font-semibold">
+            <div className="bg-primary text-primary-foreground flex h-9 w-9 items-center justify-center rounded-lg">
+              <Receipt className="h-5 w-5" />
+            </div>
+            Fatturup
+          </Link>
         </div>
 
-        <Button
-          variant="outline"
-          className="w-full"
-          onClick={handleGoogleAuth}
-          disabled={googleAuthLoading || loading}
-        >
-          {googleAuthLoading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              {tCommon('loading')}
-            </>
-          ) : (
-            <>
-              <GoogleIcon className="mr-2 h-4 w-4" />
-              {t('googleSignup')}
-            </>
-          )}
-        </Button>
-
-        <div className="flex items-center gap-3 text-xs uppercase text-muted-foreground">
-          <Separator className="flex-1" />
-          <span>{t('orContinueWithEmail')}</span>
-          <Separator className="flex-1" />
-        </div>
-
-        <Card>
-          <CardHeader className="space-y-1 text-center">
-            <CardTitle className="text-2xl font-semibold">{t('register')}</CardTitle>
-            <CardDescription>{t('registerTitle')}</CardDescription>
-          </CardHeader>
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <CardContent className="space-y-4">
-              {error && (
-                <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-left dark:border-red-800 dark:bg-red-900/20">
-                  <div className="flex items-start space-x-2">
-                    <AlertCircle className="mt-0.5 h-5 w-5 text-red-600 dark:text-red-400" />
-                    <p className="flex-1 text-sm text-red-600 dark:text-red-400">{error}</p>
-                  </div>
-                </div>
+        <div className="flex flex-1 items-center justify-center">
+          <div className="w-full max-w-sm space-y-6">
+            <Button variant="outline" className="w-full" onClick={handleGoogleAuth} disabled={googleAuthLoading || loading}>
+              {googleAuthLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {tCommon('loading')}
+                </>
+              ) : (
+                <>
+                  <GoogleIcon className="mr-2 h-4 w-4" />
+                  {t('googleSignup')}
+                </>
               )}
+            </Button>
 
-              <div className="space-y-2">
-                <Label htmlFor="companyName">{t('companyName')}</Label>
-                <Input
-                  id="companyName"
-                  type="text"
-                  placeholder="Acme Inc."
-                  disabled={loading || googleAuthLoading}
-                  {...register('companyName')}
-                />
-                {errors.companyName && (
-                  <p className="flex items-center gap-1 text-sm text-red-600 dark:text-red-400">
-                    <AlertCircle className="h-3 w-3" />
-                    {errors.companyName.message}
-                  </p>
-                )}
-              </div>
+            <div className="flex items-center gap-3 text-xs uppercase text-muted-foreground">
+              <Separator className="flex-1" />
+              <span>{t('orContinueWithEmail')}</span>
+              <Separator className="flex-1" />
+            </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="email">{t('email')}</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="nome@esempio.com"
-                  disabled={loading || googleAuthLoading}
-                  {...register('email')}
-                />
-                {errors.email && (
-                  <p className="flex items-center gap-1 text-sm text-red-600 dark:text-red-400">
-                    <AlertCircle className="h-3 w-3" />
-                    {errors.email.message}
-                  </p>
-                )}
-              </div>
+            <Card>
+              <CardHeader className="space-y-1 text-center">
+                <CardTitle className="text-2xl font-semibold">{t('register')}</CardTitle>
+                <CardDescription>{t('registerTitle')}</CardDescription>
+              </CardHeader>
+              <form onSubmit={handleSubmit(onSubmit)}>
+                <CardContent className="space-y-4 text-left">
+                  {error && (
+                    <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-left dark:border-red-800 dark:bg-red-900/20">
+                      <div className="flex items-start space-x-2">
+                        <AlertCircle className="mt-0.5 h-5 w-5 text-red-600 dark:text-red-400" />
+                        <p className="flex-1 text-sm text-red-600 dark:text-red-400">{error}</p>
+                      </div>
+                    </div>
+                  )}
 
-              <div className="space-y-2">
-                <Label htmlFor="password">{t('password')}</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  disabled={loading || googleAuthLoading}
-                  {...register('password')}
-                />
-                {errors.password && (
-                  <p className="flex items-center gap-1 text-sm text-red-600 dark:text-red-400">
-                    <AlertCircle className="h-3 w-3" />
-                    {errors.password.message}
-                  </p>
-                )}
-              </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="companyName">{t('companyName')}</Label>
+                    <Input
+                      id="companyName"
+                      type="text"
+                      placeholder="Acme Inc."
+                      disabled={loading || googleAuthLoading}
+                      {...register('companyName')}
+                    />
+                    {errors.companyName && (
+                      <p className="flex items-center gap-1 text-sm text-red-600 dark:text-red-400">
+                        <AlertCircle className="h-3 w-3" />
+                        {errors.companyName.message}
+                      </p>
+                    )}
+                  </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword">{t('confirmPassword')}</Label>
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  placeholder="••••••••"
-                  disabled={loading || googleAuthLoading}
-                  {...register('confirmPassword')}
-                />
-                {errors.confirmPassword && (
-                  <p className="flex items-center gap-1 text-sm text-red-600 dark:text-red-400">
-                    <AlertCircle className="h-3 w-3" />
-                    {errors.confirmPassword.message}
+                  <div className="space-y-2">
+                    <Label htmlFor="email">{t('email')}</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="nome@esempio.com"
+                      disabled={loading || googleAuthLoading}
+                      {...register('email')}
+                    />
+                    {errors.email && (
+                      <p className="flex items-center gap-1 text-sm text-red-600 dark:text-red-400">
+                        <AlertCircle className="h-3 w-3" />
+                        {errors.email.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="password">{t('password')}</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      placeholder="••••••••"
+                      disabled={loading || googleAuthLoading}
+                      {...register('password')}
+                    />
+                    {errors.password && (
+                      <p className="flex items-center gap-1 text-sm text-red-600 dark:text-red-400">
+                        <AlertCircle className="h-3 w-3" />
+                        {errors.password.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="confirmPassword">{t('confirmPassword')}</Label>
+                    <Input
+                      id="confirmPassword"
+                      type="password"
+                      placeholder="••••••••"
+                      disabled={loading || googleAuthLoading}
+                      {...register('confirmPassword')}
+                    />
+                    {errors.confirmPassword && (
+                      <p className="flex items-center gap-1 text-sm text-red-600 dark:text-red-400">
+                        <AlertCircle className="h-3 w-3" />
+                        {errors.confirmPassword.message}
+                      </p>
+                    )}
+                  </div>
+                </CardContent>
+                <CardFooter className="flex flex-col space-y-4">
+                  <Button type="submit" className="w-full" disabled={loading || googleAuthLoading}>
+                    {loading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        {tCommon('loading')}
+                      </>
+                    ) : (
+                      t('register')
+                    )}
+                  </Button>
+                  <p className="text-center text-sm text-muted-foreground">
+                    {t('alreadyHaveAccount')}{' '}
+                    <Link href={`/${locale}/auth/login`} className="font-medium text-primary hover:underline">
+                      {t('loginHere')}
+                    </Link>
                   </p>
-                )}
-              </div>
-            </CardContent>
-            <CardFooter className="flex flex-col space-y-4">
-              <Button type="submit" className="w-full" disabled={loading || googleAuthLoading}>
-                {loading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    {tCommon('loading')}
-                  </>
-                ) : (
-                  t('register')
-                )}
-              </Button>
-              <p className="text-center text-sm text-muted-foreground">
-                {t('alreadyHaveAccount')}{' '}
-                <Link href={`/${locale}/auth/login`} className="font-medium text-primary hover:underline">
-                  {t('loginHere')}
-                </Link>
-              </p>
-            </CardFooter>
-          </form>
-        </Card>
+                </CardFooter>
+              </form>
+            </Card>
+          </div>
+        </div>
+      </div>
+
+      <div className="relative hidden bg-muted lg:block">
+        {registerImage ? (
+          <>
+            <Image src={registerImage} alt="Team working illustration" fill priority className="object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-tr from-black/40 via-black/20 to-transparent" />
+          </>
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-700 to-slate-500 opacity-90" />
+        )}
       </div>
     </div>
   )
