@@ -209,7 +209,10 @@
     "userAlreadyExists": "Un utente con questa email esiste già",
     "weakPassword": "La password deve contenere almeno 6 caratteri",
     "accountCreated": "Account creato con successo",
-    "loginSuccess": "Accesso effettuato con successo"
+    "loginSuccess": "Accesso effettuato con successo",
+    "googleLogin": "Accedi con Google",
+    "googleSignup": "Registrati con Google",
+    "orContinueWithEmail": "Oppure continua con l'email"
   },
   "navigation": {
     "dashboard": "Dashboard",

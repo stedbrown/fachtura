@@ -42,7 +42,7 @@ export default function SubscriptionPage() {
     );
   }
 
-  const currentPlan = (subscription?.plan as any)?.name || 'Free';
+  const currentPlan = subscription?.plan?.name ?? 'Free';
   const isActiveSubscription = subscription?.status === 'active';
 
   return (

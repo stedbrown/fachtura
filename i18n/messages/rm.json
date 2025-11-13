@@ -206,7 +206,10 @@
     "userAlreadyExists": "In utilisader cun quest e-mail exista gia",
     "weakPassword": "Il pled-clav sto cuntegnair almain 6 caracters",
     "accountCreated": "Conto creà cun success",
-    "loginSuccess": "Annunzia cun success"
+    "loginSuccess": "Annunzia cun success",
+    "googleLogin": "Acceder cun Google",
+    "googleSignup": "S'annunziar cun Google",
+    "orContinueWithEmail": "Uss cuntinuar cun e-mail"
   },
   "navigation": {
     "dashboard": "Survista",

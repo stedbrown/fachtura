@@ -60,3 +60,28 @@ export const expenseStatuses = [
   'rejected',
 ] as const
 
+export type ExpenseCategory = (typeof expenseCategories)[number]
+export type ExpensePaymentMethod = (typeof expensePaymentMethods)[number]
+export type ExpenseStatus = (typeof expenseStatuses)[number]
+
+export function isExpenseCategory(value: unknown): value is ExpenseCategory {
+  return (
+    typeof value === 'string' &&
+    expenseCategories.includes(value as ExpenseCategory)
+  )
+}
+
+export function isExpensePaymentMethod(value: unknown): value is ExpensePaymentMethod {
+  return (
+    typeof value === 'string' &&
+    expensePaymentMethods.includes(value as ExpensePaymentMethod)
+  )
+}
+
+export function isExpenseStatus(value: unknown): value is ExpenseStatus {
+  return (
+    typeof value === 'string' &&
+    expenseStatuses.includes(value as ExpenseStatus)
+  )
+}
+

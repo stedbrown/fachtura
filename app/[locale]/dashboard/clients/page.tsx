@@ -37,6 +37,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { logger } from '@/lib/logger'
+import { safeAsync, safeSync, getSupabaseErrorMessage } from '@/lib/error-handler'
 
 export default function ClientsPage() {
   const params = useParams()
@@ -67,6 +68,18 @@ export default function ClientsPage() {
   
   const { subscription, checkLimits } = useSubscription()
 
+  const extractErrorMessage = (fallback: string, details?: unknown) => {
+    if (
+      details &&
+      typeof details === 'object' &&
+      'message' in details &&
+      typeof (details as { message?: unknown }).message === 'string'
+    ) {
+      return (details as { message: string }).message
+    }
+    return fallback
+  }
+
   // Column visibility configuration
   const columns: ColumnConfig[] = [
     { key: 'name', label: t('fields.name'), visible: true },
@@ -87,30 +100,47 @@ export default function ClientsPage() {
 
   const loadClients = async () => {
     setLoading(true)
-    const supabase = createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
 
-    if (!user) return
+    const result = await safeAsync(async () => {
+      const supabase = createClient()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
 
-    let query = supabase
-      .from('clients')
-      .select('*')
-      .eq('user_id', user.id)
+      if (!user) {
+        router.push(`/${locale}/auth/login`)
+        return [] as Client[]
+      }
 
-    // Filter based on archived status
-    if (showArchived) {
-      query = query.not('deleted_at', 'is', null)
+      let query = supabase
+        .from('clients')
+        .select('*')
+        .eq('user_id', user.id)
+
+      if (showArchived) {
+        query = query.not('deleted_at', 'is', null)
+      } else {
+        query = query.is('deleted_at', null)
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: false })
+
+      if (error) {
+        throw error
+      }
+
+      return data ?? []
+    }, 'Error loading clients')
+
+    if (result.success) {
+      setClients(result.data)
     } else {
-      query = query.is('deleted_at', null)
+      logger.error('Error loading clients', result.details)
+      toast.error(t('loadError') || tCommon('error'), {
+        description: extractErrorMessage(result.error, result.details),
+      })
     }
 
-    const { data, error } = await query.order('created_at', { ascending: false })
-
-    if (data) {
-      setClients(data)
-    }
     setLoading(false)
   }
 
@@ -172,38 +202,57 @@ export default function ClientsPage() {
     if (!clientToDelete) return
 
     setIsDeleting(true)
-    const supabase = createClient()
 
-    // Soft delete: set deleted_at instead of deleting the record
-    const { error } = await supabase
-      .from('clients')
-      .update({ deleted_at: new Date().toISOString() })
-      .eq('id', clientToDelete)
+    const result = await safeAsync(async () => {
+      const supabase = createClient()
 
-    if (!error) {
-      loadClients()
-    } else {
-      alert('Errore durante l\'eliminazione del cliente')
-    }
+      const { error } = await supabase
+        .from('clients')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('id', clientToDelete)
+
+      if (error) {
+        throw error
+      }
+    }, 'Error deleting client')
 
     setIsDeleting(false)
     setDeleteDialogOpen(false)
     setClientToDelete(null)
+
+    if (result.success) {
+      toast.success(t('deleteSuccess') || tCommon('success'))
+      loadClients()
+    } else {
+      logger.error('Error deleting client', result.details, { clientId: clientToDelete })
+      toast.error(t('deleteError') || tCommon('error'), {
+        description: extractErrorMessage(result.error, result.details),
+      })
+    }
   }
 
   const handleRestore = async (clientId: string) => {
-    const supabase = createClient()
+    const result = await safeAsync(async () => {
+      const supabase = createClient()
 
-    // Restore: remove deleted_at
-    const { error } = await supabase
-      .from('clients')
-      .update({ deleted_at: null })
-      .eq('id', clientId)
+      const { error } = await supabase
+        .from('clients')
+        .update({ deleted_at: null })
+        .eq('id', clientId)
 
-    if (!error) {
+      if (error) {
+        throw error
+      }
+    }, 'Error restoring client')
+
+    if (result.success) {
+      toast.success(t('restoreSuccess') || tCommon('success'))
       loadClients()
     } else {
-      alert('Errore durante il ripristino del cliente')
+      logger.error('Error restoring client', result.details, { clientId })
+      toast.error(t('restoreError') || tCommon('error'), {
+        description: extractErrorMessage(result.error, result.details),
+      })
     }
   }
 
@@ -212,110 +261,114 @@ export default function ClientsPage() {
       return
     }
 
-    const supabase = createClient()
+    const result = await safeAsync(async () => {
+      const supabase = createClient()
 
-    // Permanently delete
-    const { error } = await supabase
-      .from('clients')
-      .delete()
-      .eq('id', clientId)
+      const { error } = await supabase.from('clients').delete().eq('id', clientId)
 
-    if (!error) {
+      if (error) {
+        throw error
+      }
+    }, 'Error permanently deleting client')
+
+    if (result.success) {
+      toast.success(t('permanentDeleteSuccess') || tCommon('success'))
       loadClients()
     } else {
-      alert('Errore durante l\'eliminazione definitiva del cliente')
+      logger.error('Error permanently deleting client', result.details, { clientId })
+      toast.error(t('permanentDeleteError') || tCommon('error'), {
+        description: extractErrorMessage(result.error, result.details),
+      })
     }
   }
 
   const handleSubmit = async (data: ClientInput) => {
     setSubmitting(true)
+
     const supabase = createClient()
     const {
       data: { user },
     } = await supabase.auth.getUser()
 
-    if (!user) return
+    if (!user) {
+      setSubmitting(false)
+      toast.error(tErrors('generic'))
+      return
+    }
 
-    try {
+    if (!selectedClient) {
+      const limitsResult = await checkLimits('client')
+      logger.debug('Client limits check', { limitsResult })
+
+      if (!limitsResult.allowed) {
+        setUpgradeDialogParams({
+          currentCount: limitsResult.current_count,
+          maxCount: limitsResult.max_count || 0,
+          planName: limitsResult.plan_name || 'Free',
+        })
+        setShowUpgradeDialog(true)
+        setDialogOpen(false)
+        const resourceLabel = tCommon('client')
+        toast.error(tSubscription('toast.limitReached'), {
+          description: tSubscription('toast.limitReachedDescription', {
+            max: limitsResult.max_count || 0,
+            resource: resourceLabel,
+            plan: limitsResult.plan_name || 'Free',
+          }),
+          duration: 5000,
+        })
+        setSubmitting(false)
+        return
+      }
+    }
+
+    const result = await safeAsync(async () => {
       if (selectedClient) {
-        // Update existing client
-        await supabase
+        const { error } = await supabase
           .from('clients')
           .update({
             ...data,
             updated_at: new Date().toISOString(),
           })
           .eq('id', selectedClient.id)
-      } else {
-        // Verifica limiti prima di creare
-        const limitsResult = await checkLimits('client')
-        logger.debug('Limits check result', { limitsResult })
-        
-        if (!limitsResult.allowed) {
-          logger.debug('Limit reached, showing upgrade dialog')
-          // Aggiorna i parametri per il dialog
-          setUpgradeDialogParams({
-            currentCount: limitsResult.current_count,
-            maxCount: limitsResult.max_count || 0,
-            planName: limitsResult.plan_name || 'Free'
-          })
-          setShowUpgradeDialog(true)
-          setDialogOpen(false)
-          const resourceLabel = tCommon('client')
-          toast.error(tSubscription('toast.limitReached'), {
-            description: tSubscription('toast.limitReachedDescription', { 
-              max: limitsResult.max_count || 0,
-              resource: resourceLabel,
-              plan: limitsResult.plan_name || 'Free'
-            }),
-            duration: 5000,
-          })
-          return
+
+        if (error) {
+          throw error
         }
-        
-        // Create new client
-        const { error: insertError } = await supabase.from('clients').insert({
-          ...data,
-          user_id: user.id,
-        })
-        
-        if (insertError) {
-          // Se il database trigger blocca l'inserimento
-          logger.error('Errore inserimento cliente', insertError, { clientName: data.name })
-          // Aggiorna i parametri per il dialog
-          setUpgradeDialogParams({
-            currentCount: limitsResult.current_count,
-            maxCount: limitsResult.max_count || 0,
-            planName: limitsResult.plan_name || 'Free'
-          })
-          setShowUpgradeDialog(true)
-          setDialogOpen(false)
-          toast.error(tSubscription('toast.limitReached'), {
-            description: tSubscription('toast.limitReachedDescription', { 
-              max: limitsResult.max_count || 0,
-              resource: tCommon('client'),
-              plan: limitsResult.plan_name || 'Free'
-            }),
-            duration: 5000,
-          })
-          return
-        }
-        
-        // Notifica di successo solo se inserimento ok
+        return 'update' as const
+      }
+
+      const { error } = await supabase.from('clients').insert({
+        ...data,
+        user_id: user.id,
+      })
+
+      if (error) {
+        throw error
+      }
+
+      return 'create' as const
+    }, selectedClient ? 'Error updating client' : 'Error creating client')
+
+    setSubmitting(false)
+
+    if (result.success) {
+      if (result.data === 'create') {
         toast.success(tSubscription('toast.clientCreated'), {
           description: tSubscription('toast.clientCreatedDescription', { name: data.name }),
         })
       }
-
       setDialogOpen(false)
+      setSelectedClient(null)
       loadClients()
-    } catch (error) {
-      logger.error('Errore durante il salvataggio del cliente', error)
+    } else {
+      logger.error('Error saving client', result.details, { clientId: selectedClient?.id })
       toast.error(tCommon('error'), {
-        description: tErrors('clientSaveError'),
+        description:
+          getSupabaseErrorMessage(result.details) ||
+          extractErrorMessage(result.error, result.details) ||
+          tErrors('clientSaveError'),
       })
-    } finally {
-      setSubmitting(false)
     }
   }
 
@@ -376,10 +429,20 @@ export default function ClientsPage() {
     const timestamp = new Date().toISOString().split('T')[0]
     const filename = `clients_${timestamp}`
 
-    if (exportFormat === 'csv') {
-      exportFormattedToCSV(dataToExport, filename)
-    } else {
-      exportFormattedToExcel(dataToExport, filename)
+    const result = safeSync(() => {
+      if (exportFormat === 'csv') {
+        exportFormattedToCSV(dataToExport, filename)
+      } else {
+        exportFormattedToExcel(dataToExport, filename)
+      }
+      return true
+    }, 'Error exporting clients')
+
+    if (!result.success) {
+      logger.error('Error exporting clients', result.details)
+      toast.error(tCommon('error'), {
+        description: extractErrorMessage(result.error, result.details),
+      })
     }
   }
 

@@ -206,7 +206,10 @@
     "userAlreadyExists": "Ein Benutzer mit dieser E-Mail existiert bereits",
     "weakPassword": "Das Passwort muss mindestens 6 Zeichen enthalten",
     "accountCreated": "Konto erfolgreich erstellt",
-    "loginSuccess": "Anmeldung erfolgreich"
+    "loginSuccess": "Anmeldung erfolgreich",
+    "googleLogin": "Mit Google anmelden",
+    "googleSignup": "Mit Google registrieren",
+    "orContinueWithEmail": "Oder mit E-Mail fortfahren"
   },
   "navigation": {
     "dashboard": "Dashboard",

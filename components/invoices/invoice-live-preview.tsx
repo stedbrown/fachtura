@@ -130,7 +130,7 @@ export function InvoiceLivePreview({
         setPdfUrl(generatedUrl)
         setError(null)
       } catch (err) {
-        if ((err as any)?.name === 'AbortError') {
+        if (err instanceof DOMException && err.name === 'AbortError') {
           return
         }
         console.error('Error generating PDF:', err)

@@ -45,6 +45,11 @@ const localeMap: Record<string, Locale> = {
   rm: de,
 }
 
+const invoiceStatusKeys = ['draft', 'issued', 'paid', 'overdue'] as const
+type InvoiceStatusKey = (typeof invoiceStatusKeys)[number]
+const isInvoiceStatusKey = (value: string): value is InvoiceStatusKey =>
+  invoiceStatusKeys.includes(value as InvoiceStatusKey)
+
 export function InvoicePreview({
   open,
   onOpenChange,
@@ -94,6 +99,10 @@ export function InvoicePreview({
 
   if (!invoice) return null
 
+  const normalizedStatus = isInvoiceStatusKey(invoice.status)
+    ? invoice.status
+    : 'draft'
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl lg:max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -107,8 +116,8 @@ export function InvoicePreview({
                 {t('preview.subtitle')}
               </DialogDescription>
             </div>
-            <Badge variant={getStatusVariant(invoice.status)} className="text-xs sm:text-sm shrink-0 self-start">
-              {tStatus(invoice.status as any)}
+            <Badge variant={getStatusVariant(normalizedStatus)} className="text-xs sm:text-sm shrink-0 self-start">
+              {tStatus(normalizedStatus)}
             </Badge>
           </div>
         </DialogHeader>

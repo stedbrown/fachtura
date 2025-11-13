@@ -11,8 +11,11 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Separator } from '@/components/ui/separator'
 import { useTranslations } from 'next-intl'
 import { AlertCircle, Loader2, Mail, Receipt } from 'lucide-react'
+import { safeAsync, getSupabaseErrorMessage } from '@/lib/error-handler'
+import { logger } from '@/lib/logger'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -21,9 +24,10 @@ export default function LoginPage() {
   const t = useTranslations('auth')
   const tCommon = useTranslations('common')
   const tErrors = useTranslations('errors')
-  
+
   const [error, setError] = useState<string>('')
   const [loading, setLoading] = useState(false)
+  const [googleAuthLoading, setGoogleAuthLoading] = useState<'login' | 'signup' | null>(null)
 
   const {
     register,
@@ -33,11 +37,23 @@ export default function LoginPage() {
     resolver: zodResolver(loginSchema),
   })
 
+  const extractErrorMessage = (fallback: string, details?: unknown) => {
+    if (
+      details &&
+      typeof details === 'object' &&
+      'message' in details &&
+      typeof (details as { message?: unknown }).message === 'string'
+    ) {
+      return (details as { message: string }).message
+    }
+    return fallback
+  }
+
   const onSubmit = async (data: LoginInput) => {
     setLoading(true)
     setError('')
 
-    try {
+    const result = await safeAsync(async () => {
       const supabase = createClient()
       const { error: signInError } = await supabase.auth.signInWithPassword({
         email: data.email,
@@ -45,127 +61,205 @@ export default function LoginPage() {
       })
 
       if (signInError) {
-        // Handle common errors with user-friendly messages
-        if (signInError.message.includes('Invalid login credentials')) {
-          setError(t('invalidCredentials'))
-        } else if (signInError.message.includes('Email not confirmed')) {
-          setError(t('emailNotConfirmed'))
-        } else {
-          setError(signInError.message)
-        }
-        return
+        throw signInError
       }
+    }, 'Error signing in with email')
 
+    setLoading(false)
+
+    if (result.success) {
       router.push(`/${locale}/dashboard`)
       router.refresh()
-    } catch (err) {
-      console.error('Login error:', err)
-      setError(tErrors('generic'))
-    } finally {
-      setLoading(false)
+      return
+    }
+
+    const message = extractErrorMessage(result.error, result.details)
+
+    if (message.includes('Invalid login credentials')) {
+      setError(t('invalidCredentials'))
+    } else if (message.includes('Email not confirmed')) {
+      setError(t('emailNotConfirmed'))
+    } else {
+      setError(getSupabaseErrorMessage(result.details) || message || tErrors('generic'))
+    }
+
+    logger.error('Email login failed', result.details)
+  }
+
+  const handleGoogleAuth = async (action: 'login' | 'signup') => {
+    if (typeof window === 'undefined') return
+
+    setError('')
+    setGoogleAuthLoading(action)
+
+    const result = await safeAsync(async () => {
+      const supabase = createClient()
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/${locale}/dashboard`,
+        },
+      })
+
+      if (oauthError) {
+        throw oauthError
+      }
+    }, action === 'login' ? 'Error logging in with Google' : 'Error signing up with Google')
+
+    if (!result.success) {
+      setGoogleAuthLoading(null)
+      logger.error('Google OAuth error', result.details, { action })
+      setError(getSupabaseErrorMessage(result.details) || extractErrorMessage(result.error, result.details))
     }
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900 px-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-4">
-          <div className="flex items-center justify-center gap-2">
-            <div className="rounded-lg bg-primary/10 p-2">
-              <Receipt className="h-8 w-8 text-primary" />
-            </div>
-            <span className="text-3xl font-bold">
-              Fatturup
-            </span>
+    <div className="bg-muted flex min-h-svh flex-col items-center justify-center p-6 md:p-10">
+      <div className="w-full max-w-md space-y-6">
+        <div className="flex items-center justify-center gap-2">
+          <div className="bg-primary text-primary-foreground flex h-10 w-10 items-center justify-center rounded-lg">
+            <Receipt className="h-5 w-5" />
           </div>
-          <div className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-center">{t('login')}</CardTitle>
-            <CardDescription className="text-center">
-              {t('loginTitle')}
-            </CardDescription>
-          </div>
-        </CardHeader>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="space-y-4">
-            {error && (
-              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
-                <div className="flex items-start space-x-2">
-                  <AlertCircle className="h-5 w-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
-                  <div className="flex-1">
-                    <p className="text-sm text-red-600 dark:text-red-400">
+          <span className="text-3xl font-bold tracking-tight">Fatturup</span>
+        </div>
+
+        <div className="space-y-3">
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={() => handleGoogleAuth('login')}
+            disabled={googleAuthLoading !== null}
+          >
+            {googleAuthLoading === 'login' ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                {tCommon('loading')}
+              </>
+            ) : (
+              <>
+                <GoogleIcon className="mr-2 h-4 w-4" />
+                {t('googleLogin')}
+              </>
+            )}
+          </Button>
+          <Button
+            variant="secondary"
+            className="w-full"
+            onClick={() => handleGoogleAuth('signup')}
+            disabled={googleAuthLoading !== null}
+          >
+            {googleAuthLoading === 'signup' ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                {tCommon('loading')}
+              </>
+            ) : (
+              <>
+                <GoogleIcon className="mr-2 h-4 w-4" />
+                {t('googleSignup')}
+              </>
+            )}
+          </Button>
+        </div>
+
+        <div className="flex items-center gap-3 text-xs uppercase text-muted-foreground">
+          <Separator className="flex-1" />
+          <span>{t('orContinueWithEmail')}</span>
+          <Separator className="flex-1" />
+        </div>
+
+        <Card>
+          <CardHeader className="space-y-1 text-center">
+            <CardTitle className="text-2xl font-semibold">{t('login')}</CardTitle>
+            <CardDescription>{t('loginTitle')}</CardDescription>
+          </CardHeader>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <CardContent className="space-y-4">
+              {error && (
+                <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-left dark:border-red-800 dark:bg-red-900/20">
+                  <div className="flex items-start space-x-2">
+                    <AlertCircle className="mt-0.5 h-5 w-5 text-red-600 dark:text-red-400" />
+                    <div className="flex-1 text-sm text-red-600 dark:text-red-400">
                       {error}
-                    </p>
-                    {error === t('emailNotConfirmed') && (
-                      <p className="text-xs text-red-500 dark:text-red-400 mt-1 flex items-center gap-1">
-                        <Mail className="h-3 w-3" />
-                        {t('checkYourEmail')}
-                      </p>
-                    )}
+                      {error === t('emailNotConfirmed') && (
+                        <p className="mt-1 flex items-center gap-1 text-xs text-red-500 dark:text-red-400">
+                          <Mail className="h-3 w-3" />
+                          {t('checkYourEmail')}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
-            <div className="space-y-2">
-              <Label htmlFor="email">{t('email')}</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="nome@esempio.com"
-                {...register('email')}
-                disabled={loading}
-                autoComplete="email"
-              />
-              {errors.email && (
-                <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
-                  <AlertCircle className="h-3 w-3" />
-                  {errors.email.message}
-                </p>
               )}
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
+
+              <div className="space-y-2">
+                <Label htmlFor="email">{t('email')}</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="nome@esempio.com"
+                  autoComplete="email"
+                  disabled={loading || googleAuthLoading !== null}
+                  {...register('email')}
+                />
+                {errors.email && (
+                  <p className="flex items-center gap-1 text-sm text-red-600 dark:text-red-400">
+                    <AlertCircle className="h-3 w-3" />
+                    {errors.email.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="password">{t('password')}</Label>
-                {/* Future: Add forgot password link */}
-                {/* <Link href={`/${locale}/auth/forgot-password`} className="text-xs text-primary hover:underline">
-                  Password dimenticata?
-                </Link> */}
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="••••••••"
+                  autoComplete="current-password"
+                  disabled={loading || googleAuthLoading !== null}
+                  {...register('password')}
+                />
+                {errors.password && (
+                  <p className="flex items-center gap-1 text-sm text-red-600 dark:text-red-400">
+                    <AlertCircle className="h-3 w-3" />
+                    {errors.password.message}
+                  </p>
+                )}
               </div>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                {...register('password')}
-                disabled={loading}
-                autoComplete="current-password"
-              />
-              {errors.password && (
-                <p className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1">
-                  <AlertCircle className="h-3 w-3" />
-                  {errors.password.message}
-                </p>
-              )}
-            </div>
-          </CardContent>
-          <CardFooter className="flex flex-col space-y-4">
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {tCommon('loading')}
-                </>
-              ) : (
-                t('login')
-              )}
-            </Button>
-            <p className="text-sm text-center text-gray-600 dark:text-gray-400">
-              {t('dontHaveAccount')}{' '}
-              <Link href={`/${locale}/auth/register`} className="text-primary hover:underline font-medium">
-                {t('registerHere')}
-              </Link>
-            </p>
-          </CardFooter>
-        </form>
-      </Card>
+            </CardContent>
+            <CardFooter className="flex flex-col space-y-4">
+              <Button type="submit" className="w-full" disabled={loading || googleAuthLoading !== null}>
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {tCommon('loading')}
+                  </>
+                ) : (
+                  t('login')
+                )}
+              </Button>
+              <p className="text-center text-sm text-muted-foreground">
+                {t('dontHaveAccount')}{' '}
+                <Link href={`/${locale}/auth/register`} className="font-medium text-primary hover:underline">
+                  {t('registerHere')}
+                </Link>
+              </p>
+            </CardFooter>
+          </form>
+        </Card>
+      </div>
     </div>
+  )
+}
+
+function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" {...props}>
+      <path
+        fill="currentColor"
+        d="M21.35 11.1H12v2.8h5.35c-.23 1.47-1.62 4.3-5.35 4.3-3.22 0-5.84-2.62-5.84-5.92s2.62-5.92 5.84-5.92c1.83 0 3.07.78 3.77 1.45l2.04-1.98C16.63 4.38 14.52 3.4 12 3.4 6.98 3.4 3 7.38 3 12.28S6.98 21.16 12 21.16c6.25 0 8.64-4.41 8.64-7.31 0-.49-.05-.87-.14-1.27Z"
+      />
+    </svg>
   )
 }

@@ -36,6 +36,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { safeAsync, safeSync, getSupabaseErrorMessage } from '@/lib/error-handler'
+import { logger } from '@/lib/logger'
 
 const localeMap: Record<string, Locale> = {
   it: it,
@@ -87,6 +89,18 @@ export default function InvoicesPage() {
   const [previewInvoice, setPreviewInvoice] = useState<InvoiceWithClient | null>(null)
   const [previewOpen, setPreviewOpen] = useState(false)
 
+  const extractErrorMessage = (fallback: string, details?: unknown) => {
+    if (
+      details &&
+      typeof details === 'object' &&
+      'message' in details &&
+      typeof (details as { message?: unknown }).message === 'string'
+    ) {
+      return (details as { message: string }).message
+    }
+    return fallback
+  }
+
   // Column visibility configuration
   const invoiceColumns: ColumnConfig[] = [
     { key: 'invoice_number', label: t('fields.invoiceNumber'), visible: true },
@@ -117,66 +131,106 @@ export default function InvoicesPage() {
 
   // Update overdue invoices before loading
   const updateOverdueInvoicesAndLoad = async () => {
-    try {
-      // Call API to update overdue invoices
-      await fetch('/api/invoices/update-overdue', { method: 'POST' })
-    } catch (error) {
-      console.error('Error updating overdue invoices:', error)
-    } finally {
-      // Load invoices and clients regardless of update result
-      loadInvoices()
-      loadClients()
+    const updateResult = await safeAsync(async () => {
+      const response = await fetch('/api/invoices/update-overdue', { method: 'POST' })
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(errorText || 'Failed to update overdue invoices')
+      }
+    }, 'Error updating overdue invoices')
+
+    if (!updateResult.success) {
+      logger.error('Failed updating overdue invoices', updateResult.details)
+      toast.error(tCommon('error'), {
+        description: extractErrorMessage(updateResult.error, updateResult.details),
+      })
     }
+
+    await Promise.all([loadInvoices(), loadClients()])
   }
 
   const loadInvoices = async () => {
     setLoading(true)
-    const supabase = createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
 
-    if (!user) return
+    const result = await safeAsync(async () => {
+      const supabase = createClient()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
 
-    let query = supabase
-      .from('invoices')
-      .select(`
-        *,
-        client:clients(*)
-      `)
-      .eq('user_id', user.id)
+      if (!user) {
+        return [] as InvoiceWithClient[]
+      }
 
-    if (showArchived) {
-      query = query.not('deleted_at', 'is', null)
+      let query = supabase
+        .from('invoices')
+        .select(`
+          *,
+          client:clients(*)
+        `)
+        .eq('user_id', user.id)
+
+      if (showArchived) {
+        query = query.not('deleted_at', 'is', null)
+      } else {
+        query = query.is('deleted_at', null)
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: false })
+
+      if (error) {
+        throw error
+      }
+
+      return (data ?? []) as InvoiceWithClient[]
+    }, 'Error loading invoices')
+
+    if (result.success) {
+      setInvoices(result.data)
     } else {
-      query = query.is('deleted_at', null)
+      toast.error(tCommon('error'), {
+        description: result.details
+          ? getSupabaseErrorMessage(result.details)
+          : result.error,
+      })
     }
 
-    const { data, error } = await query.order('created_at', { ascending: false })
-
-    if (data) {
-      setInvoices(data as any)
-    }
     setLoading(false)
   }
 
   const loadClients = async () => {
-    const supabase = createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
+    const result = await safeAsync(async () => {
+      const supabase = createClient()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
 
-    if (!user) return
+      if (!user) {
+        return []
+      }
 
-    const { data } = await supabase
-      .from('clients')
-      .select('id, name')
-      .eq('user_id', user.id)
-      .is('deleted_at', null)
-      .order('name')
+      const { data, error } = await supabase
+        .from('clients')
+        .select('id, name')
+        .eq('user_id', user.id)
+        .is('deleted_at', null)
+        .order('name')
 
-    if (data) {
-      setClients(data)
+      if (error) {
+        throw error
+      }
+
+      return data ?? []
+    }, 'Error loading clients for invoices')
+
+    if (result.success) {
+      setClients(result.data)
+    } else {
+      toast.error(tCommon('error'), {
+        description: result.details
+          ? getSupabaseErrorMessage(result.details)
+          : result.error,
+      })
     }
   }
 
@@ -312,19 +366,25 @@ export default function InvoicesPage() {
 
     const filename = `fatture_${format(new Date(), 'yyyy-MM-dd')}`
 
-    try {
+    const exportResult = safeSync(() => {
       if (exportFormat === 'csv') {
         exportFormattedToCSV(exportData, filename)
       } else {
         exportFormattedToExcel(exportData, filename)
       }
+      return true
+    }, 'Error exporting invoices')
 
+    if (exportResult.success) {
       toast.success('Export completato!', {
         description: `${filteredInvoices.length} fatture esportate in ${exportFormat.toUpperCase()}`,
       })
-    } catch (error) {
+    } else {
       toast.error(tCommon('error'), {
-        description: 'Errore durante l\'export',
+        description:
+          exportResult.details
+            ? getSupabaseErrorMessage(exportResult.details)
+            : exportResult.error,
       })
     }
   }
@@ -338,36 +398,57 @@ export default function InvoicesPage() {
     if (!invoiceToDelete) return
 
     setIsDeleting(true)
-    const supabase = createClient()
 
-    const { error } = await supabase
-      .from('invoices')
-      .update({ deleted_at: new Date().toISOString() })
-      .eq('id', invoiceToDelete)
+    const result = await safeAsync(async () => {
+      const supabase = createClient()
 
-    if (!error) {
-      loadInvoices()
-    } else {
-      alert('Errore durante l\'eliminazione della fattura')
-    }
+      const { error } = await supabase
+        .from('invoices')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('id', invoiceToDelete)
+
+      if (error) {
+        throw error
+      }
+    }, 'Error archiving invoice')
 
     setIsDeleting(false)
     setDeleteDialogOpen(false)
     setInvoiceToDelete(null)
+
+    if (result.success) {
+      loadInvoices()
+    } else {
+      toast.error(tCommon('error'), {
+        description: result.details
+          ? getSupabaseErrorMessage(result.details)
+          : result.error,
+      })
+    }
   }
 
   const handleRestore = async (invoiceId: string) => {
-    const supabase = createClient()
+    const result = await safeAsync(async () => {
+      const supabase = createClient()
 
-    const { error } = await supabase
-      .from('invoices')
-      .update({ deleted_at: null })
-      .eq('id', invoiceId)
+      const { error } = await supabase
+        .from('invoices')
+        .update({ deleted_at: null })
+        .eq('id', invoiceId)
 
-    if (!error) {
+      if (error) {
+        throw error
+      }
+    }, 'Error restoring invoice')
+
+    if (result.success) {
       loadInvoices()
     } else {
-      alert('Errore durante il ripristino della fattura')
+      toast.error(tCommon('error'), {
+        description: result.details
+          ? getSupabaseErrorMessage(result.details)
+          : result.error,
+      })
     }
   }
 
@@ -376,54 +457,65 @@ export default function InvoicesPage() {
       return
     }
 
-    const supabase = createClient()
+    const result = await safeAsync(async () => {
+      const supabase = createClient()
 
-    const { error } = await supabase
-      .from('invoices')
-      .delete()
-      .eq('id', invoiceId)
+      const { error } = await supabase
+        .from('invoices')
+        .delete()
+        .eq('id', invoiceId)
 
-    if (!error) {
+      if (error) {
+        throw error
+      }
+    }, 'Error permanently deleting invoice')
+
+    if (result.success) {
       loadInvoices()
     } else {
-      alert('Errore durante l\'eliminazione definitiva della fattura')
+      toast.error(tCommon('error'), {
+        description: result.details
+          ? getSupabaseErrorMessage(result.details)
+          : result.error,
+      })
     }
   }
 
   const handleDownloadPDF = async (invoiceId: string) => {
-    try {
-      console.log('📄 Starting PDF download for invoice:', invoiceId)
+    logger.debug('Starting invoice PDF download', { invoiceId })
+
+    const result = await safeAsync(async () => {
       const url = `/api/invoices/${invoiceId}/pdf?locale=${locale}`
-      console.log('📄 Fetching from:', url)
-      
       const response = await fetch(url)
-      console.log('📄 Response status:', response.status, response.statusText)
-      console.log('📄 Response headers:', Object.fromEntries(response.headers.entries()))
-      
+
       if (!response.ok) {
         const errorText = await response.text()
-        console.error('❌ PDF generation failed:', errorText)
-        alert(`Errore ${response.status}: ${errorText}`)
-        return
+        throw new Error(
+          errorText || `Failed to download invoice PDF (status ${response.status})`
+        )
       }
-      
-      const blob = await response.blob()
-      console.log('📄 Blob received, size:', blob.size, 'type:', blob.type)
-      
-      const blobUrl = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = blobUrl
-      a.download = `fattura-${invoiceId}.pdf`
-      document.body.appendChild(a)
-      a.click()
-      window.URL.revokeObjectURL(blobUrl)
-      document.body.removeChild(a)
-      
-      console.log('✅ PDF downloaded successfully')
-    } catch (error) {
-      console.error('❌ Error downloading PDF:', error)
-      alert('Errore durante il download del PDF')
+
+      return await response.blob()
+    }, 'Error downloading invoice PDF')
+
+    if (!result.success) {
+      toast.error(tCommon('error'), {
+        description: extractErrorMessage(result.error, result.details),
+      })
+      return
     }
+
+    const blob = result.data
+    const blobUrl = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = blobUrl
+    link.download = `fattura-${invoiceId}.pdf`
+    document.body.appendChild(link)
+    link.click()
+    window.URL.revokeObjectURL(blobUrl)
+    document.body.removeChild(link)
+
+    logger.debug('Invoice PDF downloaded successfully', { invoiceId })
   }
 
   return (

@@ -34,6 +34,8 @@ interface PreviewClient extends ClientImportData {
   errors: string[]
 }
 
+type ParsedClientRow = Record<string, string | null | undefined>
+
 export function ImportClientsDialog({ onSuccess, className }: { onSuccess?: () => void; className?: string }) {
   const t = useTranslations('clients')
   const tCommon = useTranslations('common')
@@ -58,12 +60,10 @@ export function ImportClientsDialog({ onSuccess, className }: { onSuccess?: () =
   }
 
   const parseCSV = (file: File) => {
-    Papa.parse(file, {
+    Papa.parse<ParsedClientRow>(file, {
       header: true,
       skipEmptyLines: true,
-      complete: (results) => {
-        const data = results.data as any[]
-        
+      complete: ({ data }) => {
         // Map and validate data
         const mapped: PreviewClient[] = data.map((row) => {
           const client: ClientImportData = {

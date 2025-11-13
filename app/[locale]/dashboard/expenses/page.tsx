@@ -29,6 +29,7 @@ import { SubscriptionUpgradeDialog } from '@/components/subscription-upgrade-dia
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { exportFormattedToCSV, exportFormattedToExcel, formatDateForExport, formatCurrencyForExport } from '@/lib/export-utils'
 import { logger } from '@/lib/logger'
+import { safeAsync, safeSync, getSupabaseErrorMessage } from '@/lib/error-handler'
 import {
   Tooltip,
   TooltipContent,
@@ -95,6 +96,18 @@ export default function ExpensesPage() {
   // Filters state
   const [filters, setFilters] = useState<FilterState>({})
 
+  const extractErrorMessage = (fallback: string, details?: unknown) => {
+    if (
+      details &&
+      typeof details === 'object' &&
+      'message' in details &&
+      typeof (details as { message?: unknown }).message === 'string'
+    ) {
+      return (details as { message: string }).message
+    }
+    return fallback
+  }
+
   // Column visibility configuration
   const expenseColumns: ColumnConfig[] = [
     { key: 'expense_date', label: t('expenseDate'), visible: true },
@@ -123,37 +136,52 @@ export default function ExpensesPage() {
   )
 
   async function loadExpenses() {
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    
-    if (!user) {
-      router.push(`/${locale}/auth/login`)
-      return
-    }
+    setLoading(true)
 
-    let query = supabase
-      .from('expenses')
-      .select(`
-        *,
-        supplier:suppliers(*)
-      `)
-      .eq('user_id', user.id)
-      .order('expense_date', { ascending: false })
+    const result = await safeAsync(async () => {
+      const supabase = createClient()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
 
-    if (showArchived) {
-      query = query.not('deleted_at', 'is', null)
+      if (!user) {
+        router.push(`/${locale}/auth/login`)
+        return [] as ExpenseWithSupplier[]
+      }
+
+      let query = supabase
+        .from('expenses')
+        .select(`
+          *,
+          supplier:suppliers(*)
+        `)
+        .eq('user_id', user.id)
+        .order('expense_date', { ascending: false })
+
+      if (showArchived) {
+        query = query.not('deleted_at', 'is', null)
+      } else {
+        query = query.is('deleted_at', null)
+      }
+
+      const { data, error } = await query
+
+      if (error) {
+        throw error
+      }
+
+      return data ?? []
+    }, 'Error loading expenses')
+
+    if (result.success) {
+      setExpenses(result.data)
     } else {
-      query = query.is('deleted_at', null)
+      logger.error('Error loading expenses', result.details)
+      toast.error(t('loadError') || tCommon('error'), {
+        description: extractErrorMessage(result.error, result.details),
+      })
     }
 
-    const { data, error } = await query
-
-    if (error) {
-      logger.error('Error loading expenses', error)
-      toast.error(t('loadError') || 'Errore nel caricamento delle spese')
-    } else {
-      setExpenses(data || [])
-    }
     setLoading(false)
   }
 
@@ -189,57 +217,79 @@ export default function ExpensesPage() {
 
   async function handleDelete(id: string) {
     setIsDeleting(true)
-    const supabase = createClient()
-    
-    const { error } = await supabase
-      .from('expenses')
-      .update({ deleted_at: new Date().toISOString() })
-      .eq('id', id)
 
-    if (error) {
-      logger.error('Error deleting expense', error, { expenseId: id })
-      toast.error(t('deleteError') || 'Errore nell\'eliminazione della spesa')
-    } else {
-      toast.success(t('deleteSuccess') || 'Spesa eliminata con successo')
-      loadExpenses()
-    }
-    
+    const result = await safeAsync(async () => {
+      const supabase = createClient()
+
+      const { error } = await supabase
+        .from('expenses')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('id', id)
+
+      if (error) {
+        throw error
+      }
+    }, 'Error deleting expense')
+
     setIsDeleting(false)
     setDeleteDialogOpen(false)
     setExpenseToDelete(null)
+
+    if (result.success) {
+      toast.success(t('deleteSuccess') || tCommon('success'))
+      loadExpenses()
+    } else {
+      logger.error('Error deleting expense', result.details, { expenseId: id })
+      toast.error(t('deleteError') || tCommon('error'), {
+        description: extractErrorMessage(result.error, result.details),
+      })
+    }
   }
 
   async function handleRestore(id: string) {
-    const supabase = createClient()
-    
-    const { error } = await supabase
-      .from('expenses')
-      .update({ deleted_at: null })
-      .eq('id', id)
+    const result = await safeAsync(async () => {
+      const supabase = createClient()
 
-    if (error) {
-      logger.error('Error restoring expense', error, { expenseId: id })
-      toast.error(t('restoreError') || 'Errore nel ripristino della spesa')
-    } else {
-      toast.success(t('restoreSuccess') || 'Spesa ripristinata con successo')
+      const { error } = await supabase
+        .from('expenses')
+        .update({ deleted_at: null })
+        .eq('id', id)
+
+      if (error) {
+        throw error
+      }
+    }, 'Error restoring expense')
+
+    if (result.success) {
+      toast.success(t('restoreSuccess') || tCommon('success'))
       loadExpenses()
+    } else {
+      logger.error('Error restoring expense', result.details, { expenseId: id })
+      toast.error(t('restoreError') || tCommon('error'), {
+        description: extractErrorMessage(result.error, result.details),
+      })
     }
   }
 
   async function handlePermanentDelete(id: string) {
-    const supabase = createClient()
-    
-    const { error } = await supabase
-      .from('expenses')
-      .delete()
-      .eq('id', id)
+    const result = await safeAsync(async () => {
+      const supabase = createClient()
 
-    if (error) {
-      logger.error('Error permanently deleting expense', error, { expenseId: id })
-      toast.error(t('permanentDeleteError') || 'Errore nell\'eliminazione definitiva')
-    } else {
-      toast.success(t('permanentDeleteSuccess') || 'Spesa eliminata definitivamente')
+      const { error } = await supabase.from('expenses').delete().eq('id', id)
+
+      if (error) {
+        throw error
+      }
+    }, 'Error permanently deleting expense')
+
+    if (result.success) {
+      toast.success(t('permanentDeleteSuccess') || tCommon('success'))
       loadExpenses()
+    } else {
+      logger.error('Error permanently deleting expense', result.details, { expenseId: id })
+      toast.error(t('permanentDeleteError') || tCommon('error'), {
+        description: extractErrorMessage(result.error, result.details),
+      })
     }
   }
 
@@ -255,12 +305,24 @@ export default function ExpensesPage() {
       [t('isDeductible') || 'Deducibile']: expense.is_deductible ? t('deductible') : t('notDeductible'),
     }))
 
-    if (format === 'csv') {
-      exportFormattedToCSV(dataToExport, `spese-${new Date().toISOString().split('T')[0]}`)
+    const result = safeSync(() => {
+      const filename = `spese-${new Date().toISOString().split('T')[0]}`
+      if (format === 'csv') {
+        exportFormattedToCSV(dataToExport, filename)
+      } else {
+        exportFormattedToExcel(dataToExport, filename)
+      }
+      return true
+    }, 'Error exporting expenses')
+
+    if (result.success) {
+      toast.success(tCommon('exportSuccess') || 'Esportazione completata')
     } else {
-      exportFormattedToExcel(dataToExport, `spese-${new Date().toISOString().split('T')[0]}`)
+      logger.error('Error exporting expenses', result.details)
+      toast.error(tCommon('error'), {
+        description: extractErrorMessage(result.error, result.details),
+      })
     }
-    toast.success(tCommon('exportSuccess') || 'Esportazione completata')
   }
 
   const totalExpenses = expenses

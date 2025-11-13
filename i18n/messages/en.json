@@ -206,7 +206,10 @@
     "userAlreadyExists": "A user with this email already exists",
     "weakPassword": "Password must contain at least 6 characters",
     "accountCreated": "Account created successfully",
-    "loginSuccess": "Login successful"
+    "loginSuccess": "Login successful",
+    "googleLogin": "Continue with Google",
+    "googleSignup": "Sign up with Google",
+    "orContinueWithEmail": "Or continue with email"
   },
   "navigation": {
     "dashboard": "Dashboard",

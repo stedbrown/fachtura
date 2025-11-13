@@ -27,6 +27,11 @@ import { useCompanySettings } from '@/hooks/use-company-settings'
 import { toast } from 'sonner'
 import { QuoteLivePreview } from '@/components/quotes/quote-live-preview'
 
+const quoteStatuses = ['draft', 'sent', 'accepted', 'rejected'] as const
+type QuoteStatus = (typeof quoteStatuses)[number]
+const isQuoteStatus = (value: string): value is QuoteStatus =>
+  quoteStatuses.includes(value as QuoteStatus)
+
 export default function NewQuotePage() {
   const router = useRouter()
   const params = useParams()
@@ -42,13 +47,19 @@ export default function NewQuotePage() {
   const [clientId, setClientId] = useState('')
   const [date, setDate] = useState(new Date().toISOString().split('T')[0])
   const [validUntil, setValidUntil] = useState('')
-  const [status, setStatus] = useState<'draft' | 'sent' | 'accepted' | 'rejected'>('draft')
+  const [status, setStatus] = useState<QuoteStatus>('draft')
   const [notes, setNotes] = useState('')
   const [items, setItems] = useState<QuoteItemInput[]>([
     { description: '', quantity: 1, unit_price: 0, tax_rate: 8.1 },
   ])
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const [quoteNumber] = useState(generateQuoteNumber())
+
+  const handleQuoteStatusChange = (value: string) => {
+    if (isQuoteStatus(value)) {
+      setStatus(value)
+    }
+  }
 
   useEffect(() => {
     loadClients()
@@ -329,14 +340,14 @@ export default function NewQuotePage() {
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="status" className="text-xs font-medium">{tCommon('status')}</Label>
-                  <Select value={status} onValueChange={(v: any) => setStatus(v)}>
+                  <Select value={status} onValueChange={handleQuoteStatusChange}>
                     <SelectTrigger className="h-9">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {['draft', 'sent', 'accepted', 'rejected'].map((s) => (
-                        <SelectItem key={s} value={s}>
-                          {tStatus(s as any)}
+                      {quoteStatuses.map((quoteStatus) => (
+                        <SelectItem key={quoteStatus} value={quoteStatus}>
+                          {tStatus(quoteStatus)}
                         </SelectItem>
                       ))}
                     </SelectContent>

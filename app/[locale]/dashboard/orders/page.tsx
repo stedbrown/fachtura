@@ -39,6 +39,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { logger } from '@/lib/logger'
+import { safeAsync, safeSync, getSupabaseErrorMessage } from '@/lib/error-handler'
 
 const localeMap: Record<string, Locale> = {
   it: it,
@@ -113,37 +115,54 @@ export default function OrdersPage() {
   )
 
   async function loadOrders() {
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    
-    if (!user) {
-      router.push(`/${locale}/auth/login`)
-      return
-    }
+    setLoading(true)
 
-    let query = supabase
-      .from('orders')
-      .select(`
-        *,
-        supplier:suppliers(*)
-      `)
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
+    const result = await safeAsync(async () => {
+      const supabase = createClient()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
 
-    if (showArchived) {
-      query = query.not('deleted_at', 'is', null)
+      if (!user) {
+        router.push(`/${locale}/auth/login`)
+        return [] as OrderWithSupplier[]
+      }
+
+      let query = supabase
+        .from('orders')
+        .select(`
+          *,
+          supplier:suppliers(*)
+        `)
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+
+      if (showArchived) {
+        query = query.not('deleted_at', 'is', null)
+      } else {
+        query = query.is('deleted_at', null)
+      }
+
+      const { data, error } = await query
+
+      if (error) {
+        throw error
+      }
+
+      return (data ?? []) as OrderWithSupplier[]
+    }, 'Error loading orders')
+
+    if (result.success) {
+      setOrders(result.data)
     } else {
-      query = query.is('deleted_at', null)
+      logger.error('Error loading orders', result.details)
+      toast.error(t('loadError') || tCommon('error'), {
+        description: result.details
+          ? getSupabaseErrorMessage(result.details)
+          : result.error,
+      })
     }
 
-    const { data, error } = await query
-
-    if (error) {
-      console.error('Error loading orders:', error)
-      toast.error(t('loadError') || 'Errore nel caricamento degli ordini')
-    } else {
-      setOrders(data || [])
-    }
     setLoading(false)
   }
 
@@ -168,62 +187,97 @@ export default function OrdersPage() {
 
   async function handleDelete(id: string) {
     setIsDeleting(true)
-    const supabase = createClient()
-    
-    const { error } = await supabase
-      .from('orders')
-      .update({ deleted_at: new Date().toISOString() })
-      .eq('id', id)
 
-    if (error) {
-      console.error('Error deleting order:', error)
-      toast.error(t('deleteError') || 'Errore nell\'eliminazione dell\'ordine')
-    } else {
-      toast.success(t('deleteSuccess') || 'Ordine eliminato con successo')
-      loadOrders()
-    }
-    
+    const result = await safeAsync(async () => {
+      const supabase = createClient()
+
+      const { error } = await supabase
+        .from('orders')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('id', id)
+
+      if (error) {
+        throw error
+      }
+    }, 'Error deleting order')
+
     setIsDeleting(false)
     setDeleteDialogOpen(false)
     setOrderToDelete(null)
+
+    if (result.success) {
+      toast.success(t('deleteSuccess') || 'Ordine eliminato con successo')
+      loadOrders()
+    } else {
+      logger.error('Error deleting order', result.details)
+      toast.error(t('deleteError') || tCommon('error'), {
+        description: result.details
+          ? getSupabaseErrorMessage(result.details)
+          : result.error,
+      })
+    }
   }
 
   async function handleRestore(id: string) {
-    const supabase = createClient()
-    
-    const { error } = await supabase
-      .from('orders')
-      .update({ deleted_at: null })
-      .eq('id', id)
+    const result = await safeAsync(async () => {
+      const supabase = createClient()
 
-    if (error) {
-      console.error('Error restoring order:', error)
-      toast.error(t('restoreError') || 'Errore nel ripristino dell\'ordine')
-    } else {
+      const { error } = await supabase
+        .from('orders')
+        .update({ deleted_at: null })
+        .eq('id', id)
+
+      if (error) {
+        throw error
+      }
+    }, 'Error restoring order')
+
+    if (result.success) {
       toast.success(t('restoreSuccess') || 'Ordine ripristinato con successo')
       loadOrders()
+    } else {
+      logger.error('Error restoring order', result.details)
+      toast.error(t('restoreError') || tCommon('error'), {
+        description: result.details
+          ? getSupabaseErrorMessage(result.details)
+          : result.error,
+      })
     }
   }
 
   function handleExport(format: 'csv' | 'excel') {
-    const dataToExport = orders.map(order => ({
+    const dataToExport = orders.map((order) => ({
       [t('orderNumber') || 'Numero Ordine']: order.order_number,
       [t('supplier') || 'Fornitore']: order.supplier?.name || '',
       [t('orderDate') || 'Data']: formatDateForExport(order.date),
-      [t('deliveryDate') || 'Consegna']: order.expected_delivery_date ? formatDateForExport(order.expected_delivery_date) : '',
+      [t('deliveryDate') || 'Consegna']: order.expected_delivery_date
+        ? formatDateForExport(order.expected_delivery_date)
+        : '',
       [tCommon('status') || 'Stato']: tStatus(order.status) || order.status,
       [t('totalAmount') || 'Totale']: formatCurrencyForExport(order.total),
     }))
 
     const filename = `ordini_${new Date().toISOString().split('T')[0]}`
 
-    if (format === 'csv') {
-      exportFormattedToCSV(dataToExport, filename)
-    } else {
-      exportFormattedToExcel(dataToExport, filename)
-    }
+    const result = safeSync(() => {
+      if (format === 'csv') {
+        exportFormattedToCSV(dataToExport, filename)
+      } else {
+        exportFormattedToExcel(dataToExport, filename)
+      }
+      return true
+    }, 'Error exporting orders')
 
-    toast.success(tCommon('exportSuccess') || 'Export completato con successo')
+    if (result.success) {
+      toast.success(tCommon('exportSuccess') || 'Export completato con successo')
+    } else {
+      logger.error('Error exporting orders', result.details)
+      toast.error(tCommon('error'), {
+        description: result.details
+          ? getSupabaseErrorMessage(result.details)
+          : result.error,
+      })
+    }
   }
 
 

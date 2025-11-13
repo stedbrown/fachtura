@@ -36,6 +36,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { safeAsync, safeSync, getSupabaseErrorMessage } from '@/lib/error-handler'
+import { logger } from '@/lib/logger'
 
 const localeMap: Record<string, Locale> = {
   it: it,
@@ -108,52 +110,86 @@ export default function QuotesPage() {
 
   const loadQuotes = async () => {
     setLoading(true)
-    const supabase = createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
 
-    if (!user) return
+    const result = await safeAsync(async () => {
+      const supabase = createClient()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
 
-    let query = supabase
-      .from('quotes')
-      .select(`
-        *,
-        client:clients(*)
-      `)
-      .eq('user_id', user.id)
+      if (!user) {
+        return [] as QuoteWithClient[]
+      }
 
-    if (showArchived) {
-      query = query.not('deleted_at', 'is', null)
+      let query = supabase
+        .from('quotes')
+        .select(`
+          *,
+          client:clients(*)
+        `)
+        .eq('user_id', user.id)
+
+      if (showArchived) {
+        query = query.not('deleted_at', 'is', null)
+      } else {
+        query = query.is('deleted_at', null)
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: false })
+
+      if (error) {
+        throw error
+      }
+
+      return (data ?? []) as QuoteWithClient[]
+    }, 'Error loading quotes')
+
+    if (result.success) {
+      setQuotes(result.data)
     } else {
-      query = query.is('deleted_at', null)
+      toast.error(tCommon('error'), {
+        description: result.details
+          ? getSupabaseErrorMessage(result.details)
+          : result.error,
+      })
     }
 
-    const { data, error } = await query.order('created_at', { ascending: false })
-
-    if (data) {
-      setQuotes(data as any)
-    }
     setLoading(false)
   }
 
   const loadClients = async () => {
-    const supabase = createClient()
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
+    const result = await safeAsync(async () => {
+      const supabase = createClient()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
 
-    if (!user) return
+      if (!user) {
+        return []
+      }
 
-    const { data } = await supabase
-      .from('clients')
-      .select('id, name')
-      .eq('user_id', user.id)
-      .is('deleted_at', null)
-      .order('name')
+      const { data, error } = await supabase
+        .from('clients')
+        .select('id, name')
+        .eq('user_id', user.id)
+        .is('deleted_at', null)
+        .order('name')
 
-    if (data) {
-      setClients(data)
+      if (error) {
+        throw error
+      }
+
+      return data ?? []
+    }, 'Error loading clients for quotes')
+
+    if (result.success) {
+      setClients(result.data)
+    } else {
+      toast.error(tCommon('error'), {
+        description: result.details
+          ? getSupabaseErrorMessage(result.details)
+          : result.error,
+      })
     }
   }
 
@@ -284,19 +320,25 @@ export default function QuotesPage() {
 
     const filename = `preventivi_${format(new Date(), 'yyyy-MM-dd')}`
 
-    try {
+    const exportResult = safeSync(() => {
       if (exportFormat === 'csv') {
         exportFormattedToCSV(exportData, filename)
       } else {
         exportFormattedToExcel(exportData, filename)
       }
+      return true
+    }, 'Error exporting quotes')
 
+    if (exportResult.success) {
       toast.success('Export completato!', {
         description: `${filteredQuotes.length} preventivi esportati in ${exportFormat.toUpperCase()}`,
       })
-    } catch (error) {
+    } else {
       toast.error(tCommon('error'), {
-        description: 'Errore durante l\'export',
+        description:
+          exportResult.details
+            ? getSupabaseErrorMessage(exportResult.details)
+            : exportResult.error,
       })
     }
   }
@@ -310,37 +352,61 @@ export default function QuotesPage() {
     if (!quoteToDelete) return
 
     setIsDeleting(true)
-    const supabase = createClient()
 
-    const { error } = await supabase
-      .from('quotes')
-      .update({ deleted_at: new Date().toISOString() })
-      .eq('id', quoteToDelete)
+    const result = await safeAsync(async () => {
+      const supabase = createClient()
 
-    if (!error) {
-      loadQuotes()
-    } else {
-      alert('Errore durante l\'eliminazione del preventivo')
+      const { error } = await supabase
+        .from('quotes')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('id', quoteToDelete)
+
+      if (error) {
+        throw error
+      }
+    }, 'Error archiving quote')
+
+    if (!result.success) {
+      toast.error(tCommon('error'), {
+        description: result.details
+          ? getSupabaseErrorMessage(result.details)
+          : result.error,
+      })
     }
 
     setIsDeleting(false)
     setDeleteDialogOpen(false)
     setQuoteToDelete(null)
+
+    if (result.success) {
+      loadQuotes()
+    }
   }
 
   const handleRestore = async (quoteId: string) => {
-    const supabase = createClient()
+    const result = await safeAsync(async () => {
+      const supabase = createClient()
 
-    const { error } = await supabase
-      .from('quotes')
-      .update({ deleted_at: null })
-      .eq('id', quoteId)
+      const { error } = await supabase
+        .from('quotes')
+        .update({ deleted_at: null })
+        .eq('id', quoteId)
 
-    if (!error) {
-      loadQuotes()
-    } else {
-      alert('Errore durante il ripristino del preventivo')
+      if (error) {
+        throw error
+      }
+    }, 'Error restoring quote')
+
+    if (!result.success) {
+      toast.error(tCommon('error'), {
+        description: result.details
+          ? getSupabaseErrorMessage(result.details)
+          : result.error,
+      })
+      return
     }
+
+    loadQuotes()
   }
 
   const handlePermanentDelete = async (quoteId: string) => {
@@ -348,54 +414,66 @@ export default function QuotesPage() {
       return
     }
 
-    const supabase = createClient()
+    const result = await safeAsync(async () => {
+      const supabase = createClient()
 
-    const { error } = await supabase
-      .from('quotes')
-      .delete()
-      .eq('id', quoteId)
+      const { error } = await supabase
+        .from('quotes')
+        .delete()
+        .eq('id', quoteId)
 
-    if (!error) {
-      loadQuotes()
-    } else {
-      alert('Errore durante l\'eliminazione definitiva del preventivo')
+      if (error) {
+        throw error
+      }
+    }, 'Error permanently deleting quote')
+
+    if (!result.success) {
+      toast.error(tCommon('error'), {
+        description: result.details
+          ? getSupabaseErrorMessage(result.details)
+          : result.error,
+      })
+      return
     }
+
+    loadQuotes()
   }
 
   const handleDownloadPDF = async (quoteId: string, quoteNumber: string) => {
-    try {
-      console.log('📄 Starting PDF download for quote:', quoteId)
+    logger.debug('Starting quote PDF download', { quoteId, quoteNumber })
+
+    const result = await safeAsync(async () => {
       const url = `/api/quotes/${quoteId}/pdf?locale=${locale}`
-      console.log('📄 Fetching from:', url)
-      
       const response = await fetch(url)
-      console.log('📄 Response status:', response.status, response.statusText)
-      console.log('📄 Response headers:', Object.fromEntries(response.headers.entries()))
-      
+
       if (!response.ok) {
         const errorText = await response.text()
-        console.error('❌ PDF generation failed:', errorText)
-        alert(`Errore ${response.status}: ${errorText}`)
-        return
+        throw new Error(
+          errorText || `Failed to download quote PDF (status ${response.status})`
+        )
       }
-      
-      const blob = await response.blob()
-      console.log('📄 Blob received, size:', blob.size, 'type:', blob.type)
-      
-      const blobUrl = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = blobUrl
-      a.download = `preventivo-${quoteNumber}.pdf`
-      document.body.appendChild(a)
-      a.click()
-      window.URL.revokeObjectURL(blobUrl)
-      document.body.removeChild(a)
-      
-      console.log('✅ PDF downloaded successfully')
-    } catch (error) {
-      console.error('❌ Error downloading PDF:', error)
-      alert('Errore durante il download del PDF')
+
+      return await response.blob()
+    }, 'Error downloading quote PDF')
+
+    if (!result.success) {
+      toast.error(tCommon('error'), {
+        description: result.error,
+      })
+      return
     }
+
+    const blob = result.data
+    const blobUrl = window.URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = blobUrl
+    link.download = `preventivo-${quoteNumber}.pdf`
+    document.body.appendChild(link)
+    link.click()
+    window.URL.revokeObjectURL(blobUrl)
+    document.body.removeChild(link)
+
+    logger.debug('Quote PDF downloaded successfully', { quoteId })
   }
 
   return (

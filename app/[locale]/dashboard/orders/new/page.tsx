@@ -22,6 +22,11 @@ import type { OrderItemInput } from '@/lib/validations/order'
 import { calculateOrderTotals, generateOrderNumber } from '@/lib/utils/order-utils'
 import { toast } from 'sonner'
 
+const orderStatuses = ['draft', 'ordered', 'partial', 'received', 'cancelled'] as const
+type OrderStatus = (typeof orderStatuses)[number]
+const isOrderStatus = (value: string): value is OrderStatus =>
+  orderStatuses.includes(value as OrderStatus)
+
 export default function NewOrderPage() {
   const router = useRouter()
   const params = useParams()
@@ -36,12 +41,18 @@ export default function NewOrderPage() {
   const [supplierId, setSupplierId] = useState('')
   const [date, setDate] = useState(new Date().toISOString().split('T')[0])
   const [deliveryDate, setDeliveryDate] = useState('')
-  const [status, setStatus] = useState<'draft' | 'ordered' | 'partial' | 'received' | 'cancelled'>('draft')
+  const [status, setStatus] = useState<OrderStatus>('draft')
   const [notes, setNotes] = useState('')
   const [internalNotes, setInternalNotes] = useState('')
   const [items, setItems] = useState<OrderItemInput[]>([
     { description: '', quantity: 1, unit_price: 0, tax_rate: 8.1 },
   ])
+
+  const handleStatusChange = (value: string) => {
+    if (isOrderStatus(value)) {
+      setStatus(value)
+    }
+  }
 
   useEffect(() => {
     loadSuppliers()
@@ -220,14 +231,14 @@ export default function NewOrderPage() {
 
               <div className="space-y-2">
                 <Label htmlFor="status">{tCommon('status') || 'Stato'}</Label>
-                <Select value={status} onValueChange={(v: any) => setStatus(v)}>
+                <Select value={status} onValueChange={handleStatusChange}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {['draft', 'ordered', 'partial', 'received', 'cancelled'].map((s) => (
-                      <SelectItem key={s} value={s}>
-                        {tStatus(s as any)}
+                    {orderStatuses.map((orderStatus) => (
+                      <SelectItem key={orderStatus} value={orderStatus}>
+                        {tStatus(orderStatus)}
                       </SelectItem>
                     ))}
                   </SelectContent>

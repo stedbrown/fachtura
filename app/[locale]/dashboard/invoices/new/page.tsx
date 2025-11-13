@@ -30,6 +30,11 @@ import { invoiceSchema } from '@/lib/validations/invoice'
 import { logger } from '@/lib/logger'
 import { safeAsync, getSupabaseErrorMessage } from '@/lib/error-handler'
 
+const invoiceStatuses = ['draft', 'issued', 'paid', 'overdue'] as const
+type InvoiceStatus = (typeof invoiceStatuses)[number]
+const isInvoiceStatus = (value: string): value is InvoiceStatus =>
+  invoiceStatuses.includes(value as InvoiceStatus)
+
 export default function NewInvoicePage() {
   const router = useRouter()
   const params = useParams()
@@ -45,13 +50,19 @@ export default function NewInvoicePage() {
   const [clientId, setClientId] = useState('')
   const [date, setDate] = useState(new Date().toISOString().split('T')[0])
   const [dueDate, setDueDate] = useState('')
-  const [status, setStatus] = useState<'draft' | 'issued' | 'paid' | 'overdue'>('draft')
+  const [status, setStatus] = useState<InvoiceStatus>('draft')
   const [notes, setNotes] = useState('')
   const [items, setItems] = useState<InvoiceItemInput[]>([
     { description: '', quantity: 1, unit_price: 0, tax_rate: 8.1 },
   ])
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
   const [invoiceNumber] = useState(generateInvoiceNumber())
+
+  const handleInvoiceStatusChange = (value: string) => {
+    if (isInvoiceStatus(value)) {
+      setStatus(value)
+    }
+  }
 
   useEffect(() => {
     loadClients()
@@ -316,14 +327,14 @@ export default function NewInvoicePage() {
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="status" className="text-xs font-medium">{tCommon('status')}</Label>
-                  <Select value={status} onValueChange={(v: any) => setStatus(v)}>
+                  <Select value={status} onValueChange={handleInvoiceStatusChange}>
                     <SelectTrigger className="h-9">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {['draft', 'issued', 'paid', 'overdue'].map((s) => (
-                        <SelectItem key={s} value={s}>
-                          {tStatus(s as any)}
+                      {invoiceStatuses.map((invoiceStatus) => (
+                        <SelectItem key={invoiceStatus} value={invoiceStatus}>
+                          {tStatus(invoiceStatus)}
                         </SelectItem>
                       ))}
                     </SelectContent>

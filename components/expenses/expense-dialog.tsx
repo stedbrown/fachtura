@@ -2,7 +2,18 @@
 
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { type ExpenseFormInput, expenseCategories, expensePaymentMethods, expenseStatuses } from '@/lib/validations/expense'
+import {
+  type ExpenseFormInput,
+  type ExpenseCategory,
+  type ExpensePaymentMethod,
+  type ExpenseStatus,
+  expenseCategories,
+  expensePaymentMethods,
+  expenseStatuses,
+  isExpenseCategory,
+  isExpensePaymentMethod,
+  isExpenseStatus,
+} from '@/lib/validations/expense'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -39,6 +50,35 @@ interface ExpenseDialogProps {
   onSuccess: () => void
 }
 
+const createDefaultValues = (): ExpenseFormInput => ({
+  description: '',
+  category: 'office',
+  amount: 0,
+  currency: 'CHF',
+  expense_date: new Date().toISOString().split('T')[0],
+  payment_method: undefined,
+  supplier_id: undefined,
+  supplier_name: undefined,
+  receipt_url: undefined,
+  receipt_number: undefined,
+  tax_rate: 8.1,
+  tax_amount: 0,
+  is_deductible: true,
+  status: 'pending',
+  notes: undefined,
+})
+
+const normalizeCategory = (value: string | null | undefined): ExpenseCategory =>
+  isExpenseCategory(value) ? value : 'office'
+
+const normalizePaymentMethod = (
+  value: string | null | undefined
+): ExpenseFormInput['payment_method'] =>
+  isExpensePaymentMethod(value) ? value : undefined
+
+const normalizeStatus = (value: string | null | undefined): ExpenseStatus =>
+  isExpenseStatus(value) ? value : 'pending'
+
 export function ExpenseDialog({
   open,
   onOpenChange,
@@ -64,28 +104,35 @@ export function ExpenseDialog({
     watch,
     setValue,
   } = useForm<ExpenseFormInput>({
-    defaultValues: {
-      description: '',
-      category: 'office',
-      amount: 0,
-      currency: 'CHF',
-      expense_date: new Date().toISOString().split('T')[0],
-      payment_method: undefined,
-      supplier_id: undefined,
-      supplier_name: undefined,
-      receipt_url: undefined,
-      receipt_number: undefined,
-      tax_rate: 8.1,
-      tax_amount: 0,
-      is_deductible: true,
-      status: 'pending',
-      notes: undefined,
-    }
+    defaultValues: createDefaultValues(),
   })
 
   const amount = watch('amount')
   const taxRate = watch('tax_rate')
   const isDeductible = watch('is_deductible')
+
+  const handleCategoryChange = (value: string) => {
+    if (isExpenseCategory(value)) {
+      setValue('category', value)
+    }
+  }
+
+  const handlePaymentMethodChange = (value: string) => {
+    if (!value) {
+      setValue('payment_method', undefined)
+      return
+    }
+
+    if (isExpensePaymentMethod(value)) {
+      setValue('payment_method', value)
+    }
+  }
+
+  const handleStatusChange = (value: string) => {
+    if (isExpenseStatus(value)) {
+      setValue('status', value)
+    }
+  }
 
   useEffect(() => {
     if (open) {
@@ -97,39 +144,26 @@ export function ExpenseDialog({
     if (expense) {
       reset({
         description: expense.description || '',
-        category: expense.category as any,
+        category: normalizeCategory(expense.category),
         amount: Number(expense.amount) || 0,
         currency: expense.currency || 'CHF',
-        expense_date: expense.expense_date ? new Date(expense.expense_date).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-        payment_method: (expense.payment_method as any) || '',
-        supplier_id: expense.supplier_id || '',
-        supplier_name: expense.supplier_name || expense.supplier?.name || '',
-        receipt_url: expense.receipt_url || '',
-        receipt_number: expense.receipt_number || '',
+        expense_date: expense.expense_date
+          ? new Date(expense.expense_date).toISOString().split('T')[0]
+          : new Date().toISOString().split('T')[0],
+        payment_method: normalizePaymentMethod(expense.payment_method),
+        supplier_id: expense.supplier_id ?? undefined,
+        supplier_name:
+          expense.supplier_name || expense.supplier?.name || undefined,
+        receipt_url: expense.receipt_url || undefined,
+        receipt_number: expense.receipt_number || undefined,
         tax_rate: Number(expense.tax_rate) || 8.1,
         tax_amount: Number(expense.tax_amount) || 0,
         is_deductible: expense.is_deductible ?? true,
-        status: (expense.status as any) || 'pending',
-        notes: expense.notes || '',
+        status: normalizeStatus(expense.status),
+        notes: expense.notes || undefined,
       })
     } else {
-      reset({
-        description: '',
-        category: 'office',
-        amount: 0,
-        currency: 'CHF',
-        expense_date: new Date().toISOString().split('T')[0],
-        payment_method: undefined,
-        supplier_id: undefined,
-        supplier_name: undefined,
-        receipt_url: undefined,
-        receipt_number: undefined,
-        tax_rate: 8.1,
-        tax_amount: 0,
-        is_deductible: true,
-        status: 'pending',
-        notes: undefined,
-      })
+      reset(createDefaultValues())
     }
   }, [expense, reset])
 
@@ -302,7 +336,7 @@ export function ExpenseDialog({
                 </Label>
                 <Select
                   value={watch('category') || 'office'}
-                  onValueChange={(value) => setValue('category', value as any)}
+                  onValueChange={handleCategoryChange}
                 >
                   <SelectTrigger id="category" className="h-10">
                     <SelectValue placeholder={t('selectCategory')} />
@@ -358,7 +392,7 @@ export function ExpenseDialog({
                 </Label>
                 <Select
                   value={watch('payment_method') || undefined}
-                  onValueChange={(value) => setValue('payment_method', value as any)}
+                  onValueChange={handlePaymentMethodChange}
                 >
                   <SelectTrigger id="payment_method" className="h-10">
                     <SelectValue placeholder={t('selectPaymentMethod')} />
@@ -497,7 +531,7 @@ export function ExpenseDialog({
                 </Label>
                 <Select
                   value={watch('status') || 'pending'}
-                  onValueChange={(value) => setValue('status', value as any)}
+                  onValueChange={handleStatusChange}
                 >
                   <SelectTrigger id="status" className="h-10">
                     <SelectValue />

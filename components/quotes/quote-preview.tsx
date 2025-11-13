@@ -45,6 +45,11 @@ const localeMap: Record<string, Locale> = {
   rm: de,
 }
 
+const quoteStatusKeys = ['draft', 'sent', 'accepted', 'rejected'] as const
+type QuoteStatusKey = (typeof quoteStatusKeys)[number]
+const isQuoteStatusKey = (value: string): value is QuoteStatusKey =>
+  quoteStatusKeys.includes(value as QuoteStatusKey)
+
 export function QuotePreview({
   open,
   onOpenChange,
@@ -94,6 +99,10 @@ export function QuotePreview({
 
   if (!quote) return null
 
+  const normalizedStatus = isQuoteStatusKey(quote.status)
+    ? quote.status
+    : 'draft'
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-2xl lg:max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -107,8 +116,8 @@ export function QuotePreview({
                 {t('preview.subtitle')}
               </DialogDescription>
             </div>
-            <Badge variant={getStatusVariant(quote.status)} className="text-xs sm:text-sm shrink-0 self-start">
-              {tStatus(quote.status as any)}
+            <Badge variant={getStatusVariant(normalizedStatus)} className="text-xs sm:text-sm shrink-0 self-start">
+              {tStatus(normalizedStatus)}
             </Badge>
           </div>
         </DialogHeader>

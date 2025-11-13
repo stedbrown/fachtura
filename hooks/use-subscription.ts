@@ -54,6 +54,17 @@ export interface UsageLimits {
   message?: string;
 }
 
+type SupabaseSubscription = Omit<UserSubscription, 'plan'> & {
+  plan: SubscriptionPlan | null;
+};
+
+const normalizeSubscription = (
+  subscription: SupabaseSubscription
+): UserSubscription => ({
+  ...subscription,
+  plan: subscription.plan ?? undefined,
+});
+
 export function useSubscription() {
   const [subscription, setSubscription] = useState<UserSubscription | null>(null);
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
@@ -80,7 +91,7 @@ export function useSubscription() {
         .single();
 
       if (subData) {
-        setSubscription(subData as any);
+        setSubscription(normalizeSubscription(subData as SupabaseSubscription));
       } else {
         // Se non c'è abbonamento, crea uno con piano Free
         const { data: freePlan } = await supabase
@@ -104,7 +115,9 @@ export function useSubscription() {
             .single();
 
           if (newSub) {
-            setSubscription(newSub as any);
+            setSubscription(
+              normalizeSubscription(newSub as SupabaseSubscription)
+            );
           }
         }
       }

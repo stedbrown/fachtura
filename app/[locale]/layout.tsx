@@ -3,6 +3,11 @@ import { getMessages } from 'next-intl/server'
 import { notFound } from 'next/navigation'
 import { locales } from '@/i18n.config'
 
+type AppLocale = (typeof locales)[number]
+
+const isSupportedLocale = (value: string): value is AppLocale =>
+  locales.includes(value as AppLocale)
+
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }))
 }
@@ -17,7 +22,7 @@ export default async function LocaleLayout({
   const { locale } = await params
   
   // Ensure that the incoming locale is valid
-  if (!locales.includes(locale as any)) {
+  if (!isSupportedLocale(locale)) {
     notFound()
   }
 

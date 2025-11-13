@@ -17,6 +17,45 @@ interface PromptInputProps {
   className?: string
 }
 
+interface SpeechRecognitionResultEvent extends Event {
+  results: {
+    [index: number]:
+      | {
+          [index: number]:
+            | {
+                transcript?: string
+              }
+            | undefined
+        }
+      | undefined
+  }
+}
+
+interface SpeechRecognitionErrorEvent extends Event {
+  error?: string
+}
+
+interface SpeechRecognitionInstance {
+  continuous: boolean
+  interimResults: boolean
+  lang: string
+  start: () => void
+  stop: () => void
+  abort: () => void
+  onresult: ((event: SpeechRecognitionResultEvent) => void) | null
+  onend: (() => void) | null
+  onerror: ((event: SpeechRecognitionErrorEvent) => void) | null
+}
+
+interface SpeechRecognitionConstructor {
+  new (): SpeechRecognitionInstance
+}
+
+interface SpeechRecognitionWindow extends Window {
+  SpeechRecognition?: SpeechRecognitionConstructor
+  webkitSpeechRecognition?: SpeechRecognitionConstructor
+}
+
 export function PromptInput({
   value,
   onChange,
@@ -30,28 +69,26 @@ export function PromptInput({
 }: PromptInputProps) {
   const textareaRef = React.useRef<HTMLTextAreaElement>(null)
   const [isListening, setIsListening] = React.useState(false)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const recognitionRef = React.useRef<any>(null)
+  const recognitionRef = React.useRef<SpeechRecognitionInstance | null>(null)
 
   // Initialize Speech Recognition
   React.useEffect(() => {
     if (typeof window === 'undefined') return
 
-    // SpeechRecognition is a browser API that may not be fully typed
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
-    if (!SpeechRecognition) return
+    const speechWindow = window as SpeechRecognitionWindow
+    const SpeechRecognitionCtor =
+      speechWindow.SpeechRecognition || speechWindow.webkitSpeechRecognition
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const recognition = new SpeechRecognition() as any
+    if (!SpeechRecognitionCtor) return
+
+    const recognition = new SpeechRecognitionCtor()
     recognition.continuous = false
     recognition.interimResults = false
     recognition.lang = 'it-IT' // Italian
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    recognition.onresult = (event: any) => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const transcript = (event.results[0]?.[0] as any)?.transcript || ''
+    recognition.onresult = (event: SpeechRecognitionResultEvent) => {
+      const firstResult = event.results[0]?.[0]
+      const transcript = firstResult?.transcript ?? ''
       const currentValue = textareaRef.current?.value || ''
       const newValue = currentValue ? currentValue + ' ' + transcript : transcript
       onChange(newValue)
@@ -61,9 +98,13 @@ export function PromptInput({
       setIsListening(false)
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    recognition.onerror = (event: any) => {
-      logger.error('Speech recognition error', new Error(event.error || 'Unknown error'), { errorType: event.error })
+    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
+      const errorMessage = event.error ?? 'Unknown error'
+      logger.error(
+        'Speech recognition error',
+        new Error(errorMessage),
+        { errorType: event.error }
+      )
       setIsListening(false)
     }
 
@@ -99,16 +140,17 @@ export function PromptInput({
   }
 
   const toggleListening = () => {
-    if (!recognitionRef.current) {
+    const recognition = recognitionRef.current
+    if (!recognition) {
       alert('Speech recognition non supportato dal tuo browser. Usa Chrome o Edge.')
       return
     }
 
     if (isListening) {
-      recognitionRef.current.stop()
+      recognition.stop()
       setIsListening(false)
     } else {
-      recognitionRef.current.start()
+      recognition.start()
       setIsListening(true)
     }
   }

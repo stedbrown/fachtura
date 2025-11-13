@@ -25,7 +25,7 @@ import { toast } from 'sonner'
 import { useSubscription } from '@/hooks/use-subscription'
 import { SubscriptionUpgradeDialog } from '@/components/subscription-upgrade-dialog'
 import { logger } from '@/lib/logger'
-import { getErrorMessage } from '@/lib/logger'
+import { safeAsync, safeSync, getSupabaseErrorMessage } from '@/lib/error-handler'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { exportFormattedToCSV, exportFormattedToExcel, formatCurrencyForExport } from '@/lib/export-utils'
 import { ProductDialog } from '@/components/products/product-dialog'
@@ -64,6 +64,18 @@ export default function ProductsPage() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [dialogLoading, setDialogLoading] = useState(false)
 
+  const extractErrorMessage = (fallback: string, details?: unknown) => {
+    if (
+      details &&
+      typeof details === 'object' &&
+      'message' in details &&
+      typeof (details as { message?: unknown }).message === 'string'
+    ) {
+      return (details as { message: string }).message
+    }
+    return fallback
+  }
+
   // Column visibility configuration
   const productColumns: ColumnConfig[] = [
     { key: 'sku', label: t('sku') || 'SKU', visible: true },
@@ -92,34 +104,52 @@ export default function ProductsPage() {
   )
 
   async function loadProducts() {
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    
-    if (!user) {
-      router.push(`/${locale}/auth/login`)
-      return
-    }
+    setLoading(true)
 
-    let query = supabase
-      .from('products')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
+    const result = await safeAsync(async () => {
+      const supabase = createClient()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
 
-    if (showArchived) {
-      query = query.not('deleted_at', 'is', null)
+      if (!user) {
+        router.push(`/${locale}/auth/login`)
+        return [] as Product[]
+      }
+
+      let query = supabase
+        .from('products')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+
+      if (showArchived) {
+        query = query.not('deleted_at', 'is', null)
+      } else {
+        query = query.is('deleted_at', null)
+      }
+
+      const { data, error } = await query
+
+      if (error) {
+        throw error
+      }
+
+      return data ?? []
+    }, 'Error loading products')
+
+    if (result.success) {
+      setProducts(result.data)
     } else {
-      query = query.is('deleted_at', null)
+      logger.error('Error loading products', result.details)
+      toast.error(t('loadError') || tCommon('error'), {
+        description: extractErrorMessage(
+          result.error,
+          result.details
+        ),
+      })
     }
 
-    const { data, error } = await query
-
-    if (error) {
-      logger.error('Error loading products', error)
-      toast.error(t('loadError') || 'Errore nel caricamento dei prodotti')
-    } else {
-      setProducts(data || [])
-    }
     setLoading(false)
   }
 
@@ -151,18 +181,18 @@ export default function ProductsPage() {
 
   async function handleDialogSubmit(data: ProductFormInput) {
     setDialogLoading(true)
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    
-    if (!user) {
-      toast.error(tCommon('error') || 'Errore')
-      setDialogLoading(false)
-      return
-    }
 
-    try {
+    const result = await safeAsync(async () => {
+      const supabase = createClient()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+
+      if (!user) {
+        throw new Error(tCommon('error') || 'Utente non autenticato')
+      }
+
       if (selectedProduct) {
-        // Update existing product
         const { error } = await supabase
           .from('products')
           .update({
@@ -175,81 +205,110 @@ export default function ProductsPage() {
             stock_quantity: data.stock_quantity ?? 0,
             low_stock_threshold: data.low_stock_threshold ?? 10,
             is_active: data.is_active ?? true,
-            updated_at: new Date().toISOString()
+            updated_at: new Date().toISOString(),
           })
           .eq('id', selectedProduct.id)
 
-        if (error) throw error
-        toast.success(t('updateSuccess') || 'Prodotto aggiornato con successo')
+        if (error) {
+          throw error
+        }
+        return 'update' as const
       } else {
-        // Create new product
-        const { error } = await supabase
-          .from('products')
-          .insert({
-            user_id: user.id,
-            name: data.name,
-            description: data.description,
-            category: data.category,
-            unit_price: data.unit_price,
-            tax_rate: data.tax_rate ?? 8.1,
-            track_inventory: data.track_inventory ?? false,
-            stock_quantity: data.stock_quantity ?? 0,
-            low_stock_threshold: data.low_stock_threshold ?? 10,
-            is_active: data.is_active ?? true,
-          })
+        const { error } = await supabase.from('products').insert({
+          user_id: user.id,
+          name: data.name,
+          description: data.description,
+          category: data.category,
+          unit_price: data.unit_price,
+          tax_rate: data.tax_rate ?? 8.1,
+          track_inventory: data.track_inventory ?? false,
+          stock_quantity: data.stock_quantity ?? 0,
+          low_stock_threshold: data.low_stock_threshold ?? 10,
+          is_active: data.is_active ?? true,
+        })
 
-        if (error) throw error
-        toast.success(t('createSuccess') || 'Prodotto creato con successo')
+        if (error) {
+          throw error
+        }
+        return 'create' as const
       }
+    }, selectedProduct ? 'Error updating product' : 'Error creating product')
 
+    setDialogLoading(false)
+
+    if (result.success) {
+      toast.success(
+        result.data === 'update'
+          ? t('updateSuccess') || 'Prodotto aggiornato con successo'
+          : t('createSuccess') || 'Prodotto creato con successo'
+      )
       setDialogOpen(false)
       setSelectedProduct(null)
       loadProducts()
-    } catch (error) {
-      logger.error('Error saving product', error, { productId: selectedProduct?.id })
-      toast.error(selectedProduct ? t('updateError') : t('createError'))
-    } finally {
-      setDialogLoading(false)
+    } else {
+      logger.error('Error saving product', result.details, { productId: selectedProduct?.id })
+      toast.error(
+        selectedProduct ? t('updateError') || tCommon('error') : t('createError') || tCommon('error'),
+        {
+          description: extractErrorMessage(result.error, result.details),
+        }
+      )
     }
   }
 
   async function handleDelete(id: string) {
     setIsDeleting(true)
-    const supabase = createClient()
-    
-    // Soft delete
-    const { error } = await supabase
-      .from('products')
-      .update({ deleted_at: new Date().toISOString() })
-      .eq('id', id)
 
-    if (error) {
-      logger.error('Error deleting product', error, { productId: id })
-      toast.error(t('deleteError') || 'Errore nell\'eliminazione del prodotto')
-    } else {
-      toast.success(t('deleteSuccess') || 'Prodotto eliminato con successo')
-      loadProducts()
-    }
-    
+    const result = await safeAsync(async () => {
+      const supabase = createClient()
+
+      const { error } = await supabase
+        .from('products')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('id', id)
+
+      if (error) {
+        throw error
+      }
+    }, 'Error deleting product')
+
     setIsDeleting(false)
     setDeleteDialogOpen(false)
     setProductToDelete(null)
+
+    if (result.success) {
+      toast.success(t('deleteSuccess') || 'Prodotto eliminato con successo')
+      loadProducts()
+    } else {
+      logger.error('Error deleting product', result.details, { productId: id })
+      toast.error(t('deleteError') || tCommon('error'), {
+        description: extractErrorMessage(result.error, result.details),
+      })
+    }
   }
 
   async function handleRestore(id: string) {
-    const supabase = createClient()
-    
-    const { error } = await supabase
-      .from('products')
-      .update({ deleted_at: null })
-      .eq('id', id)
+    const result = await safeAsync(async () => {
+      const supabase = createClient()
 
-    if (error) {
-      logger.error('Error restoring product', error, { productId: id })
-      toast.error(t('restoreError') || 'Errore nel ripristino del prodotto')
-    } else {
+      const { error } = await supabase
+        .from('products')
+        .update({ deleted_at: null })
+        .eq('id', id)
+
+      if (error) {
+        throw error
+      }
+    }, 'Error restoring product')
+
+    if (result.success) {
       toast.success(t('restoreSuccess') || 'Prodotto ripristinato con successo')
       loadProducts()
+    } else {
+      logger.error('Error restoring product', result.details, { productId: id })
+      toast.error(t('restoreError') || tCommon('error'), {
+        description: extractErrorMessage(result.error, result.details),
+      })
     }
   }
 

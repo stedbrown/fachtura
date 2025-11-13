@@ -10,6 +10,19 @@ import { Message, MessageContent, ThinkingMessage } from '@/components/ai/messag
 import { Response } from '@/components/ai/response'
 import { Tool } from '@/components/ai/tool'
 import { PromptInput } from '@/components/ai/prompt-input'
+import { logger } from '@/lib/logger'
+
+type ToolStatus = 'input-streaming' | 'processing' | 'output-available' | 'error'
+type ToolResult = { message?: string; error?: string; [key: string]: unknown }
+
+const isToolStatus = (value: unknown): value is ToolStatus =>
+  typeof value === 'string' &&
+  ['input-streaming', 'processing', 'output-available', 'error'].includes(
+    value as ToolStatus
+  )
+
+const isToolResult = (value: unknown): value is ToolResult =>
+  typeof value === 'object' && value !== null
 
 export default function ChatPage() {
   const locale = useLocale()
@@ -34,7 +47,7 @@ export default function ChatPage() {
         const parsed = JSON.parse(savedMessages)
         setMessages(parsed)
       } catch (e) {
-        console.error('Failed to load chat history:', e)
+        logger.error('Failed to load chat history', e)
       }
     }
   }, [setMessages])
@@ -58,7 +71,7 @@ export default function ChatPage() {
         metadata: { locale }
       })
     } catch (error) {
-      console.error('Error sending message:', error)
+      logger.error('Error sending message', error)
     }
   }
 
@@ -169,16 +182,23 @@ export default function ChatPage() {
                         const toolName = part.type.replace('tool-', '')
                         const toolOutput = 'result' in part ? part.result : undefined
                         const toolState = 'state' in part ? part.state : 'output-available'
-                        const toolError = toolOutput && typeof toolOutput === 'object' && 'error' in toolOutput 
-                          ? (toolOutput as any).error 
+                        const normalizedState = isToolStatus(toolState)
+                          ? toolState
+                          : 'output-available'
+                        const normalizedResult = isToolResult(toolOutput)
+                          ? toolOutput
                           : undefined
-                        
+                        const toolError =
+                          typeof normalizedResult?.error === 'string'
+                            ? normalizedResult.error
+                            : undefined
+
                         return (
                           <Tool
                             key={index}
                             name={toolName}
-                            status={toolState as 'input-streaming' | 'processing' | 'output-available' | 'error'}
-                            result={toolOutput as { message?: string; [key: string]: unknown } | undefined}
+                            status={normalizedState}
+                            result={normalizedResult}
                             error={toolError}
                           />
                         )

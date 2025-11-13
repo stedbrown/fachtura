@@ -27,6 +27,8 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { SupplierDialog } from '@/components/suppliers/supplier-dialog'
 import type { SupplierInput } from '@/lib/validations/supplier'
 import { exportFormattedToCSV, exportFormattedToExcel, formatDateForExport } from '@/lib/export-utils'
+import { safeAsync, safeSync, getSupabaseErrorMessage } from '@/lib/error-handler'
+import { logger } from '@/lib/logger'
 import {
   Tooltip,
   TooltipContent,
@@ -67,6 +69,18 @@ export default function SuppliersPage() {
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null)
   const [dialogLoading, setDialogLoading] = useState(false)
 
+  const extractErrorMessage = (fallback: string, details?: unknown) => {
+    if (
+      details &&
+      typeof details === 'object' &&
+      'message' in details &&
+      typeof (details as { message?: unknown }).message === 'string'
+    ) {
+      return (details as { message: string }).message
+    }
+    return fallback
+  }
+
   // Column visibility configuration
   const supplierColumns: ColumnConfig[] = [
     { key: 'name', label: t('fields.name'), visible: true },
@@ -93,34 +107,49 @@ export default function SuppliersPage() {
   )
 
   async function loadSuppliers() {
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    
-    if (!user) {
-      router.push(`/${locale}/auth/login`)
-      return
-    }
+    setLoading(true)
 
-    let query = supabase
-      .from('suppliers')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('name')
+    const result = await safeAsync(async () => {
+      const supabase = createClient()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
 
-    if (showArchived) {
-      query = query.not('deleted_at', 'is', null)
+      if (!user) {
+        router.push(`/${locale}/auth/login`)
+        return [] as Supplier[]
+      }
+
+      let query = supabase
+        .from('suppliers')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('name')
+
+      if (showArchived) {
+        query = query.not('deleted_at', 'is', null)
+      } else {
+        query = query.is('deleted_at', null)
+      }
+
+      const { data, error } = await query
+
+      if (error) {
+        throw error
+      }
+
+      return data ?? []
+    }, 'Error loading suppliers')
+
+    if (result.success) {
+      setSuppliers(result.data)
     } else {
-      query = query.is('deleted_at', null)
+      logger.error('Error loading suppliers', result.details)
+      toast.error(t('loadError') || tCommon('error'), {
+        description: extractErrorMessage(result.error, result.details),
+      })
     }
 
-    const { data, error } = await query
-
-    if (error) {
-      console.error('Error loading suppliers:', error)
-      toast.error(t('loadError') || 'Errore nel caricamento dei fornitori')
-    } else {
-      setSuppliers(data || [])
-    }
     setLoading(false)
   }
 
@@ -147,18 +176,18 @@ export default function SuppliersPage() {
 
   async function handleDialogSubmit(data: SupplierInput) {
     setDialogLoading(true)
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    
-    if (!user) {
-      toast.error(tCommon('error') || 'Errore')
-      setDialogLoading(false)
-      return
-    }
 
-    try {
+    const result = await safeAsync(async () => {
+      const supabase = createClient()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+
+      if (!user) {
+        throw new Error(tCommon('error') || 'Utente non autenticato')
+      }
+
       if (selectedSupplier) {
-        // Update existing supplier
         const { error } = await supabase
           .from('suppliers')
           .update({
@@ -175,45 +204,55 @@ export default function SuppliersPage() {
             payment_terms: data.payment_terms,
             notes: data.notes,
             is_active: data.is_active ?? true,
-            updated_at: new Date().toISOString()
+            updated_at: new Date().toISOString(),
           })
           .eq('id', selectedSupplier.id)
 
-        if (error) throw error
-        toast.success(t('updateSuccess') || 'Fornitore aggiornato con successo')
+        if (error) {
+          throw error
+        }
+        return 'update' as const
       } else {
-        // Create new supplier
-        const { error } = await supabase
-          .from('suppliers')
-          .insert({
-            user_id: user.id,
-            name: data.name,
-            contact_person: data.contact_person,
-            email: data.email,
-            phone: data.phone,
-            address: data.address,
-            city: data.city,
-            postal_code: data.postal_code,
-            country: data.country,
-            vat_number: data.vat_number,
-            website: data.website,
-            payment_terms: data.payment_terms,
-            notes: data.notes,
-            is_active: data.is_active ?? true,
-          })
+        const { error } = await supabase.from('suppliers').insert({
+          user_id: user.id,
+          name: data.name,
+          contact_person: data.contact_person,
+          email: data.email,
+          phone: data.phone,
+          address: data.address,
+          city: data.city,
+          postal_code: data.postal_code,
+          country: data.country,
+          vat_number: data.vat_number,
+          website: data.website,
+          payment_terms: data.payment_terms,
+          notes: data.notes,
+          is_active: data.is_active ?? true,
+        })
 
-        if (error) throw error
-        toast.success(t('createSuccess') || 'Fornitore creato con successo')
+        if (error) {
+          throw error
+        }
+        return 'create' as const
       }
+    }, selectedSupplier ? 'Error updating supplier' : 'Error creating supplier')
 
+    setDialogLoading(false)
+
+    if (result.success) {
+      toast.success(
+        result.data === 'update'
+          ? t('updateSuccess') || 'Fornitore aggiornato con successo'
+          : t('createSuccess') || 'Fornitore creato con successo'
+      )
       setDialogOpen(false)
       setSelectedSupplier(null)
       loadSuppliers()
-    } catch (error: any) {
-      console.error('Error saving supplier:', error)
-      toast.error(selectedSupplier ? t('updateError') : t('createError'))
-    } finally {
-      setDialogLoading(false)
+    } else {
+      logger.error('Error saving supplier', result.details, { supplierId: selectedSupplier?.id })
+      toast.error(selectedSupplier ? t('updateError') || tCommon('error') : t('createError') || tCommon('error'), {
+        description: extractErrorMessage(result.error, result.details),
+      })
     }
   }
 
@@ -226,62 +265,84 @@ export default function SuppliersPage() {
     if (!supplierToDelete) return
 
     setIsDeleting(true)
-    const supabase = createClient()
-    
-    const { error } = await supabase
-      .from('suppliers')
-      .update({ deleted_at: new Date().toISOString() })
-      .eq('id', supplierToDelete)
 
-    if (error) {
-      console.error('Error archiving supplier:', error)
-      toast.error(t('deleteError') || 'Errore nell\'archiviazione del fornitore')
-    } else {
-      toast.success(t('deleteSuccess') || 'Fornitore archiviato con successo')
-      loadSuppliers()
-    }
-    
+    const result = await safeAsync(async () => {
+      const supabase = createClient()
+
+      const { error } = await supabase
+        .from('suppliers')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('id', supplierToDelete)
+
+      if (error) {
+        throw error
+      }
+    }, 'Error archiving supplier')
+
     setIsDeleting(false)
     setDeleteDialogOpen(false)
     setSupplierToDelete(null)
+
+    if (result.success) {
+      toast.success(t('deleteSuccess') || 'Fornitore archiviato con successo')
+      loadSuppliers()
+    } else {
+      logger.error('Error archiving supplier', result.details, { supplierId: supplierToDelete })
+      toast.error(t('deleteError') || tCommon('error'), {
+        description: extractErrorMessage(result.error, result.details),
+      })
+    }
   }
 
   async function handleRestore(supplierId: string) {
-    const supabase = createClient()
-    
-    const { error } = await supabase
-      .from('suppliers')
-      .update({ deleted_at: null })
-      .eq('id', supplierId)
+    const result = await safeAsync(async () => {
+      const supabase = createClient()
 
-    if (error) {
-      console.error('Error restoring supplier:', error)
-      toast.error(t('restoreError') || 'Errore nel ripristino del fornitore')
-    } else {
+      const { error } = await supabase
+        .from('suppliers')
+        .update({ deleted_at: null })
+        .eq('id', supplierId)
+
+      if (error) {
+        throw error
+      }
+    }, 'Error restoring supplier')
+
+    if (result.success) {
       toast.success(t('restoreSuccess') || 'Fornitore ripristinato con successo')
       loadSuppliers()
+    } else {
+      logger.error('Error restoring supplier', result.details, { supplierId })
+      toast.error(t('restoreError') || tCommon('error'), {
+        description: extractErrorMessage(result.error, result.details),
+      })
     }
   }
 
   async function handlePermanentDelete(supplierId: string) {
-    const supabase = createClient()
-    
-    const { error } = await supabase
-      .from('suppliers')
-      .delete()
-      .eq('id', supplierId)
+    const result = await safeAsync(async () => {
+      const supabase = createClient()
 
-    if (error) {
-      console.error('Error deleting supplier:', error)
-      toast.error(t('permanentDeleteError') || 'Errore nell\'eliminazione del fornitore')
-    } else {
+      const { error } = await supabase.from('suppliers').delete().eq('id', supplierId)
+
+      if (error) {
+        throw error
+      }
+    }, 'Error permanently deleting supplier')
+
+    if (result.success) {
       toast.success(t('permanentDeleteSuccess') || 'Fornitore eliminato definitivamente')
       loadSuppliers()
+    } else {
+      logger.error('Error permanently deleting supplier', result.details, { supplierId })
+      toast.error(t('permanentDeleteError') || tCommon('error'), {
+        description: extractErrorMessage(result.error, result.details),
+      })
     }
   }
 
   function handleExport(formatType: 'csv' | 'excel') {
-    const dataToExport = suppliers.map(supplier => ({
+    const dataToExport = suppliers.map((supplier) => ({
       [t('name') || 'Nome']: supplier.name,
       [t('email') || 'Email']: supplier.email || '',
       [t('phone') || 'Telefono']: supplier.phone || '',
@@ -293,12 +354,24 @@ export default function SuppliersPage() {
       [t('country') || 'Paese']: supplier.country || '',
     }))
 
-    if (formatType === 'csv') {
-      exportFormattedToCSV(dataToExport, `fornitori-${new Date().toISOString().split('T')[0]}`)
+    const result = safeSync(() => {
+      const filename = `fornitori-${new Date().toISOString().split('T')[0]}`
+      if (formatType === 'csv') {
+        exportFormattedToCSV(dataToExport, filename)
+      } else {
+        exportFormattedToExcel(dataToExport, filename)
+      }
+      return true
+    }, 'Error exporting suppliers')
+
+    if (result.success) {
+      toast.success(tCommon('exportSuccess') || 'Esportazione completata')
     } else {
-      exportFormattedToExcel(dataToExport, `fornitori-${new Date().toISOString().split('T')[0]}`)
+      logger.error('Error exporting suppliers', result.details)
+      toast.error(tCommon('error'), {
+        description: extractErrorMessage(result.error, result.details),
+      })
     }
-    toast.success(tCommon('exportSuccess') || 'Esportazione completata')
   }
 
   function handleRowClick(supplier: Supplier) {

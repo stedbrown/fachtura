@@ -11,7 +11,7 @@ export function SubscriptionBadge() {
     return <Loader2 className="h-4 w-4 animate-spin" />;
   }
 
-  const planName = (subscription?.plan as any)?.name || 'Free';
+  const planName = subscription?.plan?.name ?? 'Free';
   
   const variants = {
     Free: 'secondary' as const,
@@ -19,10 +19,8 @@ export function SubscriptionBadge() {
     Business: 'default' as const,
   };
 
-  return (
-    <Badge variant={variants[planName as keyof typeof variants] || 'secondary'}>
-      {planName}
-    </Badge>
-  );
+  const variant = variants[planName as keyof typeof variants] || 'secondary';
+
+  return <Badge variant={variant}>{planName}</Badge>;
 }
 

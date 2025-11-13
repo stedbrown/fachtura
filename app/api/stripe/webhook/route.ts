@@ -6,6 +6,16 @@ import { logger } from '@/lib/logger';
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
 
+type SubscriptionWithPeriod = Stripe.Subscription & {
+  current_period_start: number;
+  current_period_end: number;
+  cancel_at_period_end: boolean;
+};
+
+type InvoiceWithSubscription = Stripe.Invoice & {
+  subscription?: string | Stripe.Subscription;
+};
+
 export async function POST(req: NextRequest) {
   const body = await req.text();
   const signature = req.headers.get('stripe-signature');
@@ -56,9 +66,9 @@ export async function POST(req: NextRequest) {
 
       case 'customer.subscription.updated': {
         const subscription = event.data.object;
-        
+
         if (subscription.object === 'subscription') {
-          const sub = subscription as any;
+          const sub = subscription as SubscriptionWithPeriod;
           await supabase
             .from('user_subscriptions')
             .update({
@@ -78,9 +88,9 @@ export async function POST(req: NextRequest) {
 
       case 'customer.subscription.deleted': {
         const subscription = event.data.object;
-        
+
         if (subscription.object === 'subscription') {
-          const sub = subscription as any;
+          const sub = subscription as SubscriptionWithPeriod;
           // Ottieni il piano Free
           const { data: freePlan } = await supabase
             .from('subscription_plans')
@@ -102,39 +112,53 @@ export async function POST(req: NextRequest) {
       }
 
       case 'invoice.payment_succeeded': {
-        const invoice = event.data.object as any;
-        
-        if (invoice.subscription) {
-          const subscription = await stripe.subscriptions.retrieve(
-            invoice.subscription as string
-          ) as any;
+        const invoice = event.data.object as InvoiceWithSubscription;
 
-          await supabase
-            .from('user_subscriptions')
-            .update({
-              status: 'active',
-              current_period_start: new Date(
-                subscription.current_period_start * 1000
-              ).toISOString(),
-              current_period_end: new Date(
-                subscription.current_period_end * 1000
-              ).toISOString(),
-            })
-            .eq('stripe_subscription_id', subscription.id);
+        if (invoice.subscription) {
+          const subscriptionId =
+            typeof invoice.subscription === 'string'
+              ? invoice.subscription
+              : invoice.subscription?.id;
+
+          if (subscriptionId) {
+            const subscription = (await stripe.subscriptions.retrieve(
+              subscriptionId
+            )) as unknown as SubscriptionWithPeriod;
+
+            await supabase
+              .from('user_subscriptions')
+              .update({
+                status: 'active',
+                current_period_start: new Date(
+                  subscription.current_period_start * 1000
+                ).toISOString(),
+                current_period_end: new Date(
+                  subscription.current_period_end * 1000
+                ).toISOString(),
+              })
+              .eq('stripe_subscription_id', subscription.id);
+          }
         }
         break;
       }
 
       case 'invoice.payment_failed': {
-        const invoice = event.data.object as any;
-        
+        const invoice = event.data.object as InvoiceWithSubscription;
+
         if (invoice.subscription) {
-          await supabase
-            .from('user_subscriptions')
-            .update({
-              status: 'past_due',
-            })
-            .eq('stripe_subscription_id', invoice.subscription as string);
+          const subscriptionId =
+            typeof invoice.subscription === 'string'
+              ? invoice.subscription
+              : invoice.subscription?.id;
+
+          if (subscriptionId) {
+            await supabase
+              .from('user_subscriptions')
+              .update({
+                status: 'past_due',
+              })
+              .eq('stripe_subscription_id', subscriptionId);
+          }
         }
         break;
       }
