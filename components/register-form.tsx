@@ -46,13 +46,14 @@ export function RegisterForm({ locale }: RegisterFormProps) {
     resolver: zodResolver(registerSchema),
   })
 
-  const getRedirectUrl = () => {
-    if (typeof window === 'undefined') {
-      return `${process.env.NEXT_PUBLIC_SITE_URL ?? ''}/${locale}/dashboard`
-    }
+  const getRedirectUrl = (nextPath: string = `/${locale}/auth/register`) => {
+    const base =
+      typeof window === 'undefined'
+        ? (process.env.NEXT_PUBLIC_SITE_URL ?? '')
+        : (process.env.NEXT_PUBLIC_SITE_URL ?? window.location.origin)
 
-    const base = process.env.NEXT_PUBLIC_SITE_URL ?? window.location.origin
-    return `${base.replace(/\/$/, '')}/${locale}/dashboard`
+    const origin = base.replace(/\/$/, '')
+    return `${origin}/auth/callback?next=${encodeURIComponent(nextPath)}`
   }
 
   useEffect(() => {
@@ -79,6 +80,52 @@ export function RegisterForm({ locale }: RegisterFormProps) {
       listener.subscription.unsubscribe()
     }
   }, [locale, router, supabase])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return
+    }
+
+    const url = new URL(window.location.href)
+    const code = url.searchParams.get('code')
+    const error = url.searchParams.get('error')
+    const errorDescription = url.searchParams.get('error_description')
+
+    if (error || errorDescription) {
+      logger.error('register: oauth provider returned error', { error, errorDescription })
+      setError(errorDescription || error || tErrors('generic'))
+      url.searchParams.delete('error')
+      url.searchParams.delete('error_description')
+      window.history.replaceState({}, '', url.toString())
+      return
+    }
+
+    if (!code) {
+      return
+    }
+
+    setGoogleAuthLoading(true)
+    logger.info('register: exchanging oauth code for session')
+
+    void (async () => {
+      const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
+
+      url.searchParams.delete('code')
+      url.searchParams.delete('state')
+      window.history.replaceState({}, '', url.toString())
+
+      if (exchangeError) {
+        logger.error('register: failed to exchange oauth code', exchangeError)
+        setError(getSupabaseErrorMessage(exchangeError) || exchangeError.message || tErrors('generic'))
+        setGoogleAuthLoading(false)
+        return
+      }
+
+      logger.info('register: oauth session established, redirecting')
+      router.replace(`/${locale}/dashboard`)
+      router.refresh()
+    })()
+  }, [locale, router, supabase, tErrors])
 
   const handleGoogleAuth = async () => {
     if (typeof window === 'undefined') return

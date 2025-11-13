@@ -54,13 +54,14 @@ export function LoginForm({ locale }: LoginFormProps) {
     return fallback
   }
 
-  const getRedirectUrl = () => {
-    if (typeof window === 'undefined') {
-      return `${process.env.NEXT_PUBLIC_SITE_URL ?? ''}/${locale}/dashboard`
-    }
+  const getRedirectUrl = (nextPath: string = `/${locale}/auth/login`) => {
+    const base =
+      typeof window === 'undefined'
+        ? (process.env.NEXT_PUBLIC_SITE_URL ?? '')
+        : (process.env.NEXT_PUBLIC_SITE_URL ?? window.location.origin)
 
-    const base = process.env.NEXT_PUBLIC_SITE_URL ?? window.location.origin
-    return `${base.replace(/\/$/, '')}/${locale}/dashboard`
+    const origin = base.replace(/\/$/, '')
+    return `${origin}/auth/callback?next=${encodeURIComponent(nextPath)}`
   }
 
   useEffect(() => {
@@ -87,6 +88,52 @@ export function LoginForm({ locale }: LoginFormProps) {
       listener.subscription.unsubscribe()
     }
   }, [locale, router, supabase])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return
+    }
+
+    const url = new URL(window.location.href)
+    const code = url.searchParams.get('code')
+    const error = url.searchParams.get('error')
+    const errorDescription = url.searchParams.get('error_description')
+
+    if (error || errorDescription) {
+      logger.error('login: oauth provider returned error', { error, errorDescription })
+      setError(errorDescription || error || tErrors('generic'))
+      url.searchParams.delete('error')
+      url.searchParams.delete('error_description')
+      window.history.replaceState({}, '', url.toString())
+      return
+    }
+
+    if (!code) {
+      return
+    }
+
+    setGoogleAuthLoading(true)
+    logger.info('login: exchanging oauth code for session')
+
+    void (async () => {
+      const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(code)
+
+      url.searchParams.delete('code')
+      url.searchParams.delete('state')
+      window.history.replaceState({}, '', url.toString())
+
+      if (exchangeError) {
+        logger.error('login: failed to exchange oauth code', exchangeError)
+        setError(getSupabaseErrorMessage(exchangeError) || exchangeError.message || tErrors('generic'))
+        setGoogleAuthLoading(false)
+        return
+      }
+
+      logger.info('login: oauth session established, redirecting')
+      router.replace(`/${locale}/dashboard`)
+      router.refresh()
+    })()
+  }, [locale, router, supabase, tErrors])
 
   const handleLogin = async (formData: LoginInput) => {
     logger.info('login: user submitted credentials', { email: formData.email })
