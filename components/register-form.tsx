@@ -46,14 +46,14 @@ export function RegisterForm({ locale }: RegisterFormProps) {
     resolver: zodResolver(registerSchema),
   })
 
-  const getRedirectUrl = (nextPath: string = `/${locale}/auth/register`) => {
+  const getRedirectUrl = (nextPath: string = `/${locale}/dashboard`) => {
     const base =
       typeof window === 'undefined'
         ? (process.env.NEXT_PUBLIC_SITE_URL ?? '')
         : (process.env.NEXT_PUBLIC_SITE_URL ?? window.location.origin)
 
     const origin = base.replace(/\/$/, '')
-    return `${origin}/auth/callback?next=${encodeURIComponent(nextPath)}`
+    return `${origin}/${locale}/auth/callback?next=${encodeURIComponent(nextPath)}`
   }
 
   useEffect(() => {
