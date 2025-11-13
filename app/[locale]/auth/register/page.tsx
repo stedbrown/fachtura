@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
@@ -268,6 +268,29 @@ export default function RegisterPage() {
   }
 
   const registerImage = process.env.NEXT_PUBLIC_REGISTER_IMAGE_URL ?? process.env.NEXT_PUBLIC_LOGIN_IMAGE_URL
+
+  useEffect(() => {
+    const supabase = createClient()
+
+    const handleSession = async () => {
+      const { data } = await supabase.auth.getSession()
+      if (data.session) {
+        router.replace(`/${locale}/dashboard`)
+      }
+    }
+
+    void handleSession()
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        router.replace(`/${locale}/dashboard`)
+      }
+    })
+
+    return () => {
+      listener.subscription.unsubscribe()
+    }
+  }, [locale, router])
 
   return (
     <div className="grid min-h-svh lg:grid-cols-2">

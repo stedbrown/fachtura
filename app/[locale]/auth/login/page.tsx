@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
@@ -58,6 +58,29 @@ export default function LoginPage() {
     const base = process.env.NEXT_PUBLIC_SITE_URL ?? window.location.origin
     return `${base.replace(/\/$/, '')}/${locale}/dashboard`
   }
+
+  useEffect(() => {
+    const supabase = createClient()
+
+    const handleSession = async () => {
+      const { data } = await supabase.auth.getSession()
+      if (data.session) {
+        router.replace(`/${locale}/dashboard`)
+      }
+    }
+
+    void handleSession()
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session) {
+        router.replace(`/${locale}/dashboard`)
+      }
+    })
+
+    return () => {
+      listener.subscription.unsubscribe()
+    }
+  }, [locale, router])
 
   const onSubmit = async (data: LoginInput) => {
     setLoading(true)
