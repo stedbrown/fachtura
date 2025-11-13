@@ -193,6 +193,7 @@
     "companyName": "Nome Azienda",
     "loginTitle": "Accedi al tuo account",
     "registerTitle": "Crea un nuovo account",
+    "createAccount": "Crea il tuo account",
     "alreadyHaveAccount": "Hai già un account?",
     "dontHaveAccount": "Non hai un account?",
     "loginHere": "Accedi qui",
@@ -212,7 +213,8 @@
     "loginSuccess": "Accesso effettuato con successo",
     "googleLogin": "Accedi con Google",
     "googleSignup": "Registrati con Google",
-    "orContinueWithEmail": "Oppure continua con l'email"
+    "orContinueWithEmail": "Oppure continua con l'email",
+    "forgotPasswordShort": "Password dimenticata?"
   },
   "navigation": {
     "dashboard": "Dashboard",

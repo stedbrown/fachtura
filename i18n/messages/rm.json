@@ -190,6 +190,7 @@
     "companyName": "Num da l'interpresa",
     "loginTitle": "S'annunziar a voss conto",
     "registerTitle": "Crear in nov conto",
+    "createAccount": "Creai voss conto",
     "alreadyHaveAccount": "Avais gia in conto?",
     "dontHaveAccount": "N'avais anc nagin conto?",
     "loginHere": "S'annunziar qua",
@@ -209,7 +210,8 @@
     "loginSuccess": "Annunzia cun success",
     "googleLogin": "Acceder cun Google",
     "googleSignup": "S'annunziar cun Google",
-    "orContinueWithEmail": "Uss cuntinuar cun e-mail"
+    "orContinueWithEmail": "Uss cuntinuar cun e-mail",
+    "forgotPasswordShort": "Pled-clav emblidà?"
   },
   "navigation": {
     "dashboard": "Survista",

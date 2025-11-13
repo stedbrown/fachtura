@@ -190,6 +190,7 @@
     "companyName": "Nom de l'entreprise",
     "loginTitle": "Connectez-vous à votre compte",
     "registerTitle": "Créer un nouveau compte",
+    "createAccount": "Créez votre compte",
     "alreadyHaveAccount": "Vous avez déjà un compte?",
     "dontHaveAccount": "Vous n'avez pas de compte?",
     "loginHere": "Connectez-vous ici",
@@ -209,7 +210,8 @@
     "loginSuccess": "Connexion réussie",
     "googleLogin": "Se connecter avec Google",
     "googleSignup": "S'inscrire avec Google",
-    "orContinueWithEmail": "Ou continuer avec e-mail"
+    "orContinueWithEmail": "Ou continuer avec e-mail",
+    "forgotPasswordShort": "Mot de passe oublié\u00a0?"
   },
   "navigation": {
     "dashboard": "Tableau de bord",

@@ -190,6 +190,7 @@
     "companyName": "Firmenname",
     "loginTitle": "Melden Sie sich bei Ihrem Konto an",
     "registerTitle": "Neues Konto erstellen",
+    "createAccount": "Erstelle dein Konto",
     "alreadyHaveAccount": "Haben Sie bereits ein Konto?",
     "dontHaveAccount": "Sie haben noch kein Konto?",
     "loginHere": "Hier anmelden",
@@ -209,7 +210,8 @@
     "loginSuccess": "Anmeldung erfolgreich",
     "googleLogin": "Mit Google anmelden",
     "googleSignup": "Mit Google registrieren",
-    "orContinueWithEmail": "Oder mit E-Mail fortfahren"
+    "orContinueWithEmail": "Oder mit E-Mail fortfahren",
+    "forgotPasswordShort": "Passwort vergessen?"
   },
   "navigation": {
     "dashboard": "Dashboard",
