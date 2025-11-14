@@ -340,14 +340,11 @@ export function GlobalSearch() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors w-full sm:w-60 md:w-72"
+        className="inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background px-2 sm:px-3 py-2 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors h-9 w-9 sm:w-auto sm:min-w-[200px] md:min-w-[240px]"
         aria-label={tCommon('search')}
       >
         <Search className="h-4 w-4 flex-shrink-0" />
-        <span className="text-sm font-medium text-muted-foreground md:hidden">
-          {tCommon('search')}
-        </span>
-        <span className="hidden md:inline truncate">{tCommon('search')}...</span>
+        <span className="hidden sm:inline truncate">{tCommon('search')}...</span>
         <kbd className="pointer-events-none ml-auto hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 md:flex">
           <span className="text-xs">⌘</span>K
         </kbd>

@@ -160,7 +160,7 @@ export function NotificationsDropdown() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative shrink-0">
+        <Button variant="outline" size="icon" className="relative shrink-0 h-9 w-9">
           <Bell className="h-4 w-4" />
           {unreadCount > 0 && (
             <Badge
