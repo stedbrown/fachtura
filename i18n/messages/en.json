@@ -143,9 +143,17 @@
     "create": "Create",
     "back": "Back",
     "next": "Next",
+    "previous": "Previous",
     "close": "Close",
     "search": "Search",
     "noResults": "No results found",
+    "page": "Page",
+    "firstPage": "First page",
+    "lastPage": "Last page",
+    "moreActions": "More actions",
+    "showing": "Showing {start} - {end} of {total} results",
+    "showingRange": "Showing {start} - {end}",
+    "ofMore": "of more...",
     "filter": "Filter",
     "export": "Export",
     "import": "Import",
@@ -166,6 +174,9 @@
     "invoices": "invoices",
     "clear": "Clear",
     "clearFilters": "Clear filters",
+    "selected": "selected",
+    "item": "item",
+    "items": "items",
     "from": "From",
     "to": "To",
     "select": "Select",
@@ -1098,6 +1109,134 @@
     "statistics": "Statistics",
     "order": "order",
     "orders": "orders"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "description": "Manage all your notifications",
+    "notifications": "Notifications",
+    "all": "All",
+    "unread": "Unread",
+    "archived": "Archived",
+    "new": "New",
+    "loading": "Loading...",
+    "noNotifications": "No notifications",
+    "search": "Search...",
+    "priority": "Priority",
+    "type": "Type",
+    "markAllRead": "Mark all as read",
+    "archiveOld": "Archive old",
+    "archiveOldSuccess": "{count} notifications archived",
+    "archiveOldInfo": "No notifications to archive",
+    "types": {
+      "client_added": {
+        "title": "New client added",
+        "message": "Client \"{name}\" has been added successfully."
+      },
+      "quote_sent": {
+        "title": "Quote sent",
+        "message": "Quote {number} has been sent."
+      },
+      "quote_accepted": {
+        "title": "Quote accepted",
+        "message": "Quote {number} of {total} CHF has been accepted!"
+      },
+      "quote_rejected": {
+        "title": "Quote rejected",
+        "message": "Quote {number} has been rejected."
+      },
+      "invoice_issued": {
+        "title": "Invoice issued",
+        "message": "Invoice {number} has been issued."
+      },
+      "invoice_paid": {
+        "title": "Invoice paid",
+        "message": "Invoice {number} of {total} CHF has been paid!"
+      },
+      "invoice_overdue": {
+        "title": "Invoice overdue",
+        "message": "Invoice {number} of {total} CHF is overdue!"
+      },
+      "subscription_limit_reached": {
+        "title": "Subscription limit reached",
+        "message": "You have reached the limit of {max} {resource} for the {plan} plan."
+      },
+      "subscription_limit_warning": {
+        "title": "Subscription limit warning",
+        "message": "You have used {percentage}% of the {resource} limit ({current}/{max})."
+      },
+      "subscription_expiring": {
+        "title": "Subscription expiring",
+        "message": "Your subscription expires on {date}."
+      },
+      "subscription_upgraded": {
+        "title": "Subscription upgraded",
+        "message": "Your subscription has been upgraded to the {plan} plan."
+      },
+      "subscription_downgraded": {
+        "title": "Subscription downgraded",
+        "message": "Your subscription has been downgraded to the {plan} plan."
+      },
+      "product_low_stock": {
+        "title": "Product low stock",
+        "message": "Product \"{name}\" has only {quantity} units remaining."
+      },
+      "product_out_of_stock": {
+        "title": "Product out of stock",
+        "message": "Product \"{name}\" is out of stock."
+      },
+      "order_created": {
+        "title": "Order created",
+        "message": "Order {number} has been created."
+      },
+      "order_status_changed": {
+        "title": "Order status changed",
+        "message": "Order {number} is now {status}."
+      },
+      "order_received": {
+        "title": "Order received",
+        "message": "Order {number} has been received."
+      },
+      "expense_added": {
+        "title": "Expense added",
+        "message": "A new expense of {amount} {currency} has been added."
+      },
+      "expense_approved": {
+        "title": "Expense approved",
+        "message": "Expense of {amount} {currency} has been approved."
+      },
+      "expense_rejected": {
+        "title": "Expense rejected",
+        "message": "Expense of {amount} {currency} has been rejected."
+      },
+      "supplier_added": {
+        "title": "Supplier added",
+        "message": "Supplier \"{name}\" has been added successfully."
+      },
+      "payment_received": {
+        "title": "Payment received",
+        "message": "You have received a payment of {amount} {currency}."
+      },
+      "document_shared": {
+        "title": "Document shared",
+        "message": "Document {type} {number} has been shared."
+      },
+      "backup_completed": {
+        "title": "Backup completed",
+        "message": "Your data backup has been completed successfully."
+      },
+      "system_maintenance": {
+        "title": "System maintenance",
+        "message": "The system will be under maintenance on {date} from {time}."
+      },
+      "feature_announcement": {
+        "title": "New feature",
+        "message": "{message}"
+      },
+      "settings_updated": {
+        "title": "Settings updated",
+        "message": "Settings have been updated."
+      }
+    }
   }
 }
 

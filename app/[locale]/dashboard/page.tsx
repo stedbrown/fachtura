@@ -31,75 +31,16 @@ export default async function DashboardPage({
   const previousMonthStart = startOfMonth(subMonths(now, 1))
   const previousMonthEnd = endOfMonth(subMonths(now, 1))
 
-  // Fetch comprehensive statistics
+  // Fetch dashboard stats via secure function (not directly exposed via API)
+  const { data: dashboardStats } = await supabase
+    .rpc('get_user_dashboard_stats')
+    .single()
+
+  // Fetch detailed data for charts (only what's needed)
   const [
-    clientsCount,
-    quotesData,
-    invoicesData,
-    paidInvoices,
-    overdueInvoices,
-    currentMonthRevenue,
-    previousMonthRevenue,
     topClients,
     last12MonthsRevenue,
-    quotesByStatus
   ] = await Promise.all([
-    // Total clients
-    supabase
-      .from('clients')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', user.id)
-      .is('deleted_at', null),
-    
-    // All quotes
-    supabase
-      .from('quotes')
-      .select('status, total, created_at')
-      .eq('user_id', user.id)
-      .is('deleted_at', null),
-    
-    // All invoices
-    supabase
-      .from('invoices')
-      .select('status, total, date, due_date')
-      .eq('user_id', user.id)
-      .is('deleted_at', null),
-    
-    // Paid invoices total
-    supabase
-      .from('invoices')
-      .select('total')
-      .eq('user_id', user.id)
-      .eq('status', 'paid')
-      .is('deleted_at', null),
-    
-    // Overdue invoices (either status=overdue OR issued with past due_date)
-    supabase
-      .from('invoices')
-      .select('total, due_date, status')
-      .eq('user_id', user.id)
-      .is('deleted_at', null)
-      .or(`status.eq.overdue,and(status.eq.issued,due_date.lt.${now.toISOString()})`),
-    
-    // Current month revenue
-    supabase
-      .from('invoices')
-      .select('total')
-      .eq('user_id', user.id)
-      .eq('status', 'paid')
-      .gte('date', currentMonthStart.toISOString())
-      .is('deleted_at', null),
-    
-    // Previous month revenue
-    supabase
-      .from('invoices')
-      .select('total')
-      .eq('user_id', user.id)
-      .eq('status', 'paid')
-      .gte('date', previousMonthStart.toISOString())
-      .lte('date', previousMonthEnd.toISOString())
-      .is('deleted_at', null),
-    
     // Top 5 clients by revenue
     supabase
       .from('invoices')
@@ -116,20 +57,35 @@ export default async function DashboardPage({
       .eq('status', 'paid')
       .gte('date', subMonths(now, 11).toISOString())
       .is('deleted_at', null),
-    
-    // Quotes by status
-    supabase
-      .from('quotes')
-      .select('status')
-      .eq('user_id', user.id)
-      .is('deleted_at', null)
   ])
 
-  // Calculate totals
-  const totalRevenue = paidInvoices.data?.reduce((sum, inv) => sum + Number(inv.total), 0) || 0
-  const currentMonthTotal = currentMonthRevenue.data?.reduce((sum, inv) => sum + Number(inv.total), 0) || 0
-  const previousMonthTotal = previousMonthRevenue.data?.reduce((sum, inv) => sum + Number(inv.total), 0) || 0
-  const overdueTotal = overdueInvoices.data?.reduce((sum, inv) => sum + Number(inv.total), 0) || 0
+  // Extract values from secure function (much faster!)
+  const viewStats = dashboardStats || {
+    clients_count: 0,
+    total_quotes: 0,
+    quotes_draft: 0,
+    quotes_sent: 0,
+    quotes_accepted: 0,
+    quotes_rejected: 0,
+    total_invoices: 0,
+    invoices_draft: 0,
+    invoices_issued: 0,
+    invoices_paid: 0,
+    invoices_overdue: 0,
+    total_revenue: 0,
+    current_month_revenue: 0,
+    previous_month_revenue: 0,
+    overdue_total: 0,
+    products_count: 0,
+    total_orders: 0,
+    suppliers_count: 0,
+    expenses_count: 0,
+  }
+
+  const totalRevenue = Number(viewStats.total_revenue) || 0
+  const currentMonthTotal = Number(viewStats.current_month_revenue) || 0
+  const previousMonthTotal = Number(viewStats.previous_month_revenue) || 0
+  const overdueTotal = Number(viewStats.overdue_total) || 0
   
   // Calculate trends
   const revenueTrend = previousMonthTotal > 0 
@@ -161,20 +117,20 @@ export default async function DashboardPage({
   })
   const monthlyData = Array.from(monthlyRevenue.entries()).map(([month, total]) => ({ month, total }))
 
-  // Process quotes by status
+  // Process quotes by status (from materialized view)
   const quotesStats = {
-    accepted: quotesByStatus.data?.filter((q: any) => q.status === 'accepted').length || 0,
-    sent: quotesByStatus.data?.filter((q: any) => q.status === 'sent').length || 0,
-    rejected: quotesByStatus.data?.filter((q: any) => q.status === 'rejected').length || 0,
-    draft: quotesByStatus.data?.filter((q: any) => q.status === 'draft').length || 0,
+    accepted: viewStats.quotes_accepted || 0,
+    sent: viewStats.quotes_sent || 0,
+    rejected: viewStats.quotes_rejected || 0,
+    draft: viewStats.quotes_draft || 0,
   }
 
-  // Process invoices by status
+  // Process invoices by status (from materialized view)
   const invoicesStats = {
-    paid: invoicesData.data?.filter((inv: any) => inv.status === 'paid').length || 0,
-    issued: invoicesData.data?.filter((inv: any) => inv.status === 'issued' && new Date(inv.due_date) >= now).length || 0,
-    overdue: overdueInvoices.data?.length || 0,
-    draft: invoicesData.data?.filter((inv: any) => inv.status === 'draft').length || 0,
+    paid: viewStats.invoices_paid || 0,
+    issued: viewStats.invoices_issued || 0,
+    overdue: viewStats.invoices_overdue || 0,
+    draft: viewStats.invoices_draft || 0,
   }
 
   const stats: Array<{
@@ -198,7 +154,7 @@ export default async function DashboardPage({
     },
     {
       title: tNav('clients'),
-      value: clientsCount.count || 0,
+      value: viewStats.clients_count || 0,
       icon: 'Users',
       description: t('activeClients'),
       link: '/dashboard/clients',
@@ -210,14 +166,14 @@ export default async function DashboardPage({
       description: t('awaitingPayment'),
       link: '/dashboard/invoices?status=issued',
     },
-    {
-      title: t('overdueInvoices'),
-      value: invoicesStats.overdue,
-      icon: 'AlertCircle',
-      description: `CHF ${overdueTotal.toFixed(2)}`,
-      variant: overdueInvoices.data && overdueInvoices.data.length > 0 ? 'destructive' : 'default',
-      link: '/dashboard/invoices?status=overdue',
-    },
+      {
+        title: t('overdueInvoices'),
+        value: invoicesStats.overdue,
+        icon: 'AlertCircle',
+        description: `CHF ${overdueTotal.toFixed(2)}`,
+        variant: invoicesStats.overdue > 0 ? 'destructive' : 'default',
+        link: '/dashboard/invoices?status=overdue',
+      },
   ]
 
   return (

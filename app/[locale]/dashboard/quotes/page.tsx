@@ -40,6 +40,7 @@ import { safeAsync, safeSync, getSupabaseErrorMessage } from '@/lib/error-handle
 import { logger } from '@/lib/logger'
 import { useRowSelection } from '@/hooks/use-row-selection'
 import { TableCheckboxHeader, TableCheckboxCell } from '@/components/table/table-checkbox-column'
+import { PaginationControls } from '@/components/table/pagination-controls'
 
 const localeMap: Record<string, Locale> = {
   it: it,
@@ -77,6 +78,10 @@ export default function QuotesPage() {
   const [clients, setClients] = useState<{ id: string; name: string }[]>([])
   const [loading, setLoading] = useState(true)
   const [showArchived, setShowArchived] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize] = useState(50)
+  const [hasMore, setHasMore] = useState(true)
+  const [totalCount, setTotalCount] = useState<number | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [quoteToDelete, setQuoteToDelete] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -118,11 +123,12 @@ export default function QuotesPage() {
   )
 
   useEffect(() => {
-    loadQuotes()
+    setCurrentPage(1) // Reset to first page when filters change
+    loadQuotes(1)
     loadClients()
   }, [showArchived])
 
-  const loadQuotes = async () => {
+  const loadQuotes = async (page: number = currentPage) => {
     setLoading(true)
 
     const result = await safeAsync(async () => {
@@ -132,7 +138,7 @@ export default function QuotesPage() {
       } = await supabase.auth.getUser()
 
       if (!user) {
-        return [] as QuoteWithClient[]
+        return { data: [] as QuoteWithClient[], count: 0 }
       }
 
       let query = supabase
@@ -140,7 +146,7 @@ export default function QuotesPage() {
         .select(`
           *,
           client:clients(*)
-        `)
+        `, { count: 'exact' })
         .eq('user_id', user.id)
 
       if (showArchived) {
@@ -149,17 +155,28 @@ export default function QuotesPage() {
         query = query.is('deleted_at', null)
       }
 
-      const { data, error } = await query.order('created_at', { ascending: false })
+      const from = (page - 1) * pageSize
+      const to = from + pageSize - 1
+
+      const { data, error, count } = await query
+        .order('created_at', { ascending: false })
+        .range(from, to)
 
       if (error) {
         throw error
       }
 
-      return (data ?? []) as QuoteWithClient[]
+      return { 
+        data: (data ?? []) as QuoteWithClient[],
+        count: count ?? 0
+      }
     }, 'Error loading quotes')
 
     if (result.success) {
-      setQuotes(result.data)
+      setQuotes(result.data.data)
+      setTotalCount(result.data.count)
+      setHasMore(result.data.data.length === pageSize)
+      setCurrentPage(page)
     } else {
       toast.error(tCommon('error'), {
         description: result.details
@@ -396,7 +413,7 @@ export default function QuotesPage() {
     setQuoteToDelete(null)
 
     if (result.success) {
-      loadQuotes()
+      loadQuotes(currentPage)
     }
   }
 
@@ -880,6 +897,15 @@ export default function QuotesPage() {
                   </TableBody>
                 </Table>
               </div>
+              {/* Pagination Controls */}
+              <PaginationControls
+                page={currentPage}
+                pageSize={pageSize}
+                hasMore={hasMore}
+                totalCount={totalCount}
+                onPageChange={(page) => loadQuotes(page)}
+                loading={loading}
+              />
             </div>
           )}
         </CardContent>

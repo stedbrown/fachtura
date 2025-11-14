@@ -14,7 +14,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Eye, Trash2, Download, Archive, ArchiveRestore, FileText, Edit3, MoreHorizontal, Share2 } from 'lucide-react'
+import { Plus, Eye, Trash2, Download, Archive, ArchiveRestore, FileText, Edit3, MoreHorizontal, Share2, FileDown } from 'lucide-react'
 import { DeleteDialog } from '@/components/delete-dialog'
 import { SimpleColumnToggle, useColumnVisibility, type ColumnConfig } from '@/components/simple-column-toggle'
 import { SortableHeader, useSorting } from '@/components/sortable-header'
@@ -40,6 +40,8 @@ import { safeAsync, safeSync, getSupabaseErrorMessage } from '@/lib/error-handle
 import { logger } from '@/lib/logger'
 import { useRowSelection } from '@/hooks/use-row-selection'
 import { TableCheckboxHeader, TableCheckboxCell } from '@/components/table/table-checkbox-column'
+import { PaginationControls } from '@/components/table/pagination-controls'
+import { MultiSelectActionBar } from '@/components/table/multi-select-action-bar'
 
 const localeMap: Record<string, Locale> = {
   it: it,
@@ -78,6 +80,10 @@ export default function InvoicesPage() {
   const [clients, setClients] = useState<{ id: string; name: string }[]>([])
   const [loading, setLoading] = useState(true)
   const [showArchived, setShowArchived] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize] = useState(50)
+  const [hasMore, setHasMore] = useState(true)
+  const [totalCount, setTotalCount] = useState<number | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [invoiceToDelete, setInvoiceToDelete] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -128,6 +134,7 @@ export default function InvoicesPage() {
   }, [searchParams])
 
   useEffect(() => {
+    setCurrentPage(1) // Reset to first page when filters change
     updateOverdueInvoicesAndLoad()
   }, [showArchived])
 
@@ -148,10 +155,10 @@ export default function InvoicesPage() {
       })
     }
 
-    await Promise.all([loadInvoices(), loadClients()])
+    await Promise.all([loadInvoices(currentPage), loadClients()])
   }
 
-  const loadInvoices = async () => {
+  const loadInvoices = async (page: number = currentPage) => {
     setLoading(true)
 
     const result = await safeAsync(async () => {
@@ -161,15 +168,16 @@ export default function InvoicesPage() {
       } = await supabase.auth.getUser()
 
       if (!user) {
-        return [] as InvoiceWithClient[]
+        return { data: [] as InvoiceWithClient[], count: 0 }
       }
 
+      // Build base query
       let query = supabase
         .from('invoices')
         .select(`
           *,
           client:clients(*)
-        `)
+        `, { count: 'exact' })
         .eq('user_id', user.id)
 
       if (showArchived) {
@@ -178,17 +186,29 @@ export default function InvoicesPage() {
         query = query.is('deleted_at', null)
       }
 
-      const { data, error } = await query.order('created_at', { ascending: false })
+      // Apply pagination
+      const from = (page - 1) * pageSize
+      const to = from + pageSize - 1
+
+      const { data, error, count } = await query
+        .order('created_at', { ascending: false })
+        .range(from, to)
 
       if (error) {
         throw error
       }
 
-      return (data ?? []) as InvoiceWithClient[]
+      return { 
+        data: (data ?? []) as InvoiceWithClient[],
+        count: count ?? 0
+      }
     }, 'Error loading invoices')
 
     if (result.success) {
-      setInvoices(result.data)
+      setInvoices(result.data.data)
+      setTotalCount(result.data.count)
+      setHasMore(result.data.data.length === pageSize)
+      setCurrentPage(page)
     } else {
       toast.error(tCommon('error'), {
         description: result.details
@@ -394,6 +414,53 @@ export default function InvoicesPage() {
     }
   }
 
+  // Export selected invoices
+  const handleExportSelected = (exportFormat: 'csv' | 'excel') => {
+    if (rowSelection.selectedItems.length === 0) {
+      toast.error(tCommon('error'), {
+        description: 'Nessuna fattura selezionata',
+      })
+      return
+    }
+
+    // Prepare data for export from selected items
+    const exportData = rowSelection.selectedItems.map((invoice) => ({
+      [t('fields.invoiceNumber')]: invoice.invoice_number,
+      [t('fields.client')]: invoice.client.name,
+      [t('fields.date')]: formatDateForExport(invoice.date || ''),
+      [t('fields.dueDate')]: formatDateForExport(invoice.due_date || ''),
+      [tCommon('status')]: t(`status.${invoice.status}`),
+      [tCommon('subtotal')]: formatCurrencyForExport(invoice.subtotal),
+      [tCommon('tax')]: formatCurrencyForExport(invoice.tax_amount),
+      [tCommon('total')]: formatCurrencyForExport(invoice.total),
+    }))
+
+    const filename = `fatture_selezionate_${format(new Date(), 'yyyy-MM-dd')}`
+
+    const exportResult = safeSync(() => {
+      if (exportFormat === 'csv') {
+        exportFormattedToCSV(exportData, filename)
+      } else {
+        exportFormattedToExcel(exportData, filename)
+      }
+      return true
+    }, 'Error exporting selected invoices')
+
+    if (exportResult.success) {
+      toast.success('Export completato!', {
+        description: `${rowSelection.selectedCount} fatture esportate in ${exportFormat.toUpperCase()}`,
+      })
+      rowSelection.clearSelection()
+    } else {
+      toast.error(tCommon('error'), {
+        description:
+          exportResult.details
+            ? getSupabaseErrorMessage(exportResult.details)
+            : exportResult.error,
+      })
+    }
+  }
+
   const confirmDelete = (invoiceId: string) => {
     setInvoiceToDelete(invoiceId)
     setDeleteDialogOpen(true)
@@ -422,7 +489,7 @@ export default function InvoicesPage() {
     setInvoiceToDelete(null)
 
     if (result.success) {
-      loadInvoices()
+      loadInvoices(currentPage)
     } else {
       toast.error(tCommon('error'), {
         description: result.details
@@ -447,7 +514,7 @@ export default function InvoicesPage() {
     }, 'Error restoring invoice')
 
     if (result.success) {
-      loadInvoices()
+      loadInvoices(currentPage)
     } else {
       toast.error(tCommon('error'), {
         description: result.details
@@ -476,7 +543,7 @@ export default function InvoicesPage() {
     }, 'Error permanently deleting invoice')
 
     if (result.success) {
-      loadInvoices()
+      loadInvoices(currentPage)
     } else {
       toast.error(tCommon('error'), {
         description: result.details
@@ -690,50 +757,66 @@ export default function InvoicesPage() {
           </CardDescription>
         </CardHeader>
         {rowSelection.hasSelection && !showArchived && (
-          <div className="border-b bg-muted/30 px-4 py-3 flex items-center justify-between">
-            <div className="text-sm text-muted-foreground">
-              {rowSelection.selectedCount} {rowSelection.selectedCount === 1 ? tCommon('item') : tCommon('items')} {tCommon('selected')}
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
+          <MultiSelectActionBar
+            selectedCount={rowSelection.selectedCount}
+            onClear={rowSelection.clearSelection}
+            primaryAction={{
+              label: tCommon('delete'),
+              icon: Trash2,
+              variant: 'destructive',
+              onClick: () => {
+                const selectedIds = Array.from(rowSelection.selectedIds)
+                if (confirm(t('deleteInvoice') + ' ' + selectedIds.length + ' ' + tCommon('items') + '?')) {
+                  selectedIds.forEach((id) => {
+                    confirmDelete(id)
+                  })
+                  rowSelection.clearSelection()
+                }
+              },
+            }}
+            actions={[
+              {
+                label: tCommon('export'),
+                icon: FileDown,
+                subActions: [
+                  {
+                    label: `${tCommon('export')} CSV`,
+                    icon: FileText,
+                    onClick: () => handleExportSelected('csv'),
+                  },
+                  {
+                    label: `${tCommon('export')} Excel`,
+                    icon: FileText,
+                    onClick: () => handleExportSelected('excel'),
+                  },
+                ],
+              },
+              {
+                label: tCommon('download'),
+                icon: Download,
+                onClick: () => {
                   rowSelection.selectedItems.forEach((invoice) => {
                     handleDownloadPDF(invoice.id)
                   })
                   rowSelection.clearSelection()
-                }}
-              >
-                <Download className="h-4 w-4 mr-2" />
-                {tCommon('download')}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
+                },
+              },
+              {
+                label: tCommon('delete'),
+                icon: Trash2,
+                variant: 'destructive',
+                onClick: () => {
                   const selectedIds = Array.from(rowSelection.selectedIds)
                   if (confirm(t('deleteInvoice') + ' ' + selectedIds.length + ' ' + tCommon('items') + '?')) {
                     selectedIds.forEach((id) => {
                       confirmDelete(id)
                     })
+                    rowSelection.clearSelection()
                   }
-                  rowSelection.clearSelection()
-                }}
-                className="text-destructive hover:text-destructive"
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                {tCommon('delete')}
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={rowSelection.clearSelection}
-              >
-                {tCommon('clear')}
-              </Button>
-            </div>
-          </div>
+                },
+              },
+            ]}
+          />
         )}
         <CardContent>
           {loading ? (
@@ -928,6 +1011,15 @@ export default function InvoicesPage() {
                   </TableBody>
                 </Table>
               </div>
+              {/* Pagination Controls */}
+              <PaginationControls
+                page={currentPage}
+                pageSize={pageSize}
+                hasMore={hasMore}
+                totalCount={totalCount}
+                onPageChange={(page) => loadInvoices(page)}
+                loading={loading}
+              />
             </div>
           )}
         </CardContent>

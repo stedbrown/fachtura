@@ -144,9 +144,17 @@
     "create": "Crea",
     "back": "Indietro",
     "next": "Avanti",
+    "previous": "Precedente",
     "close": "Chiudi",
     "search": "Cerca",
     "noResults": "Nessun risultato trovato",
+    "page": "Pagina",
+    "firstPage": "Prima pagina",
+    "lastPage": "Ultima pagina",
+    "moreActions": "Altre azioni",
+    "showing": "Mostrando {start} - {end} di {total} risultati",
+    "showingRange": "Mostrando {start} - {end}",
+    "ofMore": "di più...",
     "filter": "Filtra",
     "export": "Esporta",
     "import": "Importa",
@@ -229,9 +237,138 @@
     "suppliers": "Fornitori",
     "expenses": "Spese",
     "assistant": "Assistente AI",
+    "notifications": "Notifiche",
     "subscription": "Abbonamenti",
     "profile": "Profilo",
     "settings": "Impostazioni"
+  },
+  "notifications": {
+    "title": "Notifiche",
+    "description": "Gestisci tutte le tue notifiche",
+    "notifications": "Notifiche",
+    "all": "Tutte",
+    "unread": "Non lette",
+    "archived": "Archiviate",
+    "new": "Nuova",
+    "loading": "Caricamento...",
+    "noNotifications": "Nessuna notifica",
+    "search": "Cerca...",
+    "priority": "Priorità",
+    "type": "Tipo",
+    "markAllRead": "Segna tutte lette",
+    "archiveOld": "Archivia vecchie",
+    "archiveOldSuccess": "{count} notifiche archiviate",
+    "archiveOldInfo": "Nessuna notifica da archiviare",
+    "types": {
+      "client_added": {
+        "title": "Nuovo cliente aggiunto",
+        "message": "Il cliente \"{name}\" è stato aggiunto con successo."
+      },
+      "quote_sent": {
+        "title": "Preventivo inviato",
+        "message": "Il preventivo {number} è stato inviato."
+      },
+      "quote_accepted": {
+        "title": "Preventivo accettato",
+        "message": "Il preventivo {number} di {total} CHF è stato accettato!"
+      },
+      "quote_rejected": {
+        "title": "Preventivo rifiutato",
+        "message": "Il preventivo {number} è stato rifiutato."
+      },
+      "invoice_issued": {
+        "title": "Fattura emessa",
+        "message": "La fattura {number} è stata emessa."
+      },
+      "invoice_paid": {
+        "title": "Fattura pagata",
+        "message": "La fattura {number} di {total} CHF è stata pagata!"
+      },
+      "invoice_overdue": {
+        "title": "Fattura scaduta",
+        "message": "La fattura {number} di {total} CHF è scaduta!"
+      },
+      "subscription_limit_reached": {
+        "title": "Limite abbonamento raggiunto",
+        "message": "Hai raggiunto il limite di {max} {resource} del piano {plan}."
+      },
+      "subscription_limit_warning": {
+        "title": "Avviso limite abbonamento",
+        "message": "Hai utilizzato {percentage}% del limite di {resource} ({current}/{max})."
+      },
+      "subscription_expiring": {
+        "title": "Abbonamento in scadenza",
+        "message": "Il tuo abbonamento scade il {date}."
+      },
+      "subscription_upgraded": {
+        "title": "Abbonamento aggiornato",
+        "message": "Il tuo abbonamento è stato aggiornato al piano {plan}."
+      },
+      "subscription_downgraded": {
+        "title": "Abbonamento ridotto",
+        "message": "Il tuo abbonamento è stato ridotto al piano {plan}."
+      },
+      "product_low_stock": {
+        "title": "Prodotto in esaurimento",
+        "message": "Il prodotto \"{name}\" ha solo {quantity} unità rimaste."
+      },
+      "product_out_of_stock": {
+        "title": "Prodotto esaurito",
+        "message": "Il prodotto \"{name}\" è esaurito."
+      },
+      "order_created": {
+        "title": "Ordine creato",
+        "message": "L'ordine {number} è stato creato."
+      },
+      "order_status_changed": {
+        "title": "Stato ordine cambiato",
+        "message": "L'ordine {number} è ora {status}."
+      },
+      "order_received": {
+        "title": "Ordine ricevuto",
+        "message": "L'ordine {number} è stato ricevuto."
+      },
+      "expense_added": {
+        "title": "Spesa aggiunta",
+        "message": "Una nuova spesa di {amount} {currency} è stata aggiunta."
+      },
+      "expense_approved": {
+        "title": "Spesa approvata",
+        "message": "La spesa di {amount} {currency} è stata approvata."
+      },
+      "expense_rejected": {
+        "title": "Spesa rifiutata",
+        "message": "La spesa di {amount} {currency} è stata rifiutata."
+      },
+      "supplier_added": {
+        "title": "Fornitore aggiunto",
+        "message": "Il fornitore \"{name}\" è stato aggiunto con successo."
+      },
+      "payment_received": {
+        "title": "Pagamento ricevuto",
+        "message": "Hai ricevuto un pagamento di {amount} {currency}."
+      },
+      "document_shared": {
+        "title": "Documento condiviso",
+        "message": "Il documento {type} {number} è stato condiviso."
+      },
+      "backup_completed": {
+        "title": "Backup completato",
+        "message": "Il backup dei tuoi dati è stato completato con successo."
+      },
+      "system_maintenance": {
+        "title": "Manutenzione sistema",
+        "message": "Il sistema sarà in manutenzione il {date} dalle {time}."
+      },
+      "feature_announcement": {
+        "title": "Nuova funzionalità",
+        "message": "{message}"
+      },
+      "settings_updated": {
+        "title": "Impostazioni aggiornate",
+        "message": "Le impostazioni sono state aggiornate."
+      }
+    }
   },
   "dashboard": {
     "title": "Dashboard",

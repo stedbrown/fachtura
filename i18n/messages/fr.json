@@ -143,9 +143,17 @@
     "create": "Créer",
     "back": "Retour",
     "next": "Suivant",
+    "previous": "Précédent",
     "close": "Fermer",
     "search": "Rechercher",
     "noResults": "Aucun résultat trouvé",
+    "page": "Page",
+    "firstPage": "Première page",
+    "lastPage": "Dernière page",
+    "moreActions": "Plus d'actions",
+    "showing": "Affichage de {start} - {end} sur {total} résultats",
+    "showingRange": "Affichage de {start} - {end}",
+    "ofMore": "de plus...",
     "filter": "Filtrer",
     "export": "Exporter",
     "import": "Importer",
@@ -166,6 +174,9 @@
     "invoices": "factures",
     "clear": "Effacer",
     "clearFilters": "Effacer les filtres",
+    "selected": "sélectionné",
+    "item": "élément",
+    "items": "éléments",
     "from": "De",
     "to": "À",
     "select": "Sélectionner",
@@ -1099,6 +1110,134 @@
     "statistics": "Statistiques",
     "order": "commande",
     "orders": "commandes"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "description": "Gérez toutes vos notifications",
+    "notifications": "Notifications",
+    "all": "Toutes",
+    "unread": "Non lues",
+    "archived": "Archivées",
+    "new": "Nouvelle",
+    "loading": "Chargement...",
+    "noNotifications": "Aucune notification",
+    "search": "Rechercher...",
+    "priority": "Priorité",
+    "type": "Type",
+    "markAllRead": "Tout marquer comme lu",
+    "archiveOld": "Archiver les anciennes",
+    "archiveOldSuccess": "{count} notifications archivées",
+    "archiveOldInfo": "Aucune notification à archiver",
+    "types": {
+      "client_added": {
+        "title": "Nouveau client ajouté",
+        "message": "Le client \"{name}\" a été ajouté avec succès."
+      },
+      "quote_sent": {
+        "title": "Devis envoyé",
+        "message": "Le devis {number} a été envoyé."
+      },
+      "quote_accepted": {
+        "title": "Devis accepté",
+        "message": "Le devis {number} de {total} CHF a été accepté!"
+      },
+      "quote_rejected": {
+        "title": "Devis rejeté",
+        "message": "Le devis {number} a été rejeté."
+      },
+      "invoice_issued": {
+        "title": "Facture émise",
+        "message": "La facture {number} a été émise."
+      },
+      "invoice_paid": {
+        "title": "Facture payée",
+        "message": "La facture {number} de {total} CHF a été payée!"
+      },
+      "invoice_overdue": {
+        "title": "Facture en retard",
+        "message": "La facture {number} de {total} CHF est en retard!"
+      },
+      "subscription_limit_reached": {
+        "title": "Limite d'abonnement atteinte",
+        "message": "Vous avez atteint la limite de {max} {resource} pour le plan {plan}."
+      },
+      "subscription_limit_warning": {
+        "title": "Avertissement limite d'abonnement",
+        "message": "Vous avez utilisé {percentage}% de la limite de {resource} ({current}/{max})."
+      },
+      "subscription_expiring": {
+        "title": "Abonnement expirant",
+        "message": "Votre abonnement expire le {date}."
+      },
+      "subscription_upgraded": {
+        "title": "Abonnement amélioré",
+        "message": "Votre abonnement a été amélioré au plan {plan}."
+      },
+      "subscription_downgraded": {
+        "title": "Abonnement réduit",
+        "message": "Votre abonnement a été réduit au plan {plan}."
+      },
+      "product_low_stock": {
+        "title": "Produit en rupture de stock",
+        "message": "Le produit \"{name}\" n'a plus que {quantity} unités."
+      },
+      "product_out_of_stock": {
+        "title": "Produit épuisé",
+        "message": "Le produit \"{name}\" est épuisé."
+      },
+      "order_created": {
+        "title": "Commande créée",
+        "message": "La commande {number} a été créée."
+      },
+      "order_status_changed": {
+        "title": "Statut de commande modifié",
+        "message": "La commande {number} est maintenant {status}."
+      },
+      "order_received": {
+        "title": "Commande reçue",
+        "message": "La commande {number} a été reçue."
+      },
+      "expense_added": {
+        "title": "Dépense ajoutée",
+        "message": "Une nouvelle dépense de {amount} {currency} a été ajoutée."
+      },
+      "expense_approved": {
+        "title": "Dépense approuvée",
+        "message": "La dépense de {amount} {currency} a été approuvée."
+      },
+      "expense_rejected": {
+        "title": "Dépense rejetée",
+        "message": "La dépense de {amount} {currency} a été rejetée."
+      },
+      "supplier_added": {
+        "title": "Fournisseur ajouté",
+        "message": "Le fournisseur \"{name}\" a été ajouté avec succès."
+      },
+      "payment_received": {
+        "title": "Paiement reçu",
+        "message": "Vous avez reçu un paiement de {amount} {currency}."
+      },
+      "document_shared": {
+        "title": "Document partagé",
+        "message": "Le document {type} {number} a été partagé."
+      },
+      "backup_completed": {
+        "title": "Sauvegarde terminée",
+        "message": "Votre sauvegarde de données a été terminée avec succès."
+      },
+      "system_maintenance": {
+        "title": "Maintenance système",
+        "message": "Le système sera en maintenance le {date} à partir de {time}."
+      },
+      "feature_announcement": {
+        "title": "Nouvelle fonctionnalité",
+        "message": "{message}"
+      },
+      "settings_updated": {
+        "title": "Paramètres mis à jour",
+        "message": "Les paramètres ont été mis à jour."
+      }
+    }
   }
 }
 

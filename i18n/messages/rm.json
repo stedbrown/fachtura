@@ -143,9 +143,17 @@
     "create": "Crear",
     "back": "Enavos",
     "next": "Vinavant",
+    "previous": "Precedent",
     "close": "Serrar",
     "search": "Tschertgar",
     "noResults": "Nagins resultats chattads",
+    "page": "Pagina",
+    "firstPage": "Emprima pagina",
+    "lastPage": "Ultima pagina",
+    "moreActions": "Dapli acziuns",
+    "showing": "Mussar {start} - {end} da {total} resultats",
+    "showingRange": "Mussar {start} - {end}",
+    "ofMore": "da dapli...",
     "filter": "Filtrar",
     "export": "Exportar",
     "import": "Importar",
@@ -166,6 +174,9 @@
     "invoices": "facturas",
     "clear": "Stizzar",
     "clearFilters": "Stizzar filters",
+    "selected": "selecziunà",
+    "item": "element",
+    "items": "elements",
     "from": "Da",
     "to": "Fin",
     "select": "Selecziunar",
@@ -840,7 +851,6 @@
     "detail": "Detagls dal product",
     "notFound": "Product betg chattà",
     "information": "Infurmaziuns",
-    "inventory": "Inventari",
     "lowStockWarning": "Attenziun: la rezerva è bassa!"
   },
   "orders": {
@@ -1098,6 +1108,134 @@
     "statistics": "Statisticas",
     "order": "ordinaziun",
     "orders": "ordinaziuns"
+  },
+  "notifications": {
+    "title": "Notificaziuns",
+    "description": "Administrar tuttas vossas notificaziuns",
+    "notifications": "Notificaziuns",
+    "all": "Tuttas",
+    "unread": "Betg legidas",
+    "archived": "Archivadas",
+    "new": "Nova",
+    "loading": "Chargiar...",
+    "noNotifications": "Naginas notificaziuns",
+    "search": "Tschertgar...",
+    "priority": "Prioritad",
+    "type": "Tip",
+    "markAllRead": "Marcar tuttas sco legidas",
+    "archiveOld": "Archivar veglias",
+    "archiveOldSuccess": "{count} notificaziuns archivadas",
+    "archiveOldInfo": "Naginas notificaziuns per archivar",
+    "types": {
+      "client_added": {
+        "title": "Nov client agiuntà",
+        "message": "Il client \"{name}\" è vegnì agiuntà cun success."
+      },
+      "quote_sent": {
+        "title": "Offerta tramessa",
+        "message": "L'offerta {number} è vegnida tramessa."
+      },
+      "quote_accepted": {
+        "title": "Offerta acceptada",
+        "message": "L'offerta {number} da {total} CHF è vegnida acceptada!"
+      },
+      "quote_rejected": {
+        "title": "Offerta refusada",
+        "message": "L'offerta {number} è vegnida refusada."
+      },
+      "invoice_issued": {
+        "title": "Factura emessa",
+        "message": "La factura {number} è vegnida emessa."
+      },
+      "invoice_paid": {
+        "title": "Factura pajada",
+        "message": "La factura {number} da {total} CHF è vegnida pajada!"
+      },
+      "invoice_overdue": {
+        "title": "Factura scadida",
+        "message": "La factura {number} da {total} CHF è scadida!"
+      },
+      "subscription_limit_reached": {
+        "title": "Limita d'abunament cuntanschida",
+        "message": "Vus avais cuntanschì la limita da {max} {resource} dal plan {plan}."
+      },
+      "subscription_limit_warning": {
+        "title": "Avertiment limita d'abunament",
+        "message": "Vus avais duvrà {percentage}% da la limita da {resource} ({current}/{max})."
+      },
+      "subscription_expiring": {
+        "title": "Abunament che scada",
+        "message": "Voss abunament scada il {date}."
+      },
+      "subscription_upgraded": {
+        "title": "Abunament actualisà",
+        "message": "Voss abunament è vegnì actualisà al plan {plan}."
+      },
+      "subscription_downgraded": {
+        "title": "Abunament reducì",
+        "message": "Voss abunament è vegnì reducì al plan {plan}."
+      },
+      "product_low_stock": {
+        "title": "Product en mancanza",
+        "message": "Il product \"{name}\" ha mo {quantity} unitads restantas."
+      },
+      "product_out_of_stock": {
+        "title": "Product esaurì",
+        "message": "Il product \"{name}\" è esaurì."
+      },
+      "order_created": {
+        "title": "Ordinaziun creada",
+        "message": "L'ordinaziun {number} è vegnida creada."
+      },
+      "order_status_changed": {
+        "title": "Status d'ordinaziun midà",
+        "message": "L'ordinaziun {number} è ussa {status}."
+      },
+      "order_received": {
+        "title": "Ordinaziun retschavida",
+        "message": "L'ordinaziun {number} è vegnida retschavida."
+      },
+      "expense_added": {
+        "title": "Spesa agiuntada",
+        "message": "Ina nova spesa da {amount} {currency} è vegnida agiuntada."
+      },
+      "expense_approved": {
+        "title": "Spesa approvada",
+        "message": "La spesa da {amount} {currency} è vegnida approvada."
+      },
+      "expense_rejected": {
+        "title": "Spesa refusada",
+        "message": "La spesa da {amount} {currency} è vegnida refusada."
+      },
+      "supplier_added": {
+        "title": "Furnider agiuntà",
+        "message": "Il furnider \"{name}\" è vegnì agiuntà cun success."
+      },
+      "payment_received": {
+        "title": "Pagament retschavì",
+        "message": "Vus avais retschavì in pagament da {amount} {currency}."
+      },
+      "document_shared": {
+        "title": "Document partagà",
+        "message": "Il document {type} {number} è vegnì partagà."
+      },
+      "backup_completed": {
+        "title": "Backup terminà",
+        "message": "Voss backup da datas è vegnì terminà cun success."
+      },
+      "system_maintenance": {
+        "title": "Manutenziun dal sistem",
+        "message": "Il sistem vegn mantegnì il {date} da {time}."
+      },
+      "feature_announcement": {
+        "title": "Nova funcziunalitad",
+        "message": "{message}"
+      },
+      "settings_updated": {
+        "title": "Parameters actualisads",
+        "message": "Ils parameters èn vegnids actualisads."
+      }
+    }
   }
 }
 

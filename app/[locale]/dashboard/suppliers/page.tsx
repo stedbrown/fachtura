@@ -31,6 +31,7 @@ import { safeAsync, safeSync, getSupabaseErrorMessage } from '@/lib/error-handle
 import { logger } from '@/lib/logger'
 import { useRowSelection } from '@/hooks/use-row-selection'
 import { TableCheckboxHeader, TableCheckboxCell } from '@/components/table/table-checkbox-column'
+import { PaginationControls } from '@/components/table/pagination-controls'
 import {
   Tooltip,
   TooltipContent,
@@ -56,6 +57,10 @@ export default function SuppliersPage() {
   const [suppliers, setSuppliers] = useState<Supplier[]>([])
   const [loading, setLoading] = useState(true)
   const [showArchived, setShowArchived] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize] = useState(50)
+  const [hasMore, setHasMore] = useState(true)
+  const [totalCount, setTotalCount] = useState<number | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [supplierToDelete, setSupplierToDelete] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -98,7 +103,8 @@ export default function SuppliersPage() {
   )
 
   useEffect(() => {
-    loadSuppliers()
+    setCurrentPage(1) // Reset to first page when filters change
+    loadSuppliers(1)
   }, [showArchived])
 
   // Sorting
@@ -111,7 +117,7 @@ export default function SuppliersPage() {
   // Row selection
   const rowSelection = useRowSelection(sortedSuppliers)
 
-  async function loadSuppliers() {
+  async function loadSuppliers(page: number = currentPage) {
     setLoading(true)
 
     const result = await safeAsync(async () => {
@@ -122,14 +128,13 @@ export default function SuppliersPage() {
 
       if (!user) {
         router.push(`/${locale}/auth/login`)
-        return [] as Supplier[]
+        return { data: [] as Supplier[], count: 0 }
       }
 
       let query = supabase
         .from('suppliers')
-        .select('*')
+        .select('*', { count: 'exact' })
         .eq('user_id', user.id)
-        .order('name')
 
       if (showArchived) {
         query = query.not('deleted_at', 'is', null)
@@ -137,17 +142,28 @@ export default function SuppliersPage() {
         query = query.is('deleted_at', null)
       }
 
-      const { data, error } = await query
+      const from = (page - 1) * pageSize
+      const to = from + pageSize - 1
+
+      const { data, error, count } = await query
+        .order('name')
+        .range(from, to)
 
       if (error) {
         throw error
       }
 
-      return data ?? []
+      return { 
+        data: data ?? [],
+        count: count ?? 0
+      }
     }, 'Error loading suppliers')
 
     if (result.success) {
-      setSuppliers(result.data)
+      setSuppliers(result.data.data)
+      setTotalCount(result.data.count)
+      setHasMore(result.data.data.length === pageSize)
+      setCurrentPage(page)
     } else {
       logger.error('Error loading suppliers', result.details)
       toast.error(t('loadError') || tCommon('error'), {
@@ -252,7 +268,7 @@ export default function SuppliersPage() {
       )
       setDialogOpen(false)
       setSelectedSupplier(null)
-      loadSuppliers()
+      loadSuppliers(currentPage)
     } else {
       logger.error('Error saving supplier', result.details, { supplierId: selectedSupplier?.id })
       toast.error(selectedSupplier ? t('updateError') || tCommon('error') : t('createError') || tCommon('error'), {
@@ -290,7 +306,7 @@ export default function SuppliersPage() {
 
     if (result.success) {
       toast.success(t('deleteSuccess') || 'Fornitore archiviato con successo')
-      loadSuppliers()
+      loadSuppliers(currentPage)
     } else {
       logger.error('Error archiving supplier', result.details, { supplierId: supplierToDelete })
       toast.error(t('deleteError') || tCommon('error'), {
@@ -315,7 +331,7 @@ export default function SuppliersPage() {
 
     if (result.success) {
       toast.success(t('restoreSuccess') || 'Fornitore ripristinato con successo')
-      loadSuppliers()
+      loadSuppliers(currentPage)
     } else {
       logger.error('Error restoring supplier', result.details, { supplierId })
       toast.error(t('restoreError') || tCommon('error'), {
@@ -337,7 +353,7 @@ export default function SuppliersPage() {
 
     if (result.success) {
       toast.success(t('permanentDeleteSuccess') || 'Fornitore eliminato definitivamente')
-      loadSuppliers()
+      loadSuppliers(currentPage)
     } else {
       logger.error('Error permanently deleting supplier', result.details, { supplierId })
       toast.error(t('permanentDeleteError') || tCommon('error'), {
@@ -619,6 +635,15 @@ export default function SuppliersPage() {
                   </TableBody>
                 </Table>
               </div>
+              {/* Pagination Controls */}
+              <PaginationControls
+                page={currentPage}
+                pageSize={pageSize}
+                hasMore={hasMore}
+                totalCount={totalCount}
+                onPageChange={(page) => loadSuppliers(page)}
+                loading={loading}
+              />
             </div>
           )}
         </CardContent>

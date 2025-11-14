@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
 
 export interface SubscriptionPlan {
@@ -66,18 +66,20 @@ const normalizeSubscription = (
 });
 
 export function useSubscription() {
-  const [subscription, setSubscription] = useState<UserSubscription | null>(null);
-  const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    const fetchSubscription = async () => {
+  // Fetch subscription with caching
+  const {
+    data: subscription,
+    isLoading: subscriptionLoading,
+  } = useQuery({
+    queryKey: ['subscription'],
+    queryFn: async () => {
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
 
       if (!user) {
-        setLoading(false);
-        return;
+        return null;
       }
 
       // Carica il piano corrente dell'utente
@@ -91,7 +93,7 @@ export function useSubscription() {
         .single();
 
       if (subData) {
-        setSubscription(normalizeSubscription(subData as SupabaseSubscription));
+        return normalizeSubscription(subData as SupabaseSubscription);
       } else {
         // Se non c'è abbonamento, crea uno con piano Free
         const { data: freePlan } = await supabase
@@ -115,29 +117,38 @@ export function useSubscription() {
             .single();
 
           if (newSub) {
-            setSubscription(
-              normalizeSubscription(newSub as SupabaseSubscription)
-            );
+            return normalizeSubscription(newSub as SupabaseSubscription);
           }
         }
       }
 
-      // Carica tutti i piani disponibili
+      return null;
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
+  });
+
+  // Fetch plans with caching
+  const {
+    data: plans = [],
+    isLoading: plansLoading,
+  } = useQuery({
+    queryKey: ['subscription-plans'],
+    queryFn: async () => {
+      const supabase = createClient();
       const { data: plansData } = await supabase
         .from('subscription_plans')
         .select('*')
         .eq('is_active', true)
         .order('price', { ascending: true });
 
-      if (plansData) {
-        setPlans(plansData);
-      }
+      return plansData || [];
+    },
+    staleTime: 30 * 60 * 1000, // 30 minutes (plans change rarely)
+    gcTime: 60 * 60 * 1000, // 1 hour
+  });
 
-      setLoading(false);
-    };
-
-    fetchSubscription();
-  }, []);
+  const loading = subscriptionLoading || plansLoading;
 
   const checkLimits = async (resourceType: 'invoice' | 'quote' | 'client' | 'product' | 'order' | 'supplier' | 'expense'): Promise<UsageLimits> => {
     try {
@@ -153,7 +164,12 @@ export function useSubscription() {
         throw new Error('Failed to check limits');
       }
 
-      return await response.json();
+      const result = await response.json();
+      
+      // Invalidate subscription cache if limits changed
+      queryClient.invalidateQueries({ queryKey: ['subscription'] });
+      
+      return result;
     } catch (error) {
       console.error('Error checking limits:', error);
       return {
@@ -212,13 +228,19 @@ export function useSubscription() {
     }
   };
 
+  // Mutation to refresh subscription after changes
+  const refreshSubscription = () => {
+    queryClient.invalidateQueries({ queryKey: ['subscription'] });
+  };
+
   return {
-    subscription,
+    subscription: subscription ?? null,
     plans,
     loading,
     checkLimits,
     createCheckoutSession,
     openCustomerPortal,
+    refreshSubscription,
   };
 }
 

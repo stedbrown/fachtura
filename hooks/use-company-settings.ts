@@ -1,4 +1,6 @@
-import { useEffect, useState } from 'react'
+'use client'
+
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { createClient } from '@/lib/supabase/client'
 
 export interface CompanySettingsStatus {
@@ -10,83 +12,93 @@ export interface CompanySettingsStatus {
 }
 
 export function useCompanySettings() {
-  const [status, setStatus] = useState<CompanySettingsStatus>({
-    hasSettings: false,
-    hasIBAN: false,
-    hasRequiredFields: false,
-    isLoading: true,
-    settings: null,
+  const queryClient = useQueryClient()
+
+  const {
+    data: status,
+    isLoading,
+  } = useQuery({
+    queryKey: ['company-settings'],
+    queryFn: async (): Promise<CompanySettingsStatus> => {
+      try {
+        const supabase = createClient()
+        const {
+          data: { user },
+        } = await supabase.auth.getUser()
+
+        if (!user) {
+          return {
+            hasSettings: false,
+            hasIBAN: false,
+            hasRequiredFields: false,
+            isLoading: false,
+            settings: null,
+          }
+        }
+
+        const { data: settings } = await supabase
+          .from('company_settings')
+          .select('*')
+          .eq('user_id', user.id)
+          .single()
+
+        if (!settings) {
+          return {
+            hasSettings: false,
+            hasIBAN: false,
+            hasRequiredFields: false,
+            isLoading: false,
+            settings: null,
+          }
+        }
+
+        // Check required fields for QR code
+        const hasIBAN = Boolean(settings.iban && settings.iban.trim())
+        const hasRequiredFields = Boolean(
+          settings.company_name &&
+          settings.address &&
+          settings.city &&
+          settings.postal_code &&
+          settings.country &&
+          hasIBAN
+        )
+
+        return {
+          hasSettings: true,
+          hasIBAN,
+          hasRequiredFields,
+          isLoading: false,
+          settings,
+        }
+      } catch (error) {
+        console.error('Error checking company settings:', error)
+        return {
+          hasSettings: false,
+          hasIBAN: false,
+          hasRequiredFields: false,
+          isLoading: false,
+          settings: null,
+        }
+      }
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes
   })
 
-  useEffect(() => {
-    checkSettings()
-  }, [])
-
-  const checkSettings = async () => {
-    try {
-      const supabase = createClient()
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-
-      if (!user) {
-        setStatus({
-          hasSettings: false,
-          hasIBAN: false,
-          hasRequiredFields: false,
-          isLoading: false,
-          settings: null,
-        })
-        return
-      }
-
-      const { data: settings } = await supabase
-        .from('company_settings')
-        .select('*')
-        .eq('user_id', user.id)
-        .single()
-
-      if (!settings) {
-        setStatus({
-          hasSettings: false,
-          hasIBAN: false,
-          hasRequiredFields: false,
-          isLoading: false,
-          settings: null,
-        })
-        return
-      }
-
-      // Check required fields for QR code
-      const hasIBAN = Boolean(settings.iban && settings.iban.trim())
-      const hasRequiredFields = Boolean(
-        settings.company_name &&
-        settings.address &&
-        settings.city &&
-        settings.postal_code &&
-        settings.country &&
-        hasIBAN
-      )
-
-      setStatus({
-        hasSettings: true,
-        hasIBAN,
-        hasRequiredFields,
-        isLoading: false,
-        settings,
-      })
-    } catch (error) {
-      console.error('Error checking company settings:', error)
-      setStatus({
-        hasSettings: false,
-        hasIBAN: false,
-        hasRequiredFields: false,
-        isLoading: false,
-        settings: null,
-      })
-    }
+  const refetch = () => {
+    queryClient.invalidateQueries({ queryKey: ['company-settings'] })
   }
 
-  return { ...status, refetch: checkSettings }
+  return {
+    ...(status ?? {
+      hasSettings: false,
+      hasIBAN: false,
+      hasRequiredFields: false,
+      isLoading: true,
+      settings: null,
+    }),
+    isLoading,
+    refetch,
+  }
 }
 

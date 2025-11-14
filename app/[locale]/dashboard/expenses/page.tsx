@@ -32,6 +32,7 @@ import { logger } from '@/lib/logger'
 import { safeAsync, safeSync, getSupabaseErrorMessage } from '@/lib/error-handler'
 import { useRowSelection } from '@/hooks/use-row-selection'
 import { TableCheckboxHeader, TableCheckboxCell } from '@/components/table/table-checkbox-column'
+import { PaginationControls } from '@/components/table/pagination-controls'
 import {
   Tooltip,
   TooltipContent,
@@ -81,6 +82,10 @@ export default function ExpensesPage() {
   const [expenses, setExpenses] = useState<ExpenseWithSupplier[]>([])
   const [loading, setLoading] = useState(true)
   const [showArchived, setShowArchived] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize] = useState(50)
+  const [hasMore, setHasMore] = useState(true)
+  const [totalCount, setTotalCount] = useState<number | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [expenseToDelete, setExpenseToDelete] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -127,7 +132,8 @@ export default function ExpensesPage() {
   )
 
   useEffect(() => {
-    loadExpenses()
+    setCurrentPage(1) // Reset to first page when filters change
+    loadExpenses(1)
   }, [showArchived])
 
   // Sorting
@@ -137,7 +143,7 @@ export default function ExpensesPage() {
     'desc'
   )
 
-  async function loadExpenses() {
+  async function loadExpenses(page: number = currentPage) {
     setLoading(true)
 
     const result = await safeAsync(async () => {
@@ -148,7 +154,7 @@ export default function ExpensesPage() {
 
       if (!user) {
         router.push(`/${locale}/auth/login`)
-        return [] as ExpenseWithSupplier[]
+        return { data: [] as ExpenseWithSupplier[], count: 0 }
       }
 
       let query = supabase
@@ -156,9 +162,8 @@ export default function ExpensesPage() {
         .select(`
           *,
           supplier:suppliers(*)
-        `)
+        `, { count: 'exact' })
         .eq('user_id', user.id)
-        .order('expense_date', { ascending: false })
 
       if (showArchived) {
         query = query.not('deleted_at', 'is', null)
@@ -166,17 +171,28 @@ export default function ExpensesPage() {
         query = query.is('deleted_at', null)
       }
 
-      const { data, error } = await query
+      const from = (page - 1) * pageSize
+      const to = from + pageSize - 1
+
+      const { data, error, count } = await query
+        .order('expense_date', { ascending: false })
+        .range(from, to)
 
       if (error) {
         throw error
       }
 
-      return data ?? []
+      return { 
+        data: data ?? [],
+        count: count ?? 0
+      }
     }, 'Error loading expenses')
 
     if (result.success) {
-      setExpenses(result.data)
+      setExpenses(result.data.data)
+      setTotalCount(result.data.count)
+      setHasMore(result.data.data.length === pageSize)
+      setCurrentPage(page)
     } else {
       logger.error('Error loading expenses', result.details)
       toast.error(t('loadError') || tCommon('error'), {
@@ -239,7 +255,7 @@ export default function ExpensesPage() {
 
     if (result.success) {
       toast.success(t('deleteSuccess') || tCommon('success'))
-      loadExpenses()
+      loadExpenses(currentPage)
     } else {
       logger.error('Error deleting expense', result.details, { expenseId: id })
       toast.error(t('deleteError') || tCommon('error'), {
@@ -264,7 +280,7 @@ export default function ExpensesPage() {
 
     if (result.success) {
       toast.success(t('restoreSuccess') || tCommon('success'))
-      loadExpenses()
+      loadExpenses(currentPage)
     } else {
       logger.error('Error restoring expense', result.details, { expenseId: id })
       toast.error(t('restoreError') || tCommon('error'), {
@@ -286,7 +302,7 @@ export default function ExpensesPage() {
 
     if (result.success) {
       toast.success(t('permanentDeleteSuccess') || tCommon('success'))
-      loadExpenses()
+      loadExpenses(currentPage)
     } else {
       logger.error('Error permanently deleting expense', result.details, { expenseId: id })
       toast.error(t('permanentDeleteError') || tCommon('error'), {
@@ -649,11 +665,20 @@ export default function ExpensesPage() {
                     ))}
                   </TableBody>
                 </Table>
-                </div>
               </div>
-            )}
-          </CardContent>
-        </Card>
+              {/* Pagination Controls */}
+              <PaginationControls
+                page={currentPage}
+                pageSize={pageSize}
+                hasMore={hasMore}
+                totalCount={totalCount}
+                onPageChange={(page) => loadExpenses(page)}
+                loading={loading}
+              />
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <DeleteDialog
         open={deleteDialogOpen}

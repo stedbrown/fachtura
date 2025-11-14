@@ -28,6 +28,7 @@ import { logger } from '@/lib/logger'
 import { safeAsync, safeSync, getSupabaseErrorMessage } from '@/lib/error-handler'
 import { useRowSelection } from '@/hooks/use-row-selection'
 import { TableCheckboxHeader, TableCheckboxCell } from '@/components/table/table-checkbox-column'
+import { PaginationControls } from '@/components/table/pagination-controls'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { exportFormattedToCSV, exportFormattedToExcel, formatCurrencyForExport } from '@/lib/export-utils'
 import { ProductDialog } from '@/components/products/product-dialog'
@@ -51,6 +52,10 @@ export default function ProductsPage() {
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [showArchived, setShowArchived] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [pageSize] = useState(50)
+  const [hasMore, setHasMore] = useState(true)
+  const [totalCount, setTotalCount] = useState<number | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [productToDelete, setProductToDelete] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -95,7 +100,8 @@ export default function ProductsPage() {
   )
 
   useEffect(() => {
-    loadProducts()
+    setCurrentPage(1) // Reset to first page when filters change
+    loadProducts(1)
   }, [showArchived])
 
   // Sorting
@@ -108,7 +114,7 @@ export default function ProductsPage() {
   // Row selection
   const rowSelection = useRowSelection(sortedProducts)
 
-  async function loadProducts() {
+  async function loadProducts(page: number = currentPage) {
     setLoading(true)
 
     const result = await safeAsync(async () => {
@@ -119,14 +125,13 @@ export default function ProductsPage() {
 
       if (!user) {
         router.push(`/${locale}/auth/login`)
-        return [] as Product[]
+        return { data: [] as Product[], count: 0 }
       }
 
       let query = supabase
         .from('products')
-        .select('*')
+        .select('*', { count: 'exact' })
         .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
 
       if (showArchived) {
         query = query.not('deleted_at', 'is', null)
@@ -134,17 +139,28 @@ export default function ProductsPage() {
         query = query.is('deleted_at', null)
       }
 
-      const { data, error } = await query
+      const from = (page - 1) * pageSize
+      const to = from + pageSize - 1
+
+      const { data, error, count } = await query
+        .order('created_at', { ascending: false })
+        .range(from, to)
 
       if (error) {
         throw error
       }
 
-      return data ?? []
+      return { 
+        data: data ?? [],
+        count: count ?? 0
+      }
     }, 'Error loading products')
 
     if (result.success) {
-      setProducts(result.data)
+      setProducts(result.data.data)
+      setTotalCount(result.data.count)
+      setHasMore(result.data.data.length === pageSize)
+      setCurrentPage(page)
     } else {
       logger.error('Error loading products', result.details)
       toast.error(t('loadError') || tCommon('error'), {
@@ -249,7 +265,7 @@ export default function ProductsPage() {
       )
       setDialogOpen(false)
       setSelectedProduct(null)
-      loadProducts()
+      loadProducts(currentPage)
     } else {
       logger.error('Error saving product', result.details, { productId: selectedProduct?.id })
       toast.error(
@@ -288,7 +304,7 @@ export default function ProductsPage() {
 
     if (result.success) {
       toast.success(t('deleteSuccess') || 'Prodotto eliminato con successo')
-      loadProducts()
+      loadProducts(currentPage)
     } else {
       logger.error('Error deleting product', result.details, { productId: id })
       toast.error(t('deleteError') || tCommon('error'), {
@@ -313,7 +329,7 @@ export default function ProductsPage() {
 
     if (result.success) {
       toast.success(t('restoreSuccess') || 'Prodotto ripristinato con successo')
-      loadProducts()
+      loadProducts(currentPage)
     } else {
       logger.error('Error restoring product', result.details, { productId: id })
       toast.error(t('restoreError') || tCommon('error'), {
@@ -618,6 +634,15 @@ export default function ProductsPage() {
                   </TableBody>
                 </Table>
               </div>
+              {/* Pagination Controls */}
+              <PaginationControls
+                page={currentPage}
+                pageSize={pageSize}
+                hasMore={hasMore}
+                totalCount={totalCount}
+                onPageChange={(page) => loadProducts(page)}
+                loading={loading}
+              />
             </div>
           )}
         </CardContent>
