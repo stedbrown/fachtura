@@ -6,6 +6,28 @@ import { DashboardStats, OverdueAlert } from '@/components/dashboard-stats'
 import { updateOverdueInvoices } from '@/lib/utils/update-overdue-invoices'
 import { SetupAlert } from '@/components/setup-alert'
 
+interface DashboardStatsData {
+  clients_count: number
+  total_quotes: number
+  quotes_draft: number
+  quotes_sent: number
+  quotes_accepted: number
+  quotes_rejected: number
+  total_invoices: number
+  invoices_draft: number
+  invoices_issued: number
+  invoices_paid: number
+  invoices_overdue: number
+  total_revenue: number
+  current_month_revenue: number
+  previous_month_revenue: number
+  overdue_total: number
+  products_count: number
+  total_orders: number
+  suppliers_count: number
+  expenses_count: number
+}
+
 export default async function DashboardPage({
   params,
 }: {
@@ -60,7 +82,7 @@ export default async function DashboardPage({
   ])
 
   // Extract values from secure function (much faster!)
-  const viewStats = dashboardStats || {
+  const defaultStats: DashboardStatsData = {
     clients_count: 0,
     total_quotes: 0,
     quotes_draft: 0,
@@ -81,6 +103,8 @@ export default async function DashboardPage({
     suppliers_count: 0,
     expenses_count: 0,
   }
+  
+  const viewStats: DashboardStatsData = (dashboardStats as DashboardStatsData) || defaultStats
 
   const totalRevenue = Number(viewStats.total_revenue) || 0
   const currentMonthTotal = Number(viewStats.current_month_revenue) || 0
