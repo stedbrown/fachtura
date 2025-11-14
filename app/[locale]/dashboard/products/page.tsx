@@ -261,6 +261,11 @@ export default function ProductsPage() {
     }
   }
 
+  function confirmDelete(id: string) {
+    setProductToDelete(id)
+    setDeleteDialogOpen(true)
+  }
+
   async function handleDelete(id: string) {
     setIsDeleting(true)
 
@@ -410,12 +415,12 @@ export default function ProductsPage() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => {
+                onClick={async () => {
                   const selectedIds = Array.from(rowSelection.selectedIds)
                   if (confirm(t('deleteProduct') + ' ' + selectedIds.length + ' ' + tCommon('items') + '?')) {
-                    selectedIds.forEach((id) => {
-                      confirmDelete(id)
-                    })
+                    for (const id of selectedIds) {
+                      await handleDelete(id)
+                    }
                   }
                   rowSelection.clearSelection()
                 }}
