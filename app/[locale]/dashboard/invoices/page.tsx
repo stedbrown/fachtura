@@ -14,7 +14,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Eye, Trash2, Download, Archive, ArchiveRestore, FileText, Edit3, MoreHorizontal } from 'lucide-react'
+import { Plus, Eye, Trash2, Download, Archive, ArchiveRestore, FileText, Edit3, MoreHorizontal, Share2 } from 'lucide-react'
 import { DeleteDialog } from '@/components/delete-dialog'
 import { SimpleColumnToggle, useColumnVisibility, type ColumnConfig } from '@/components/simple-column-toggle'
 import { SortableHeader, useSorting } from '@/components/sortable-header'
@@ -38,6 +38,8 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { safeAsync, safeSync, getSupabaseErrorMessage } from '@/lib/error-handler'
 import { logger } from '@/lib/logger'
+import { useRowSelection } from '@/hooks/use-row-selection'
+import { TableCheckboxHeader, TableCheckboxCell } from '@/components/table/table-checkbox-column'
 
 const localeMap: Record<string, Locale> = {
   it: it,
@@ -343,6 +345,9 @@ export default function InvoicesPage() {
     'desc'
   )
 
+  // Row selection
+  const rowSelection = useRowSelection(sortedInvoices)
+
   // Export function
   const handleExport = (exportFormat: 'csv' | 'excel') => {
     if (filteredInvoices.length === 0) {
@@ -518,6 +523,102 @@ export default function InvoicesPage() {
     logger.debug('Invoice PDF downloaded successfully', { invoiceId })
   }
 
+  const handleSharePDF = async (invoiceId: string, invoiceNumber: string, clientName: string) => {
+    logger.debug('Starting invoice PDF share', { invoiceId, invoiceNumber, clientName })
+
+    // Check if Web Share API is supported
+    if (!navigator.share) {
+      logger.debug('Web Share API not supported', { invoiceId })
+      toast.error(t('shareNotSupported'))
+      return
+    }
+
+    logger.debug('Web Share API is supported, fetching PDF', { invoiceId })
+
+    const result = await safeAsync(async () => {
+      const url = `/api/invoices/${invoiceId}/pdf?locale=${locale}`
+      logger.debug('Fetching PDF from API', { invoiceId, url })
+      const response = await fetch(url)
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(
+          errorText || `Failed to fetch invoice PDF (status ${response.status})`
+        )
+      }
+
+      return await response.blob()
+    }, 'Error fetching invoice PDF for sharing')
+
+    if (!result.success) {
+      logger.error('Failed to fetch PDF for sharing', result.error, { invoiceId, details: result.details })
+      toast.error(t('shareError'), {
+        description: extractErrorMessage(result.error, result.details),
+      })
+      return
+    }
+
+    try {
+      const blob = result.data
+      logger.debug('PDF blob received', { invoiceId, blobSize: blob.size, blobType: blob.type })
+      
+      const file = new File([blob], `Fattura-${invoiceNumber}.pdf`, { type: 'application/pdf' })
+      logger.debug('File object created', { invoiceId, fileName: file.name, fileSize: file.size, fileType: file.type })
+
+      // Check if file sharing is supported with the actual file
+      if (!navigator.canShare) {
+        logger.debug('navigator.canShare not available', { invoiceId })
+        toast.error(t('shareFilesNotSupported'))
+        return
+      }
+
+      const canShareResult = navigator.canShare({ files: [file] })
+      logger.debug('canShare check result', { invoiceId, canShare: canShareResult })
+      
+      if (!canShareResult) {
+        logger.debug('File sharing not supported for this file', { invoiceId })
+        toast.error(t('shareFilesNotSupported'))
+        return
+      }
+
+      logger.debug('Calling navigator.share', { invoiceId })
+      await navigator.share({
+        title: `Fattura ${invoiceNumber}`,
+        text: t('shareText', { clientName, invoiceNumber }),
+        files: [file],
+      })
+
+      toast.success(t('sharedSuccessfully'))
+      logger.debug('Invoice PDF shared successfully', { invoiceId })
+    } catch (error) {
+      // User cancelled or error occurred
+      if (error instanceof Error) {
+        if (error.name === 'AbortError' || error.name === 'NotAllowedError') {
+          // User cancelled the share dialog - this is expected behavior
+          logger.debug('User cancelled invoice PDF share', { invoiceId, errorName: error.name })
+        } else {
+          // Actual error occurred
+          logger.error('Error sharing invoice PDF', error, { 
+            invoiceId, 
+            errorName: error.name,
+            errorMessage: error.message,
+            errorStack: error.stack 
+          })
+          toast.error(t('shareError'))
+        }
+      } else {
+        // Unknown error type
+        const errorString = error ? String(error) : 'Unknown error'
+        logger.error('Error sharing invoice PDF', new Error(errorString), { 
+          invoiceId, 
+          originalError: error,
+          errorType: typeof error 
+        })
+        toast.error(t('shareError'))
+      }
+    }
+  }
+
   return (
     <div className="space-y-4 md:space-y-6">
       {/* Header */}
@@ -588,6 +689,52 @@ export default function InvoicesPage() {
             {showArchived ? t('archivedDescription') : t('listDescription')}
           </CardDescription>
         </CardHeader>
+        {rowSelection.hasSelection && !showArchived && (
+          <div className="border-b bg-muted/30 px-4 py-3 flex items-center justify-between">
+            <div className="text-sm text-muted-foreground">
+              {rowSelection.selectedCount} {rowSelection.selectedCount === 1 ? tCommon('item') : tCommon('items')} {tCommon('selected')}
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  rowSelection.selectedItems.forEach((invoice) => {
+                    handleDownloadPDF(invoice.id)
+                  })
+                  rowSelection.clearSelection()
+                }}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                {tCommon('download')}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const selectedIds = Array.from(rowSelection.selectedIds)
+                  if (confirm(t('deleteInvoice') + ' ' + selectedIds.length + ' ' + tCommon('items') + '?')) {
+                    selectedIds.forEach((id) => {
+                      confirmDelete(id)
+                    })
+                  }
+                  rowSelection.clearSelection()
+                }}
+                className="text-destructive hover:text-destructive"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                {tCommon('delete')}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={rowSelection.clearSelection}
+              >
+                {tCommon('clear')}
+              </Button>
+            </div>
+          </div>
+        )}
         <CardContent>
           {loading ? (
             <div className="text-center py-8 md:py-12 text-muted-foreground">
@@ -615,6 +762,11 @@ export default function InvoicesPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableCheckboxHeader
+                        checked={rowSelection.isAllSelected}
+                        indeterminate={rowSelection.isIndeterminate}
+                        onCheckedChange={rowSelection.toggleAll}
+                      />
                       <TableHead className={getColumnClass('invoice_number', 'text-xs md:text-sm')}>
                         <SortableHeader
                           label={t('fields.invoiceNumber')}
@@ -678,11 +830,16 @@ export default function InvoicesPage() {
                   <TableRow 
                     key={invoice.id}
                     className="cursor-pointer hover:bg-muted/50"
+                    data-state={rowSelection.selectedIds.has(invoice.id) ? 'selected' : undefined}
                     onClick={() => {
                       setPreviewInvoice(invoice)
                       setPreviewOpen(true)
                     }}
                   >
+                    <TableCheckboxCell
+                      checked={rowSelection.selectedIds.has(invoice.id)}
+                      onCheckedChange={() => rowSelection.toggleRow(invoice.id)}
+                    />
                     <TableCell className={getColumnClass('invoice_number', 'font-medium text-xs md:text-sm')}>
                       {invoice.invoice_number}
                     </TableCell>
@@ -732,6 +889,12 @@ export default function InvoicesPage() {
                               <DropdownMenuItem onSelect={() => handleDownloadPDF(invoice.id)}>
                                 <Download className="mr-2 h-4 w-4" />
                                 {tCommon('download')}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onSelect={() => handleSharePDF(invoice.id, invoice.invoice_number, invoice.client.name)}
+                              >
+                                <Share2 className="mr-2 h-4 w-4" />
+                                {tCommon('share')}
                               </DropdownMenuItem>
                               <DropdownMenuItem
                                 onSelect={() => confirmDelete(invoice.id)}
@@ -806,6 +969,11 @@ export default function InvoicesPage() {
         onDownload={() => {
           if (previewInvoice) {
             handleDownloadPDF(previewInvoice.id)
+          }
+        }}
+        onShare={() => {
+          if (previewInvoice) {
+            handleSharePDF(previewInvoice.id, previewInvoice.invoice_number, previewInvoice.client.name)
           }
         }}
       />

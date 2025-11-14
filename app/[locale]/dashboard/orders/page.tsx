@@ -41,6 +41,8 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { logger } from '@/lib/logger'
 import { safeAsync, safeSync, getSupabaseErrorMessage } from '@/lib/error-handler'
+import { useRowSelection } from '@/hooks/use-row-selection'
+import { TableCheckboxHeader, TableCheckboxCell } from '@/components/table/table-checkbox-column'
 
 const localeMap: Record<string, Locale> = {
   it: it,
@@ -113,6 +115,9 @@ export default function OrdersPage() {
     'order_number',
     'desc'
   )
+
+  // Row selection
+  const rowSelection = useRowSelection(sortedOrders)
 
   async function loadOrders() {
     setLoading(true)
@@ -371,6 +376,11 @@ export default function OrdersPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableCheckboxHeader
+                        checked={rowSelection.isAllSelected}
+                        indeterminate={rowSelection.isIndeterminate}
+                        onCheckedChange={rowSelection.toggleAll}
+                      />
                       <TableHead className={getColumnClass('order_number', 'text-xs md:text-sm')}>
                         <SortableHeader
                           label={t('orderNumber')}
@@ -434,8 +444,13 @@ export default function OrdersPage() {
                       <TableRow
                         key={order.id}
                         className="cursor-pointer hover:bg-muted/50"
+                        data-state={rowSelection.selectedIds.has(order.id) ? 'selected' : undefined}
                         onClick={() => handleRowClick(order.id)}
                       >
+                        <TableCheckboxCell
+                          checked={rowSelection.selectedIds.has(order.id)}
+                          onCheckedChange={() => rowSelection.toggleRow(order.id)}
+                        />
                         <TableCell className={getColumnClass('order_number', 'font-medium text-xs md:text-sm')}>{order.order_number}</TableCell>
                         <TableCell className={getColumnClass('supplier', 'text-xs md:text-sm')}>{order.supplier?.name || '-'}</TableCell>
                         <TableCell className={getColumnClass('date', 'hidden md:table-cell text-xs md:text-sm')}>

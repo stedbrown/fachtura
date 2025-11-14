@@ -14,7 +14,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import { Plus, Eye, Trash2, Download, Archive, ArchiveRestore, Receipt, FileText, Edit3, MoreHorizontal } from 'lucide-react'
+import { Plus, Eye, Trash2, Download, Archive, ArchiveRestore, Receipt, FileText, Edit3, MoreHorizontal, Share2 } from 'lucide-react'
 import { DeleteDialog } from '@/components/delete-dialog'
 import { SimpleColumnToggle, useColumnVisibility, type ColumnConfig } from '@/components/simple-column-toggle'
 import { SortableHeader, useSorting } from '@/components/sortable-header'
@@ -38,6 +38,8 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { safeAsync, safeSync, getSupabaseErrorMessage } from '@/lib/error-handler'
 import { logger } from '@/lib/logger'
+import { useRowSelection } from '@/hooks/use-row-selection'
+import { TableCheckboxHeader, TableCheckboxCell } from '@/components/table/table-checkbox-column'
 
 const localeMap: Record<string, Locale> = {
   it: it,
@@ -87,6 +89,18 @@ export default function QuotesPage() {
   })
   const [previewQuote, setPreviewQuote] = useState<QuoteWithClient | null>(null)
   const [previewOpen, setPreviewOpen] = useState(false)
+
+  const extractErrorMessage = (fallback: string, details?: unknown) => {
+    if (
+      details &&
+      typeof details === 'object' &&
+      'message' in details &&
+      typeof (details as { message?: unknown }).message === 'string'
+    ) {
+      return (details as { message: string }).message
+    }
+    return fallback
+  }
 
   // Column visibility configuration
   const quoteColumns: ColumnConfig[] = [
@@ -298,6 +312,9 @@ export default function QuotesPage() {
     'desc'
   )
 
+  // Row selection
+  const rowSelection = useRowSelection(sortedQuotes)
+
   const handleExport = (exportFormat: 'csv' | 'excel') => {
     if (filteredQuotes.length === 0) {
       toast.error(tCommon('error'), {
@@ -476,6 +493,102 @@ export default function QuotesPage() {
     logger.debug('Quote PDF downloaded successfully', { quoteId })
   }
 
+  const handleSharePDF = async (quoteId: string, quoteNumber: string, clientName: string) => {
+    logger.debug('Starting quote PDF share', { quoteId, quoteNumber, clientName })
+
+    // Check if Web Share API is supported
+    if (!navigator.share) {
+      logger.debug('Web Share API not supported', { quoteId })
+      toast.error(t('shareNotSupported'))
+      return
+    }
+
+    logger.debug('Web Share API is supported, fetching PDF', { quoteId })
+
+    const result = await safeAsync(async () => {
+      const url = `/api/quotes/${quoteId}/pdf?locale=${locale}`
+      logger.debug('Fetching PDF from API', { quoteId, url })
+      const response = await fetch(url)
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        throw new Error(
+          errorText || `Failed to fetch quote PDF (status ${response.status})`
+        )
+      }
+
+      return await response.blob()
+    }, 'Error fetching quote PDF for sharing')
+
+    if (!result.success) {
+      logger.error('Failed to fetch PDF for sharing', result.error, { quoteId, details: result.details })
+      toast.error(t('shareError'), {
+        description: extractErrorMessage(result.error, result.details),
+      })
+      return
+    }
+
+    try {
+      const blob = result.data
+      logger.debug('PDF blob received', { quoteId, blobSize: blob.size, blobType: blob.type })
+      
+      const file = new File([blob], `Preventivo-${quoteNumber}.pdf`, { type: 'application/pdf' })
+      logger.debug('File object created', { quoteId, fileName: file.name, fileSize: file.size, fileType: file.type })
+
+      // Check if file sharing is supported with the actual file
+      if (!navigator.canShare) {
+        logger.debug('navigator.canShare not available', { quoteId })
+        toast.error(t('shareFilesNotSupported'))
+        return
+      }
+
+      const canShareResult = navigator.canShare({ files: [file] })
+      logger.debug('canShare check result', { quoteId, canShare: canShareResult })
+      
+      if (!canShareResult) {
+        logger.debug('File sharing not supported for this file', { quoteId })
+        toast.error(t('shareFilesNotSupported'))
+        return
+      }
+
+      logger.debug('Calling navigator.share', { quoteId })
+      await navigator.share({
+        title: `Preventivo ${quoteNumber}`,
+        text: t('shareText', { clientName, quoteNumber }),
+        files: [file],
+      })
+
+      toast.success(t('sharedSuccessfully'))
+      logger.debug('Quote PDF shared successfully', { quoteId })
+    } catch (error) {
+      // User cancelled or error occurred
+      if (error instanceof Error) {
+        if (error.name === 'AbortError' || error.name === 'NotAllowedError') {
+          // User cancelled the share dialog - this is expected behavior
+          logger.debug('User cancelled quote PDF share', { quoteId, errorName: error.name })
+        } else {
+          // Actual error occurred
+          logger.error('Error sharing quote PDF', error, { 
+            quoteId, 
+            errorName: error.name,
+            errorMessage: error.message,
+            errorStack: error.stack 
+          })
+          toast.error(t('shareError'))
+        }
+      } else {
+        // Unknown error type
+        const errorString = error ? String(error) : 'Unknown error'
+        logger.error('Error sharing quote PDF', new Error(errorString), { 
+          quoteId, 
+          originalError: error,
+          errorType: typeof error 
+        })
+        toast.error(t('shareError'))
+      }
+    }
+  }
+
   return (
     <div className="space-y-4 md:space-y-6">
       {/* Header */}
@@ -546,6 +659,52 @@ export default function QuotesPage() {
             {showArchived ? t('archivedDescription') : t('listDescription')}
           </CardDescription>
         </CardHeader>
+        {rowSelection.hasSelection && !showArchived && (
+          <div className="border-b bg-muted/30 px-4 py-3 flex items-center justify-between">
+            <div className="text-sm text-muted-foreground">
+              {rowSelection.selectedCount} {rowSelection.selectedCount === 1 ? tCommon('item') : tCommon('items')} {tCommon('selected')}
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  rowSelection.selectedItems.forEach((quote) => {
+                    handleDownloadPDF(quote.id, quote.quote_number)
+                  })
+                  rowSelection.clearSelection()
+                }}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                {tCommon('download')}
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const selectedIds = Array.from(rowSelection.selectedIds)
+                  if (confirm(t('deleteQuote') + ' ' + selectedIds.length + ' ' + tCommon('items') + '?')) {
+                    selectedIds.forEach((id) => {
+                      confirmDelete(id)
+                    })
+                  }
+                  rowSelection.clearSelection()
+                }}
+                className="text-destructive hover:text-destructive"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                {tCommon('delete')}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={rowSelection.clearSelection}
+              >
+                {tCommon('clear')}
+              </Button>
+            </div>
+          </div>
+        )}
         <CardContent>
           {loading ? (
             <div className="text-center py-8 md:py-12 text-muted-foreground">
@@ -573,6 +732,11 @@ export default function QuotesPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableCheckboxHeader
+                        checked={rowSelection.isAllSelected}
+                        indeterminate={rowSelection.isIndeterminate}
+                        onCheckedChange={rowSelection.toggleAll}
+                      />
                       <TableHead className={getColumnClass('quote_number', 'text-xs md:text-sm')}>
                         <SortableHeader
                           label={t('fields.quoteNumber')}
@@ -627,11 +791,16 @@ export default function QuotesPage() {
                   <TableRow 
                     key={quote.id}
                     className="cursor-pointer hover:bg-muted/50"
+                    data-state={rowSelection.selectedIds.has(quote.id) ? 'selected' : undefined}
                     onClick={() => {
                       setPreviewQuote(quote)
                       setPreviewOpen(true)
                     }}
                   >
+                    <TableCheckboxCell
+                      checked={rowSelection.selectedIds.has(quote.id)}
+                      onCheckedChange={() => rowSelection.toggleRow(quote.id)}
+                    />
                     <TableCell className={getColumnClass('quote_number', 'font-medium text-xs md:text-sm')}>
                       {quote.quote_number}
                     </TableCell>
@@ -672,6 +841,12 @@ export default function QuotesPage() {
                               <DropdownMenuItem onSelect={() => handleDownloadPDF(quote.id, quote.quote_number)}>
                                 <Download className="mr-2 h-4 w-4" />
                                 {tCommon('download')}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onSelect={() => handleSharePDF(quote.id, quote.quote_number, quote.client.name)}
+                              >
+                                <Share2 className="mr-2 h-4 w-4" />
+                                {tCommon('share')}
                               </DropdownMenuItem>
                               <DropdownMenuItem
                                 onSelect={() => confirmDelete(quote.id)}
@@ -746,6 +921,11 @@ export default function QuotesPage() {
         onDownload={() => {
           if (previewQuote) {
             handleDownloadPDF(previewQuote.id, previewQuote.quote_number)
+          }
+        }}
+        onShare={() => {
+          if (previewQuote) {
+            handleSharePDF(previewQuote.id, previewQuote.quote_number, previewQuote.client.name)
           }
         }}
       />

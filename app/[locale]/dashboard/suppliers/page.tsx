@@ -29,6 +29,8 @@ import type { SupplierInput } from '@/lib/validations/supplier'
 import { exportFormattedToCSV, exportFormattedToExcel, formatDateForExport } from '@/lib/export-utils'
 import { safeAsync, safeSync, getSupabaseErrorMessage } from '@/lib/error-handler'
 import { logger } from '@/lib/logger'
+import { useRowSelection } from '@/hooks/use-row-selection'
+import { TableCheckboxHeader, TableCheckboxCell } from '@/components/table/table-checkbox-column'
 import {
   Tooltip,
   TooltipContent,
@@ -105,6 +107,9 @@ export default function SuppliersPage() {
     'name',
     'asc'
   )
+
+  // Row selection
+  const rowSelection = useRowSelection(sortedSuppliers)
 
   async function loadSuppliers() {
     setLoading(true)
@@ -441,6 +446,39 @@ export default function SuppliersPage() {
             {showArchived ? t('archivedDescription') : t('listDescription')}
           </CardDescription>
         </CardHeader>
+        {rowSelection.hasSelection && !showArchived && (
+          <div className="border-b bg-muted/30 px-4 py-3 flex items-center justify-between">
+            <div className="text-sm text-muted-foreground">
+              {rowSelection.selectedCount} {rowSelection.selectedCount === 1 ? tCommon('item') : tCommon('items')} {tCommon('selected')}
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const selectedIds = Array.from(rowSelection.selectedIds)
+                  if (confirm(t('deleteSupplier') + ' ' + selectedIds.length + ' ' + tCommon('items') + '?')) {
+                    selectedIds.forEach((id) => {
+                      confirmDelete(id)
+                    })
+                  }
+                  rowSelection.clearSelection()
+                }}
+                className="text-destructive hover:text-destructive"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                {tCommon('delete')}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={rowSelection.clearSelection}
+              >
+                {tCommon('clear')}
+              </Button>
+            </div>
+          </div>
+        )}
         <CardContent>
           {loading ? (
             <div className="text-center py-8 md:py-12 text-muted-foreground">
@@ -468,6 +506,11 @@ export default function SuppliersPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableCheckboxHeader
+                        checked={rowSelection.isAllSelected}
+                        indeterminate={rowSelection.isIndeterminate}
+                        onCheckedChange={rowSelection.toggleAll}
+                      />
                       <TableHead className={getColumnClass('name', 'text-xs md:text-sm')}>
                         <SortableHeader
                           label={t('fields.name')}
@@ -512,8 +555,13 @@ export default function SuppliersPage() {
                       <TableRow 
                         key={supplier.id}
                         className="cursor-pointer hover:bg-muted/50"
+                        data-state={rowSelection.selectedIds.has(supplier.id) ? 'selected' : undefined}
                         onClick={() => handleRowClick(supplier)}
                       >
+                        <TableCheckboxCell
+                          checked={rowSelection.selectedIds.has(supplier.id)}
+                          onCheckedChange={() => rowSelection.toggleRow(supplier.id)}
+                        />
                         <TableCell className={getColumnClass('name', 'font-medium text-xs md:text-sm')}>
                           {supplier.name}
                         </TableCell>

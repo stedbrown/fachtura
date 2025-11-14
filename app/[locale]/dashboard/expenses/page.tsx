@@ -30,6 +30,8 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { exportFormattedToCSV, exportFormattedToExcel, formatDateForExport, formatCurrencyForExport } from '@/lib/export-utils'
 import { logger } from '@/lib/logger'
 import { safeAsync, safeSync, getSupabaseErrorMessage } from '@/lib/error-handler'
+import { useRowSelection } from '@/hooks/use-row-selection'
+import { TableCheckboxHeader, TableCheckboxCell } from '@/components/table/table-checkbox-column'
 import {
   Tooltip,
   TooltipContent,
@@ -134,6 +136,9 @@ export default function ExpensesPage() {
     'expense_date',
     'desc'
   )
+
+  // Row selection - use filteredExpenses for selection
+  const rowSelection = useRowSelection(filteredExpenses)
 
   async function loadExpenses() {
     setLoading(true)
@@ -447,6 +452,39 @@ export default function ExpensesPage() {
             {showArchived ? t('archivedDescription') : t('listDescription')}
           </CardDescription>
         </CardHeader>
+        {rowSelection.hasSelection && !showArchived && (
+          <div className="border-b bg-muted/30 px-4 py-3 flex items-center justify-between">
+            <div className="text-sm text-muted-foreground">
+              {rowSelection.selectedCount} {rowSelection.selectedCount === 1 ? tCommon('item') : tCommon('items')} {tCommon('selected')}
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const selectedIds = Array.from(rowSelection.selectedIds)
+                  if (confirm(t('deleteExpense') + ' ' + selectedIds.length + ' ' + tCommon('items') + '?')) {
+                    selectedIds.forEach((id) => {
+                      confirmDelete(id)
+                    })
+                  }
+                  rowSelection.clearSelection()
+                }}
+                className="text-destructive hover:text-destructive"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                {tCommon('delete')}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={rowSelection.clearSelection}
+              >
+                {tCommon('clear')}
+              </Button>
+            </div>
+          </div>
+        )}
         <CardContent>
             {filteredExpenses.length === 0 ? (
               <div className="text-center py-8 md:py-12">
@@ -470,6 +508,11 @@ export default function ExpensesPage() {
                   <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableCheckboxHeader
+                        checked={rowSelection.isAllSelected}
+                        indeterminate={rowSelection.isIndeterminate}
+                        onCheckedChange={rowSelection.toggleAll}
+                      />
                       <TableHead className={getColumnClass('expense_date')}>
                         <SortableHeader
                           label={t('expenseDate')}
@@ -508,8 +551,13 @@ export default function ExpensesPage() {
                       <TableRow
                         key={expense.id}
                         className="cursor-pointer hover:bg-muted/50"
+                        data-state={rowSelection.selectedIds.has(expense.id) ? 'selected' : undefined}
                         onClick={() => handleRowClick(expense)}
                       >
+                        <TableCheckboxCell
+                          checked={rowSelection.selectedIds.has(expense.id)}
+                          onCheckedChange={() => rowSelection.toggleRow(expense.id)}
+                        />
                         <TableCell className={getColumnClass('expense_date', 'font-medium')}>
                           {format(new Date(expense.expense_date), 'dd/MM/yyyy', {
                             locale: localeMap[locale] || enUS,

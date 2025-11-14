@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { Download, Edit3, Loader2 } from 'lucide-react'
+import { Download, Edit3, Loader2, Share2 } from 'lucide-react'
 import type { QuoteWithClient } from '@/lib/types/database'
 import { format } from 'date-fns'
 import { it, de, fr, enUS, type Locale } from 'date-fns/locale'
@@ -26,6 +26,7 @@ interface QuotePreviewProps {
   locale: string
   onEdit?: () => void
   onDownload?: () => void
+  onShare?: () => void
 }
 
 interface QuoteItem {
@@ -57,6 +58,7 @@ export function QuotePreview({
   locale,
   onEdit,
   onDownload,
+  onShare,
 }: QuotePreviewProps) {
   const t = useTranslations('quotes')
   const tCommon = useTranslations('common')
@@ -311,6 +313,17 @@ export function QuotePreview({
                 <Download className="h-4 w-4 sm:mr-2" />
                 <span className="hidden sm:inline">{tCommon('download')}</span>
                 <span className="sm:hidden">{tCommon('download')}</span>
+              </Button>
+            )}
+            {onShare && (
+              <Button
+                variant="outline"
+                onClick={onShare}
+                className="w-full sm:w-auto"
+              >
+                <Share2 className="h-4 w-4 sm:mr-2" />
+                <span className="hidden sm:inline">{tCommon('share')}</span>
+                <span className="sm:hidden">{tCommon('share')}</span>
               </Button>
             )}
             {onEdit && (

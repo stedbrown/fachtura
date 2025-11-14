@@ -26,6 +26,8 @@ import { useSubscription } from '@/hooks/use-subscription'
 import { SubscriptionUpgradeDialog } from '@/components/subscription-upgrade-dialog'
 import { logger } from '@/lib/logger'
 import { safeAsync, safeSync, getSupabaseErrorMessage } from '@/lib/error-handler'
+import { useRowSelection } from '@/hooks/use-row-selection'
+import { TableCheckboxHeader, TableCheckboxCell } from '@/components/table/table-checkbox-column'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { exportFormattedToCSV, exportFormattedToExcel, formatCurrencyForExport } from '@/lib/export-utils'
 import { ProductDialog } from '@/components/products/product-dialog'
@@ -102,6 +104,9 @@ export default function ProductsPage() {
     'name',
     'asc'
   )
+
+  // Row selection
+  const rowSelection = useRowSelection(sortedProducts)
 
   async function loadProducts() {
     setLoading(true)
@@ -396,6 +401,39 @@ export default function ProductsPage() {
             {showArchived ? t('archivedDescription') : t('tableDescription')}
           </CardDescription>
         </CardHeader>
+        {rowSelection.hasSelection && !showArchived && (
+          <div className="border-b bg-muted/30 px-4 py-3 flex items-center justify-between">
+            <div className="text-sm text-muted-foreground">
+              {rowSelection.selectedCount} {rowSelection.selectedCount === 1 ? tCommon('item') : tCommon('items')} {tCommon('selected')}
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const selectedIds = Array.from(rowSelection.selectedIds)
+                  if (confirm(t('deleteProduct') + ' ' + selectedIds.length + ' ' + tCommon('items') + '?')) {
+                    selectedIds.forEach((id) => {
+                      confirmDelete(id)
+                    })
+                  }
+                  rowSelection.clearSelection()
+                }}
+                className="text-destructive hover:text-destructive"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                {tCommon('delete')}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={rowSelection.clearSelection}
+              >
+                {tCommon('clear')}
+              </Button>
+            </div>
+          </div>
+        )}
         <CardContent>
           {loading ? (
             <div className="text-center py-8 md:py-12 text-muted-foreground">
@@ -423,6 +461,11 @@ export default function ProductsPage() {
                 <Table>
                   <TableHeader>
                     <TableRow>
+                      <TableCheckboxHeader
+                        checked={rowSelection.isAllSelected}
+                        indeterminate={rowSelection.isIndeterminate}
+                        onCheckedChange={rowSelection.toggleAll}
+                      />
                       <TableHead className={getColumnClass('sku', 'text-xs md:text-sm')}>
                         <SortableHeader
                           label={t('sku') || 'SKU'}
@@ -487,8 +530,13 @@ export default function ProductsPage() {
                       <TableRow
                         key={product.id}
                         className="cursor-pointer hover:bg-muted/50"
+                        data-state={rowSelection.selectedIds.has(product.id) ? 'selected' : undefined}
                         onClick={() => handleRowClick(product)}
                       >
+                        <TableCheckboxCell
+                          checked={rowSelection.selectedIds.has(product.id)}
+                          onCheckedChange={() => rowSelection.toggleRow(product.id)}
+                        />
                         <TableCell className={getColumnClass('sku', 'font-mono text-xs md:text-sm')}>{product.sku || '-'}</TableCell>
                         <TableCell className={getColumnClass('name', 'font-medium text-xs md:text-sm')}>
                           {product.name}
