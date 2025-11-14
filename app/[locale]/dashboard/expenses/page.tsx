@@ -137,9 +137,6 @@ export default function ExpensesPage() {
     'desc'
   )
 
-  // Row selection - use filteredExpenses for selection
-  const rowSelection = useRowSelection(filteredExpenses)
-
   async function loadExpenses() {
     setLoading(true)
 
@@ -376,6 +373,9 @@ export default function ExpensesPage() {
       return true
     })
   }, [sortedExpenses, filters])
+
+  // Row selection - use filteredExpenses for selection
+  const rowSelection = useRowSelection(filteredExpenses)
 
   if (loading) {
     return (
