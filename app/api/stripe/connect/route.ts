@@ -74,11 +74,27 @@ export async function GET(request: NextRequest) {
                                  errorMessage.includes('Connect')
     
     if (isConnectNotEnabled) {
+      // Provide more detailed instructions
+      const isTestMode = process.env.STRIPE_SECRET_KEY?.startsWith('sk_test_')
+      const dashboardUrl = isTestMode 
+        ? 'https://dashboard.stripe.com/test/connect/overview'
+        : 'https://dashboard.stripe.com/connect/overview'
+      
       return NextResponse.json(
         { 
           error: 'Stripe Connect non abilitato',
-          message: 'Il tuo account Stripe non ha Stripe Connect abilitato. Per abilitarlo, visita https://stripe.com/docs/connect e segui le istruzioni per attivare Stripe Connect sul tuo account.',
-          helpUrl: 'https://stripe.com/docs/connect'
+          message: `Il tuo account Stripe non ha Stripe Connect completamente abilitato. 
+          
+Passi da completare:
+1. Vai su ${dashboardUrl}
+2. Assicurati di aver completato tutti i passaggi dell'onboarding
+3. Verifica che "Gli utenti riscuoteranno i pagamenti direttamente" sia selezionato
+4. Completa eventuali verifiche richieste (email, profilo, ecc.)
+5. Attendi qualche minuto per la propagazione delle modifiche
+
+Se hai appena completato l'onboarding, potrebbe essere necessario attendere alcuni minuti prima che le modifiche siano attive.`,
+          helpUrl: 'https://dashboard.stripe.com/connect/overview',
+          dashboardUrl
         },
         { status: 400 }
       )
