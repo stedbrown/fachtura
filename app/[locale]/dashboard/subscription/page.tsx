@@ -98,7 +98,7 @@ export default function SubscriptionPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {plans.map((plan) => {
           const isCurrentPlan = plan.name === currentPlan;
-          const features = Array.isArray(plan.features) ? plan.features : [];
+          const features: string[] = Array.isArray(plan.features) ? plan.features : [];
 
           return (
             <Card
