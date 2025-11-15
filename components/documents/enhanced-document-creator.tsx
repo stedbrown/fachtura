@@ -47,10 +47,18 @@ export function EnhancedDocumentCreator({
   const tCommon = useTranslations('common')
   const tStatus = useTranslations(`${type === 'invoice' ? 'invoices' : 'quotes'}.status`)
 
+  const { settings } = useCompanySettings()
+  
   const [clientId, setClientId] = React.useState('')
   const [date, setDate] = React.useState(new Date().toISOString().split('T')[0])
   const [dueDate, setDueDate] = React.useState('')
   const [validUntil, setValidUntil] = React.useState('')
+  const [status, setStatus] = React.useState('draft')
+  const [items, setItems] = React.useState<ItemInput[]>([
+    { id: `item-${Date.now()}`, description: '', quantity: 1, unit_price: 0, tax_rate: 8.1 },
+  ])
+  const [notes, setNotes] = React.useState('')
+  const [isSaving, setIsSaving] = React.useState(false)
 
   // Calculate default due date / valid until from company settings
   const getDefaultDays = React.useCallback(() => {
@@ -59,13 +67,6 @@ export function EnhancedDocumentCreator({
       ? (settings.invoice_default_due_days || 30)
       : (settings.quote_default_validity_days || 30)
   }, [settings, type])
-  const [status, setStatus] = React.useState('draft')
-  const [items, setItems] = React.useState<ItemInput[]>([
-    { id: `item-${Date.now()}`, description: '', quantity: 1, unit_price: 0, tax_rate: 8.1 },
-  ])
-  const [notes, setNotes] = React.useState('')
-  const [isSaving, setIsSaving] = React.useState(false)
-  const { settings } = useCompanySettings()
 
   // Load default notes from company settings
   React.useEffect(() => {
