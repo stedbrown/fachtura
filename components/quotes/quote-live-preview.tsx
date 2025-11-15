@@ -138,10 +138,23 @@ export function QuoteLivePreview({
   }, [clientId, client, date, validUntil, status, notes, items, quoteNumber, locale])
 
   useEffect(() => {
+    // Dev logging
+    if (process.env.NODE_ENV === 'development') {
+      logger.debug('QuoteLivePreview: useEffect triggered', {
+        hasPdfData: !!pdfData,
+        pdfDataItemsCount: pdfData?.items?.length || 0,
+        clientName: pdfData?.client?.name,
+      })
+    }
+
+    // Abort any pending request when dependencies change
     pendingAbortRef.current?.abort()
     pendingAbortRef.current = null
 
     if (!pdfData) {
+      if (process.env.NODE_ENV === 'development') {
+        logger.debug('QuoteLivePreview: No pdfData, clearing preview')
+      }
       if (activeBlobUrlRef.current) {
         URL.revokeObjectURL(activeBlobUrlRef.current)
         activeBlobUrlRef.current = null
@@ -156,6 +169,13 @@ export function QuoteLivePreview({
 
     setIsGenerating(true)
     setError(null)
+
+    if (process.env.NODE_ENV === 'development') {
+      logger.debug('QuoteLivePreview: Starting PDF generation', {
+        itemsCount: pdfData.items.length,
+        total: pdfData.total,
+      })
+    }
 
     let generatedUrl: string | null = null
 
