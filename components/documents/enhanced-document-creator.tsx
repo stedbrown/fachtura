@@ -8,6 +8,7 @@ import { DocumentWizard } from './document-wizard'
 import { ClientInfoStep } from './steps/client-info-step'
 import { ItemsStep, type ItemInput } from './steps/items-step'
 import { NotesStep } from './steps/notes-step'
+import { ActionsStep } from './steps/actions-step'
 import type { Client, Product } from '@/lib/types/database'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
@@ -60,6 +61,8 @@ export function EnhancedDocumentCreator({
   ])
   const [notes, setNotes] = React.useState('')
   const [isSaving, setIsSaving] = React.useState(false)
+  const [savedDocumentId, setSavedDocumentId] = React.useState<string | undefined>()
+  const [savedDocumentNumber, setSavedDocumentNumber] = React.useState<string | undefined>()
 
   // Calculate default due date / valid until from company settings
   const getDefaultDays = React.useCallback(() => {
@@ -265,6 +268,7 @@ export function EnhancedDocumentCreator({
       previewComponent={previewComponent}
       previewData={currentData}
       className="h-screen flex flex-col"
+      isSaving={isSaving}
     />
   )
 }

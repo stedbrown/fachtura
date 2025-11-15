@@ -3,7 +3,7 @@
 import * as React from 'react'
 import { Stepper, StepContent } from '@/components/ui/stepper'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, ArrowRight, Check, ChevronDown, Eye, EyeOff } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, ChevronDown, Eye, EyeOff, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface Step {
@@ -32,6 +32,7 @@ export function DocumentWizard({
   showPreview = false,
   previewComponent,
   previewData,
+  isSaving = false,
 }: DocumentWizardProps) {
   const [currentStep, setCurrentStep] = React.useState(0)
   const [direction, setDirection] = React.useState<'forward' | 'backward'>('forward')
