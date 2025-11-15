@@ -23,6 +23,7 @@ interface DocumentWizardProps {
   previewComponent?: React.ReactNode | ((data: any) => React.ReactNode)
   previewData?: any
   isSaving?: boolean
+  onStepChange?: (stepIndex: number) => void
 }
 
 export function DocumentWizard({
@@ -34,6 +35,7 @@ export function DocumentWizard({
   previewComponent,
   previewData,
   isSaving = false,
+  onStepChange,
 }: DocumentWizardProps) {
   const [currentStep, setCurrentStep] = React.useState(0)
   const [direction, setDirection] = React.useState<'forward' | 'backward'>('forward')

@@ -63,6 +63,7 @@ export function EnhancedDocumentCreator({
   const [isSaving, setIsSaving] = React.useState(false)
   const [savedDocumentId, setSavedDocumentId] = React.useState<string | undefined>()
   const [savedDocumentNumber, setSavedDocumentNumber] = React.useState<string | undefined>()
+  const [currentStepIndex, setCurrentStepIndex] = React.useState(0)
 
   // Calculate default due date / valid until from company settings
   const getDefaultDays = React.useCallback(() => {
@@ -327,6 +328,7 @@ export function EnhancedDocumentCreator({
       previewData={currentData}
       className="h-screen flex flex-col"
       isSaving={isSaving}
+      onStepChange={setCurrentStepIndex}
     />
   )
 }
