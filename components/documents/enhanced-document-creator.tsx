@@ -230,15 +230,11 @@ export function EnhancedDocumentCreator({
     notes,
   }
 
-  // Show preview only when client is selected and has at least one valid item
+  // Show preview only when client is selected
+  // Preview will update in real-time as user fills the form
   const shouldShowPreview = React.useMemo(() => {
-    return !!(
-      clientId &&
-      previewComponent &&
-      items.length > 0 &&
-      items.some(item => item.description?.trim() && item.quantity > 0 && item.unit_price > 0)
-    )
-  }, [clientId, previewComponent, items])
+    return !!(clientId && previewComponent)
+  }, [clientId, previewComponent])
 
   return (
     <DocumentWizard
