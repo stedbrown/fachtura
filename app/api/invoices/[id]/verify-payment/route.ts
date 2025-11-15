@@ -54,6 +54,8 @@ export async function POST(
         invoice.stripe_checkout_session_id,
         {
           expand: ['payment_intent'],
+        },
+        {
           stripeAccount: invoice.stripe_account_id,
         }
       )

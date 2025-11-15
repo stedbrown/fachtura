@@ -45,10 +45,15 @@ export async function GET(request: NextRequest) {
     }
 
     // Retrieve checkout session from Stripe Connect account
-    const session = await stripe.checkout.sessions.retrieve(sessionId, {
-      expand: ['payment_intent'],
-      stripeAccount: invoice.stripe_account_id,
-    })
+    const session = await stripe.checkout.sessions.retrieve(
+      sessionId,
+      {
+        expand: ['payment_intent'],
+      },
+      {
+        stripeAccount: invoice.stripe_account_id,
+      }
+    )
 
     logger.info('Verifying payment session', {
       sessionId,
