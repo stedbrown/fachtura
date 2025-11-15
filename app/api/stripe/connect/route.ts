@@ -20,14 +20,6 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const returnUrl = searchParams.get('return_url') || `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings`
 
-    // Create Stripe Connect OAuth link
-    const accountLink = await stripe.accountLinks.create({
-      account: '', // Will be created after onboarding
-      refresh_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/stripe/connect/refresh`,
-      return_url: returnUrl,
-      type: 'account_onboarding',
-    })
-
     // For Express accounts, we need to create the account first
     // Then create the account link
     const account = await stripe.accounts.create({
@@ -44,7 +36,7 @@ export async function GET(request: NextRequest) {
     })
 
     // Create account link with the new account ID
-    const accountLinkWithAccount = await stripe.accountLinks.create({
+    const accountLink = await stripe.accountLinks.create({
       account: account.id,
       refresh_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/stripe/connect/refresh?account_id=${account.id}`,
       return_url: `${returnUrl}?account_id=${account.id}`,
@@ -57,7 +49,7 @@ export async function GET(request: NextRequest) {
     })
 
     return {
-      url: accountLinkWithAccount.url,
+      url: accountLink.url,
       accountId: account.id,
     }
   }, 'Error initiating Stripe Connect')
