@@ -866,6 +866,8 @@
   "orders": {
     "title": "Ordinaziuns",
     "moduleDescription": "Administrescha tias ordinaziuns da clients",
+    "order": "ordinaziun",
+    "orders": "ordinaziuns",
     "addNew": "Nova ordinaziun",
     "newOrder": "Nova ordinaziun",
     "editOrder": "Modifitgar ordinaziun",
