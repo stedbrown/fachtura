@@ -230,12 +230,22 @@ export function EnhancedDocumentCreator({
     notes,
   }
 
+  // Show preview only when client is selected and has at least one valid item
+  const shouldShowPreview = React.useMemo(() => {
+    return !!(
+      clientId &&
+      previewComponent &&
+      items.length > 0 &&
+      items.some(item => item.description?.trim() && item.quantity > 0 && item.unit_price > 0)
+    )
+  }, [clientId, previewComponent, items])
+
   return (
     <DocumentWizard
       steps={steps}
       onComplete={handleComplete}
       onCancel={() => router.push(`/${locale}/dashboard/${type === 'invoice' ? 'invoices' : 'quotes'}`)}
-      showPreview={!!previewComponent}
+      showPreview={shouldShowPreview}
       previewComponent={previewComponent}
       previewData={currentData}
       className="h-screen flex flex-col"

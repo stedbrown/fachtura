@@ -91,7 +91,7 @@ export function DocumentWizard({
           </div>
         </div>
 
-        {/* Mobile Preview Toggle */}
+        {/* Mobile Preview Toggle - Only show when preview is available */}
         {showPreview && previewComponent && (
           <div className="lg:hidden border-t border-border/60 bg-muted/30 px-4 py-2 flex-shrink-0">
             <Button
@@ -110,8 +110,8 @@ export function DocumentWizard({
           </div>
         )}
 
-        {/* Preview Section */}
-        {showPreview && previewComponent && (
+        {/* Preview Section - Only show when client is selected and has valid data */}
+        {showPreview && previewComponent && previewData && (
           <>
             {/* Desktop Preview */}
             <div className="hidden lg:block lg:w-1/2 border-l bg-muted/30 overflow-y-auto">
@@ -135,6 +135,20 @@ export function DocumentWizard({
               </div>
             </div>
           </>
+        )}
+
+        {/* Empty State when preview is not available */}
+        {!showPreview && previewComponent && (
+          <div className="hidden lg:flex lg:w-1/2 border-l bg-muted/30 items-center justify-center">
+            <div className="text-center p-8 space-y-2">
+              <p className="text-sm font-medium text-muted-foreground">
+                Seleziona un cliente per vedere l'anteprima
+              </p>
+              <p className="text-xs text-muted-foreground">
+                La preview del documento apparirà qui
+              </p>
+            </div>
+          </div>
         )}
       </div>
 
