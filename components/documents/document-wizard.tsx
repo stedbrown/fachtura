@@ -76,6 +76,7 @@ export function DocumentWizard({
   // Notify parent of initial step
   React.useEffect(() => {
     onStepChange?.(currentStep)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []) // Only on mount
 
   return (
