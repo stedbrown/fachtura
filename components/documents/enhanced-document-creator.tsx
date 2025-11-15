@@ -65,6 +65,59 @@ export function EnhancedDocumentCreator({
   const [savedDocumentNumber, setSavedDocumentNumber] = React.useState<string | undefined>()
   const [currentStepIndex, setCurrentStepIndex] = React.useState(0)
 
+  // Auto-save when moving from Notes to Actions step
+  React.useEffect(() => {
+    const notesStepIndex = steps.findIndex(s => s.id === 'notes')
+    const actionsStepIndex = steps.findIndex(s => s.id === 'actions')
+    
+    // If we're moving to actions step and document not saved yet
+    if (currentStepIndex === actionsStepIndex && !savedDocumentId && notesStepIndex >= 0) {
+      // Check if previous step was notes and form is valid
+      if (isStep1Valid && isStep2Valid && !isSaving) {
+        handleSaveDocument()
+      }
+    }
+  }, [currentStepIndex, savedDocumentId, isStep1Valid, isStep2Valid, isSaving])
+
+  const handleSaveDocument = React.useCallback(async () => {
+    if (!isStep1Valid || !isStep2Valid) {
+      toast.error('Compila tutti i campi obbligatori')
+      return
+    }
+
+    if (isSaving || savedDocumentId) return // Already saving or saved
+
+    setIsSaving(true)
+    try {
+      const result = await onSave({
+        clientId,
+        date,
+        dueDate: type === 'invoice' ? dueDate : undefined,
+        validUntil: type === 'quote' ? validUntil : undefined,
+        status,
+        items,
+        notes,
+      })
+      
+      // Store saved document info for actions step
+      if (result && typeof result === 'object' && 'id' in result) {
+        setSavedDocumentId(result.id as string)
+        if ('invoice_number' in result) {
+          setSavedDocumentNumber(result.invoice_number as string)
+        } else if ('quote_number' in result) {
+          setSavedDocumentNumber(result.quote_number as string)
+        }
+        setIsSaving(false)
+        toast.success(type === 'invoice' ? 'Fattura creata con successo' : 'Preventivo creato con successo')
+      } else {
+        setIsSaving(false)
+      }
+    } catch (error: any) {
+      toast.error(error?.message || tCommon('error'))
+      setIsSaving(false)
+    }
+  }, [isStep1Valid, isStep2Valid, isSaving, savedDocumentId, clientId, date, dueDate, validUntil, status, items, notes, type, onSave, tCommon])
+
   // Calculate default due date / valid until from company settings
   const getDefaultDays = React.useCallback(() => {
     if (!settings) return 30
