@@ -421,25 +421,26 @@ export function EnhancedDocumentCreator({
   }, [clientId, previewComponent])
 
   return (
-    <DocumentWizard
-      steps={steps}
-      onComplete={handleComplete}
-      onCancel={() => router.push(`/${locale}/dashboard/${type === 'invoice' ? 'invoices' : 'quotes'}`)}
-      showPreview={shouldShowPreview}
-      previewComponent={previewComponent}
-      previewData={currentData}
-      className="h-screen flex flex-col"
-      isSaving={isSaving}
-      onStepChange={setCurrentStepIndex}
-    />
-    <ClientDialog
-      open={clientDialogOpen}
-      onOpenChange={setClientDialogOpen}
-      onSubmit={handleClientSubmit}
-      client={null}
-      loading={isCreatingClient}
-    />
-  </>
+    <>
+      <DocumentWizard
+        steps={steps}
+        onComplete={handleComplete}
+        onCancel={() => router.push(`/${locale}/dashboard/${type === 'invoice' ? 'invoices' : 'quotes'}`)}
+        showPreview={shouldShowPreview}
+        previewComponent={previewComponent}
+        previewData={currentData}
+        className="h-screen flex flex-col"
+        isSaving={isSaving}
+        onStepChange={setCurrentStepIndex}
+      />
+      <ClientDialog
+        open={clientDialogOpen}
+        onOpenChange={setClientDialogOpen}
+        onSubmit={handleClientSubmit}
+        client={null}
+        loading={isCreatingClient}
+      />
+    </>
   )
 }
 
