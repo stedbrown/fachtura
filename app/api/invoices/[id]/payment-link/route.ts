@@ -137,7 +137,10 @@ export async function POST(
       .eq('id', invoice.id)
 
     if (updateError) {
-      logger.warn('Error updating invoice with checkout session', updateError, { invoiceId: invoice.id })
+      logger.warn('Error updating invoice with checkout session', { 
+        error: updateError, 
+        invoiceId: invoice.id 
+      })
       // Continue anyway as checkout session was created successfully
     }
 
