@@ -134,12 +134,14 @@ export default function NewQuotePage() {
     }, 'Error saving quote')
 
     if (result.success) {
-      toast.success(t('createSuccess') || 'Preventivo creato con successo')
-      router.push(`/${locale}/dashboard/quotes`)
+      // Return the quote data instead of navigating immediately
+      // Navigation will be handled by the actions step
+      return result.data
     } else {
       const errorMessage = getSupabaseErrorMessage(result.error)
       logger.error('Error creating quote', result.details)
       toast.error(errorMessage || t('createError') || tCommon('error'))
+      throw new Error(errorMessage || t('createError') || tCommon('error'))
     }
   }
 
@@ -182,8 +184,8 @@ export default function NewQuotePage() {
       locale={locale}
       onSave={handleSave}
       previewComponent={previewComponent}
-      onCreateClient={() => {
-        router.push(`/${locale}/dashboard/clients?create=true`)
+      onClientsChange={(updatedClients) => {
+        setClients(updatedClients)
       }}
     />
   )
