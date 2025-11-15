@@ -3,9 +3,10 @@
 import * as React from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Share2, Download, Mail, Printer, Copy, CheckCircle2, ExternalLink } from 'lucide-react'
+import { Share2, Download, Mail, Printer, Copy, CheckCircle2, ExternalLink, CreditCard } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
+import { logger } from '@/lib/logger'
 
 interface ActionsStepProps {
   documentId?: string

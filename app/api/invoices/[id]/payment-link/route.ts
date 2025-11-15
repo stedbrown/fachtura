@@ -83,15 +83,19 @@ export async function POST(
       url: paymentLink.url,
     })
 
-    // Store payment link in invoice metadata or separate table
-    // For now, we'll return it and the frontend can store it
-    await supabase
+    // Store payment link in invoice
+    const { error: updateError } = await supabase
       .from('invoices')
       .update({
         stripe_payment_link_id: paymentLink.id,
         stripe_payment_link_url: paymentLink.url,
       })
       .eq('id', invoice.id)
+
+    if (updateError) {
+      logger.warn('Error updating invoice with payment link', updateError, { invoiceId: invoice.id })
+      // Continue anyway as payment link was created successfully
+    }
 
     return {
       paymentLinkUrl: paymentLink.url,
