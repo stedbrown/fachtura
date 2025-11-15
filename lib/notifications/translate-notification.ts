@@ -21,28 +21,7 @@ export function translateNotification(
 ): { title: string; message: string } {
   const typeKey = `types.${notification.type}`
   
-  // Try to get translation
-  let title: string
-  let message: string
-  
-  try {
-    title = t(`${typeKey}.title`)
-    message = t(`${typeKey}.message`)
-    
-    // If translation returns the key itself, it means translation doesn't exist
-    if (title === `${typeKey}.title`) {
-      title = notification.title
-    }
-    if (message === `${typeKey}.message`) {
-      message = notification.message
-    }
-  } catch {
-    // Fallback to database values if translation fails
-    title = notification.title
-    message = notification.message
-  }
-  
-  // Extract parameters from metadata
+  // Extract parameters from metadata FIRST
   const metadata = notification.metadata || {}
   const params: TranslationParams = {}
   
@@ -80,7 +59,7 @@ export function translateNotification(
       params.currency = 'CHF'
     }
     
-    // Extract client/product name from message
+    // Extract client/product/supplier name from message
     const nameMatch = notification.message.match(/"([^"]+)"/)
     if (nameMatch) params.name = nameMatch[1]
   }
@@ -105,14 +84,48 @@ export function translateNotification(
     }
   }
   
-  // Replace parameters in translated strings
-  if (Object.keys(params).length > 0) {
-    title = title.replace(/\{(\w+)\}/g, (match, key) => {
-      return params[key]?.toString() || match
-    })
-    message = message.replace(/\{(\w+)\}/g, (match, key) => {
-      return params[key]?.toString() || match
-    })
+  // Try to get translation WITH parameters
+  let title: string
+  let message: string
+  
+  try {
+    // Pass params to t() to avoid FORMATTING_ERROR
+    title = t(`${typeKey}.title`, params)
+    message = t(`${typeKey}.message`, params)
+    
+    // If translation returns the key itself, it means translation doesn't exist
+    if (title === `${typeKey}.title`) {
+      title = notification.title
+      // Replace parameters in fallback title
+      if (Object.keys(params).length > 0) {
+        title = title.replace(/\{(\w+)\}/g, (match, key) => {
+          return params[key]?.toString() || match
+        })
+      }
+    }
+    if (message === `${typeKey}.message`) {
+      message = notification.message
+      // Replace parameters in fallback message
+      if (Object.keys(params).length > 0) {
+        message = message.replace(/\{(\w+)\}/g, (match, key) => {
+          return params[key]?.toString() || match
+        })
+      }
+    }
+  } catch {
+    // Fallback to database values if translation fails
+    title = notification.title
+    message = notification.message
+    
+    // Replace parameters in fallback strings
+    if (Object.keys(params).length > 0) {
+      title = title.replace(/\{(\w+)\}/g, (match, key) => {
+        return params[key]?.toString() || match
+      })
+      message = message.replace(/\{(\w+)\}/g, (match, key) => {
+        return params[key]?.toString() || match
+      })
+    }
   }
   
   return { title, message }
