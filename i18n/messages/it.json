@@ -468,6 +468,8 @@
     "restore": "Ripristina",
     "permanentDelete": "Elimina definitivamente",
     "permanentDeleteWarning": "ATTENZIONE: Questa azione eliminerà definitivamente il preventivo e non potrà essere annullata. Continuare?",
+    "permanentDeleteSuccess": "Preventivo eliminato definitivamente",
+    "permanentDeleteError": "Errore nell'eliminazione definitiva del preventivo",
     "changeStatus": "Cambia stato",
     "convertToInvoice": "Converti in Fattura",
     "downloadPDF": "Scarica PDF",
