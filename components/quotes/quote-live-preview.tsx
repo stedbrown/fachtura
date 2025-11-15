@@ -258,36 +258,38 @@ export function QuoteLivePreview({
 
   if (!pdfUrl) {
     return (
-      <div className={cn('relative h-full bg-background rounded-lg border border-border shadow-sm', compact && 'py-4')}>
+      <div className={cn('relative w-full h-full bg-background rounded-xl border-2 border-border/50 shadow-xl flex items-center justify-center', compact && 'py-0')}>
         {isGenerating && renderOverlay()}
-        <div className="flex items-center justify-center h-full min-h-[400px]">
-          <div className={cn('text-center space-y-2 max-w-md px-4', compact && 'px-3')}>
-            <p className="text-sm font-medium text-muted-foreground">
-              Compila il form per vedere l'anteprima del PDF
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Seleziona un cliente e aggiungi almeno un articolo
-            </p>
-            {error && (
-              <p className="text-xs text-destructive mt-2">
-                {error}
-              </p>
-            )}
+        <div className="text-center space-y-3 max-w-md px-6">
+          <div className="w-16 h-16 mx-auto rounded-full bg-muted/50 flex items-center justify-center">
+            <Loader2 className="h-8 w-8 text-muted-foreground animate-spin" />
           </div>
+          <p className="text-sm font-medium text-foreground">
+            Compila il form per vedere l'anteprima del PDF
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Seleziona un cliente e aggiungi almeno un articolo
+          </p>
+          {error && (
+            <p className="text-xs text-destructive mt-2 font-medium">
+              {error}
+            </p>
+          )}
         </div>
       </div>
     )
   }
 
   return (
-    <div className={cn('relative h-full bg-background rounded-lg border border-border shadow-lg overflow-hidden', compact && 'py-4')}>
+    <div className={cn('relative w-full h-full bg-background rounded-xl border-2 border-border/50 shadow-2xl overflow-hidden', compact && 'py-0')}>
       <iframe
-        src={`${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0`}
+        src={`${pdfUrl}#toolbar=0&navpanes=0&scrollbar=1&zoom=page-fit`}
         className={cn(
-          'w-full h-full border-0',
-          compact && 'rounded-lg'
+          'w-full h-full border-0 rounded-xl',
+          'bg-white'
         )}
         title="Quote Preview"
+        style={{ minHeight: '100%' }}
       />
       {(isGenerating || error) && renderOverlay(error ?? undefined)}
     </div>

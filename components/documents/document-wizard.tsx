@@ -114,9 +114,9 @@ export function DocumentWizard({
         {showPreview && previewComponent && previewData && (
           <>
             {/* Desktop Preview */}
-            <div className="hidden lg:flex lg:w-1/2 border-l bg-background overflow-hidden flex-col">
-              <div className="flex-1 overflow-y-auto">
-                <div className="p-6">
+            <div className="hidden lg:flex lg:w-1/2 border-l border-border/50 bg-muted/20 overflow-hidden flex-col">
+              <div className="flex-1 overflow-hidden relative">
+                <div className="absolute inset-0 p-4">
                   {typeof previewComponent === 'function' 
                     ? previewComponent(previewData)
                     : previewComponent}
@@ -126,11 +126,11 @@ export function DocumentWizard({
             {/* Mobile Preview */}
             <div
               className={cn(
-                'lg:hidden border-t border-border bg-background flex-shrink-0 overflow-hidden',
-                isPreviewOpen ? 'flex flex-col h-[60vh]' : 'hidden'
+                'lg:hidden border-t border-border bg-muted/20 flex-shrink-0 overflow-hidden',
+                isPreviewOpen ? 'flex flex-col h-[70vh]' : 'hidden'
               )}
             >
-              <div className="flex-1 overflow-y-auto p-4">
+              <div className="flex-1 overflow-hidden relative p-4">
                 {typeof previewComponent === 'function' 
                   ? previewComponent(previewData)
                   : previewComponent}
