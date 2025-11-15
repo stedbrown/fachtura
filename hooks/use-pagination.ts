@@ -104,7 +104,7 @@ export function usePagination<T>({
     setError(null)
     setLoadedPages(new Set())
     setTotalCount(null)
-  })
+  }, [initialPage])
 
   const refresh = useCallback(async () => {
     setLoadedPages(new Set())
