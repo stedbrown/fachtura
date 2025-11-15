@@ -89,6 +89,9 @@ export default function ExpensesPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [expenseToDelete, setExpenseToDelete] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [permanentDeleteDialogOpen, setPermanentDeleteDialogOpen] = useState(false)
+  const [expenseToPermanentDelete, setExpenseToPermanentDelete] = useState<string | null>(null)
+  const [isPermanentlyDeleting, setIsPermanentlyDeleting] = useState(false)
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false)
   const [upgradeDialogParams, setUpgradeDialogParams] = useState({
     currentCount: 0,
@@ -289,22 +292,35 @@ export default function ExpensesPage() {
     }
   }
 
-  async function handlePermanentDelete(id: string) {
+  const confirmPermanentDelete = (id: string) => {
+    setExpenseToPermanentDelete(id)
+    setPermanentDeleteDialogOpen(true)
+  }
+
+  async function handlePermanentDelete() {
+    if (!expenseToPermanentDelete) return
+
+    setIsPermanentlyDeleting(true)
+
     const result = await safeAsync(async () => {
       const supabase = createClient()
 
-      const { error } = await supabase.from('expenses').delete().eq('id', id)
+      const { error } = await supabase.from('expenses').delete().eq('id', expenseToPermanentDelete)
 
       if (error) {
         throw error
       }
     }, 'Error permanently deleting expense')
 
+    setIsPermanentlyDeleting(false)
+    setPermanentDeleteDialogOpen(false)
+    setExpenseToPermanentDelete(null)
+
     if (result.success) {
       toast.success(t('permanentDeleteSuccess') || tCommon('success'))
       loadExpenses(currentPage)
     } else {
-      logger.error('Error permanently deleting expense', result.details, { expenseId: id })
+      logger.error('Error permanently deleting expense', result.details, { expenseId: expenseToPermanentDelete })
       toast.error(t('permanentDeleteError') || tCommon('error'), {
         description: extractErrorMessage(result.error, result.details),
       })
@@ -650,7 +666,7 @@ export default function ExpensesPage() {
                                   </DropdownMenuItem>
                                   <DropdownMenuSeparator />
                                   <DropdownMenuItem
-                                    onSelect={() => handlePermanentDelete(expense.id)}
+                                    onSelect={() => confirmPermanentDelete(expense.id)}
                                     className="text-destructive focus:text-destructive"
                                   >
                                     <Trash2 className="mr-2 h-4 w-4" />
@@ -687,6 +703,15 @@ export default function ExpensesPage() {
         title={t('deleteDialogTitle')}
         description={t('deleteDialogDescription')}
         isDeleting={isDeleting}
+      />
+
+      <DeleteDialog
+        open={permanentDeleteDialogOpen}
+        onOpenChange={setPermanentDeleteDialogOpen}
+        onConfirm={handlePermanentDelete}
+        title={t('permanentDelete')}
+        description={t('permanentDeleteWarning')}
+        isDeleting={isPermanentlyDeleting}
       />
 
       <SubscriptionUpgradeDialog

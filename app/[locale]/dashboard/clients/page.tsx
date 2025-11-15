@@ -65,6 +65,9 @@ export default function ClientsPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [clientToDelete, setClientToDelete] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [permanentDeleteDialogOpen, setPermanentDeleteDialogOpen] = useState(false)
+  const [clientToPermanentDelete, setClientToPermanentDelete] = useState<string | null>(null)
+  const [isPermanentlyDeleting, setIsPermanentlyDeleting] = useState(false)
   const [filters, setFilters] = useState<ClientFilterState>({})
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false)
   const [upgradeDialogParams, setUpgradeDialogParams] = useState({
@@ -275,26 +278,35 @@ export default function ClientsPage() {
     }
   }
 
-  const handlePermanentDelete = async (clientId: string) => {
-    if (!confirm(t('permanentDeleteWarning'))) {
-      return
-    }
+  const confirmPermanentDelete = (clientId: string) => {
+    setClientToPermanentDelete(clientId)
+    setPermanentDeleteDialogOpen(true)
+  }
+
+  const handlePermanentDelete = async () => {
+    if (!clientToPermanentDelete) return
+
+    setIsPermanentlyDeleting(true)
 
     const result = await safeAsync(async () => {
       const supabase = createClient()
 
-      const { error } = await supabase.from('clients').delete().eq('id', clientId)
+      const { error } = await supabase.from('clients').delete().eq('id', clientToPermanentDelete)
 
       if (error) {
         throw error
       }
     }, 'Error permanently deleting client')
 
+    setIsPermanentlyDeleting(false)
+    setPermanentDeleteDialogOpen(false)
+    setClientToPermanentDelete(null)
+
     if (result.success) {
       toast.success(t('permanentDeleteSuccess') || tCommon('success'))
       loadClients()
     } else {
-      logger.error('Error permanently deleting client', result.details, { clientId })
+      logger.error('Error permanently deleting client', result.details, { clientId: clientToPermanentDelete })
       toast.error(t('permanentDeleteError') || tCommon('error'), {
         description: extractErrorMessage(result.error, result.details),
       })
@@ -691,7 +703,7 @@ export default function ClientsPage() {
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
-                                onSelect={() => handlePermanentDelete(client.id)}
+                                onSelect={() => confirmPermanentDelete(client.id)}
                                 className="text-destructive focus:text-destructive"
                               >
                                 <Trash2 className="mr-2 h-4 w-4" />
@@ -736,6 +748,15 @@ export default function ClientsPage() {
         title={t('deleteClient')}
         description={t('deleteDescription')}
         isDeleting={isDeleting}
+      />
+
+      <DeleteDialog
+        open={permanentDeleteDialogOpen}
+        onOpenChange={setPermanentDeleteDialogOpen}
+        onConfirm={handlePermanentDelete}
+        title={t('permanentDelete')}
+        description={t('permanentDeleteWarning')}
+        isDeleting={isPermanentlyDeleting}
       />
 
       <SubscriptionUpgradeDialog

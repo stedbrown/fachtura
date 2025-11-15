@@ -64,6 +64,9 @@ export default function SuppliersPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [supplierToDelete, setSupplierToDelete] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [permanentDeleteDialogOpen, setPermanentDeleteDialogOpen] = useState(false)
+  const [supplierToPermanentDelete, setSupplierToPermanentDelete] = useState<string | null>(null)
+  const [isPermanentlyDeleting, setIsPermanentlyDeleting] = useState(false)
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false)
   const [upgradeDialogParams, setUpgradeDialogParams] = useState({
     currentCount: 0,
@@ -340,22 +343,35 @@ export default function SuppliersPage() {
     }
   }
 
-  async function handlePermanentDelete(supplierId: string) {
+  const confirmPermanentDelete = (supplierId: string) => {
+    setSupplierToPermanentDelete(supplierId)
+    setPermanentDeleteDialogOpen(true)
+  }
+
+  async function handlePermanentDelete() {
+    if (!supplierToPermanentDelete) return
+
+    setIsPermanentlyDeleting(true)
+
     const result = await safeAsync(async () => {
       const supabase = createClient()
 
-      const { error } = await supabase.from('suppliers').delete().eq('id', supplierId)
+      const { error } = await supabase.from('suppliers').delete().eq('id', supplierToPermanentDelete)
 
       if (error) {
         throw error
       }
     }, 'Error permanently deleting supplier')
 
+    setIsPermanentlyDeleting(false)
+    setPermanentDeleteDialogOpen(false)
+    setSupplierToPermanentDelete(null)
+
     if (result.success) {
       toast.success(t('permanentDeleteSuccess') || 'Fornitore eliminato definitivamente')
       loadSuppliers(currentPage)
     } else {
-      logger.error('Error permanently deleting supplier', result.details, { supplierId })
+      logger.error('Error permanently deleting supplier', result.details, { supplierId: supplierToPermanentDelete })
       toast.error(t('permanentDeleteError') || tCommon('error'), {
         description: extractErrorMessage(result.error, result.details),
       })
@@ -619,7 +635,7 @@ export default function SuppliersPage() {
                                   </DropdownMenuItem>
                                   <DropdownMenuSeparator />
                                   <DropdownMenuItem
-                                    onSelect={() => handlePermanentDelete(supplier.id)}
+                                    onSelect={() => confirmPermanentDelete(supplier.id)}
                                     className="text-destructive focus:text-destructive"
                                   >
                                     <Trash2 className="mr-2 h-4 w-4" />
@@ -656,6 +672,15 @@ export default function SuppliersPage() {
         title={t('deleteTitle') || 'Elimina Fornitore'}
         description={t('deleteDescription') || 'Sei sicuro di voler archiviare questo fornitore?'}
         isDeleting={isDeleting}
+      />
+
+      <DeleteDialog
+        open={permanentDeleteDialogOpen}
+        onOpenChange={setPermanentDeleteDialogOpen}
+        onConfirm={handlePermanentDelete}
+        title={t('permanentDelete')}
+        description={t('permanentDeleteWarning')}
+        isDeleting={isPermanentlyDeleting}
       />
 
       <SubscriptionUpgradeDialog

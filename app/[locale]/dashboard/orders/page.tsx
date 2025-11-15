@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
 import { Plus, Trash2, Archive, ArchiveRestore, ShoppingCart, Download, MoreHorizontal, ChevronDown } from 'lucide-react'
+import { DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import { DeleteDialog } from '@/components/delete-dialog'
 import { SimpleColumnToggle, useColumnVisibility, type ColumnConfig } from '@/components/simple-column-toggle'
 import { AdvancedFilters } from '@/components/advanced-filters'
@@ -87,6 +88,9 @@ export default function OrdersPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [orderToDelete, setOrderToDelete] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [permanentDeleteDialogOpen, setPermanentDeleteDialogOpen] = useState(false)
+  const [orderToPermanentDelete, setOrderToPermanentDelete] = useState<string | null>(null)
+  const [isPermanentlyDeleting, setIsPermanentlyDeleting] = useState(false)
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false)
   const [upgradeDialogParams, setUpgradeDialogParams] = useState({
     currentCount: 0,
@@ -259,6 +263,46 @@ export default function OrdersPage() {
     } else {
       logger.error('Error restoring order', result.details)
       toast.error(t('restoreError') || tCommon('error'), {
+        description: result.details
+          ? getSupabaseErrorMessage(result.details)
+          : result.error,
+      })
+    }
+  }
+
+  const confirmPermanentDelete = (orderId: string) => {
+    setOrderToPermanentDelete(orderId)
+    setPermanentDeleteDialogOpen(true)
+  }
+
+  const handlePermanentDelete = async () => {
+    if (!orderToPermanentDelete) return
+
+    setIsPermanentlyDeleting(true)
+
+    const result = await safeAsync(async () => {
+      const supabase = createClient()
+
+      const { error } = await supabase
+        .from('orders')
+        .delete()
+        .eq('id', orderToPermanentDelete)
+
+      if (error) {
+        throw error
+      }
+    }, 'Error permanently deleting order')
+
+    setIsPermanentlyDeleting(false)
+    setPermanentDeleteDialogOpen(false)
+    setOrderToPermanentDelete(null)
+
+    if (result.success) {
+      toast.success(t('permanentDeleteSuccess') || tCommon('success'))
+      loadOrders(currentPage)
+    } else {
+      logger.error('Error permanently deleting order', result.details)
+      toast.error(t('permanentDeleteError') || tCommon('error'), {
         description: result.details
           ? getSupabaseErrorMessage(result.details)
           : result.error,
@@ -514,10 +558,20 @@ export default function OrdersPage() {
                                   {t('delete')}
                                 </DropdownMenuItem>
                               ) : (
-                                <DropdownMenuItem onSelect={() => handleRestore(order.id)}>
-                                  <ArchiveRestore className="mr-2 h-4 w-4" />
-                                  {t('restore')}
-                                </DropdownMenuItem>
+                                <>
+                                  <DropdownMenuItem onSelect={() => handleRestore(order.id)}>
+                                    <ArchiveRestore className="mr-2 h-4 w-4" />
+                                    {t('restore')}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem
+                                    onSelect={() => confirmPermanentDelete(order.id)}
+                                    className="text-destructive focus:text-destructive"
+                                  >
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    {t('permanentDelete')}
+                                  </DropdownMenuItem>
+                                </>
                               )}
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -549,6 +603,15 @@ export default function OrdersPage() {
         title={t('deleteDialogTitle')}
         description={t('deleteDialogDescription')}
         isDeleting={isDeleting}
+      />
+
+      <DeleteDialog
+        open={permanentDeleteDialogOpen}
+        onOpenChange={setPermanentDeleteDialogOpen}
+        onConfirm={handlePermanentDelete}
+        title={t('permanentDelete')}
+        description={t('permanentDeleteWarning')}
+        isDeleting={isPermanentlyDeleting}
       />
 
       {/* Upgrade Dialog */}

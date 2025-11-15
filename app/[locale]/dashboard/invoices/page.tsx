@@ -87,6 +87,9 @@ export default function InvoicesPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [invoiceToDelete, setInvoiceToDelete] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [permanentDeleteDialogOpen, setPermanentDeleteDialogOpen] = useState(false)
+  const [invoiceToPermanentDelete, setInvoiceToPermanentDelete] = useState<string | null>(null)
+  const [isPermanentlyDeleting, setIsPermanentlyDeleting] = useState(false)
   const [filters, setFilters] = useState<FilterState>({})
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false)
   const [upgradeDialogParams, setUpgradeDialogParams] = useState({
@@ -524,10 +527,15 @@ export default function InvoicesPage() {
     }
   }
 
-  const handlePermanentDelete = async (invoiceId: string) => {
-    if (!confirm(t('deleteDescription'))) {
-      return
-    }
+  const confirmPermanentDelete = (invoiceId: string) => {
+    setInvoiceToPermanentDelete(invoiceId)
+    setPermanentDeleteDialogOpen(true)
+  }
+
+  const handlePermanentDelete = async () => {
+    if (!invoiceToPermanentDelete) return
+
+    setIsPermanentlyDeleting(true)
 
     const result = await safeAsync(async () => {
       const supabase = createClient()
@@ -535,17 +543,22 @@ export default function InvoicesPage() {
       const { error } = await supabase
         .from('invoices')
         .delete()
-        .eq('id', invoiceId)
+        .eq('id', invoiceToPermanentDelete)
 
       if (error) {
         throw error
       }
     }, 'Error permanently deleting invoice')
 
+    setIsPermanentlyDeleting(false)
+    setPermanentDeleteDialogOpen(false)
+    setInvoiceToPermanentDelete(null)
+
     if (result.success) {
+      toast.success(t('permanentDeleteSuccess') || tCommon('success'))
       loadInvoices(currentPage)
     } else {
-      toast.error(tCommon('error'), {
+      toast.error(t('permanentDeleteError') || tCommon('error'), {
         description: result.details
           ? getSupabaseErrorMessage(result.details)
           : result.error,
@@ -995,7 +1008,7 @@ export default function InvoicesPage() {
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
-                                onSelect={() => handlePermanentDelete(invoice.id)}
+                                onSelect={() => confirmPermanentDelete(invoice.id)}
                                 className="text-destructive focus:text-destructive"
                               >
                                 <Trash2 className="mr-2 h-4 w-4" />
@@ -1032,6 +1045,15 @@ export default function InvoicesPage() {
         title={t('deleteInvoice')}
         description={t('deleteDescription')}
         isDeleting={isDeleting}
+      />
+
+      <DeleteDialog
+        open={permanentDeleteDialogOpen}
+        onOpenChange={setPermanentDeleteDialogOpen}
+        onConfirm={handlePermanentDelete}
+        title={t('permanentDelete')}
+        description={t('permanentDeleteWarning')}
+        isDeleting={isPermanentlyDeleting}
       />
 
       <SubscriptionUpgradeDialog

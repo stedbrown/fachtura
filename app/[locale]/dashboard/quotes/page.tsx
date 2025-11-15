@@ -85,6 +85,9 @@ export default function QuotesPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [quoteToDelete, setQuoteToDelete] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [permanentDeleteDialogOpen, setPermanentDeleteDialogOpen] = useState(false)
+  const [quoteToPermanentDelete, setQuoteToPermanentDelete] = useState<string | null>(null)
+  const [isPermanentlyDeleting, setIsPermanentlyDeleting] = useState(false)
   const [filters, setFilters] = useState<FilterState>({})
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false)
   const [upgradeDialogParams, setUpgradeDialogParams] = useState({
@@ -443,10 +446,15 @@ export default function QuotesPage() {
     loadQuotes()
   }
 
-  const handlePermanentDelete = async (quoteId: string) => {
-    if (!confirm(t('deleteDescription'))) {
-      return
-    }
+  const confirmPermanentDelete = (quoteId: string) => {
+    setQuoteToPermanentDelete(quoteId)
+    setPermanentDeleteDialogOpen(true)
+  }
+
+  const handlePermanentDelete = async () => {
+    if (!quoteToPermanentDelete) return
+
+    setIsPermanentlyDeleting(true)
 
     const result = await safeAsync(async () => {
       const supabase = createClient()
@@ -454,23 +462,27 @@ export default function QuotesPage() {
       const { error } = await supabase
         .from('quotes')
         .delete()
-        .eq('id', quoteId)
+        .eq('id', quoteToPermanentDelete)
 
       if (error) {
         throw error
       }
     }, 'Error permanently deleting quote')
 
-    if (!result.success) {
-      toast.error(tCommon('error'), {
+    setIsPermanentlyDeleting(false)
+    setPermanentDeleteDialogOpen(false)
+    setQuoteToPermanentDelete(null)
+
+    if (result.success) {
+      toast.success(t('permanentDeleteSuccess') || tCommon('success'))
+      loadQuotes()
+    } else {
+      toast.error(t('permanentDeleteError') || tCommon('error'), {
         description: result.details
           ? getSupabaseErrorMessage(result.details)
           : result.error,
       })
-      return
     }
-
-    loadQuotes()
   }
 
   const handleDownloadPDF = async (quoteId: string, quoteNumber: string) => {
@@ -881,7 +893,7 @@ export default function QuotesPage() {
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
-                                onSelect={() => handlePermanentDelete(quote.id)}
+                                onSelect={() => confirmPermanentDelete(quote.id)}
                                 className="text-destructive focus:text-destructive"
                               >
                                 <Trash2 className="mr-2 h-4 w-4" />
@@ -918,6 +930,15 @@ export default function QuotesPage() {
         title={t('deleteQuote')}
         description={t('deleteDescription')}
         isDeleting={isDeleting}
+      />
+
+      <DeleteDialog
+        open={permanentDeleteDialogOpen}
+        onOpenChange={setPermanentDeleteDialogOpen}
+        onConfirm={handlePermanentDelete}
+        title={t('permanentDelete')}
+        description={t('permanentDeleteWarning')}
+        isDeleting={isPermanentlyDeleting}
       />
 
       <SubscriptionUpgradeDialog

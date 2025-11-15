@@ -37,6 +37,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
@@ -59,6 +60,9 @@ export default function ProductsPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [productToDelete, setProductToDelete] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [permanentDeleteDialogOpen, setPermanentDeleteDialogOpen] = useState(false)
+  const [productToPermanentDelete, setProductToPermanentDelete] = useState<string | null>(null)
+  const [isPermanentlyDeleting, setIsPermanentlyDeleting] = useState(false)
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false)
   const [upgradeDialogParams, setUpgradeDialogParams] = useState({
     currentCount: 0,
@@ -333,6 +337,44 @@ export default function ProductsPage() {
     } else {
       logger.error('Error restoring product', result.details, { productId: id })
       toast.error(t('restoreError') || tCommon('error'), {
+        description: extractErrorMessage(result.error, result.details),
+      })
+    }
+  }
+
+  const confirmPermanentDelete = (id: string) => {
+    setProductToPermanentDelete(id)
+    setPermanentDeleteDialogOpen(true)
+  }
+
+  const handlePermanentDelete = async () => {
+    if (!productToPermanentDelete) return
+
+    setIsPermanentlyDeleting(true)
+
+    const result = await safeAsync(async () => {
+      const supabase = createClient()
+
+      const { error } = await supabase
+        .from('products')
+        .delete()
+        .eq('id', productToPermanentDelete)
+
+      if (error) {
+        throw error
+      }
+    }, 'Error permanently deleting product')
+
+    setIsPermanentlyDeleting(false)
+    setPermanentDeleteDialogOpen(false)
+    setProductToPermanentDelete(null)
+
+    if (result.success) {
+      toast.success(t('permanentDeleteSuccess') || tCommon('success'))
+      loadProducts(currentPage)
+    } else {
+      logger.error('Error permanently deleting product', result.details, { productId: productToPermanentDelete })
+      toast.error(t('permanentDeleteError') || tCommon('error'), {
         description: extractErrorMessage(result.error, result.details),
       })
     }
@@ -624,6 +666,14 @@ export default function ProductsPage() {
                                     <ArchiveRestore className="mr-2 h-4 w-4" />
                                     {t('restore')}
                                   </DropdownMenuItem>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem
+                                    onSelect={() => confirmPermanentDelete(product.id)}
+                                    className="text-destructive focus:text-destructive"
+                                  >
+                                    <Trash2 className="mr-2 h-4 w-4" />
+                                    {t('permanentDelete')}
+                                  </DropdownMenuItem>
                                 </>
                               )}
                             </DropdownMenuContent>
@@ -656,6 +706,15 @@ export default function ProductsPage() {
         title={t('deleteDialogTitle')}
         description={t('deleteDialogDescription')}
         isDeleting={isDeleting}
+      />
+
+      <DeleteDialog
+        open={permanentDeleteDialogOpen}
+        onOpenChange={setPermanentDeleteDialogOpen}
+        onConfirm={handlePermanentDelete}
+        title={t('permanentDelete')}
+        description={t('permanentDeleteWarning')}
+        isDeleting={isPermanentlyDeleting}
       />
 
       {/* Upgrade Dialog */}
