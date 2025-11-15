@@ -271,6 +271,21 @@ export function EnhancedDocumentCreator({
     await handleSaveDocument()
   }
 
+  // Calculate totals for display
+  const documentTotal = React.useMemo(() => {
+    if (items.length === 0) return 0
+    const subtotal = items.reduce((sum, item) => {
+      const itemSubtotal = item.quantity * item.unit_price
+      return sum + itemSubtotal
+    }, 0)
+    const tax = items.reduce((sum, item) => {
+      const itemSubtotal = item.quantity * item.unit_price
+      const itemTax = itemSubtotal * (item.tax_rate / 100)
+      return sum + itemTax
+    }, 0)
+    return subtotal + tax
+  }, [items])
+
   const steps = React.useMemo(
     () => [
       {
