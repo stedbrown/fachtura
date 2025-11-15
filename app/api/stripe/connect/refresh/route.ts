@@ -44,12 +44,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(accountLink.url)
   }, 'Error refreshing Stripe Connect')
 
-  if (result.success && result.data) {
+  if (result.success) {
     return result.data as NextResponse
-  } else {
-    const errorDetails = result.success === false ? (result.details || result.error) : result.error
-    logger.error('Error refreshing Stripe Connect', errorDetails)
-    return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings?error=stripe_connect_failed`)
   }
+  
+  // Error case
+  const errorDetails = result.details || result.error
+  logger.error('Error refreshing Stripe Connect', errorDetails)
+  return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings?error=stripe_connect_failed`)
 }
 
