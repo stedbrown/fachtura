@@ -3,7 +3,7 @@
 import * as React from 'react'
 import { Stepper, StepContent } from '@/components/ui/stepper'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft, ArrowRight, Check, ChevronDown } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Check, ChevronDown, Eye, EyeOff } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface Step {
@@ -93,18 +93,25 @@ export function DocumentWizard({
 
         {/* Mobile Preview Toggle - Only show when preview is available */}
         {showPreview && previewComponent && (
-          <div className="lg:hidden border-t border-border/60 bg-muted/30 px-4 py-2 flex-shrink-0">
+          <div className="lg:hidden border-t border-border bg-background/95 backdrop-blur-sm px-4 py-3 flex-shrink-0 shadow-sm">
             <Button
-              variant="outline"
-              size="sm"
-              className="w-full justify-between"
+              variant={isPreviewOpen ? "secondary" : "default"}
+              size="lg"
+              className="w-full justify-between h-12 font-semibold shadow-md hover:shadow-lg transition-all"
               onClick={() => setIsPreviewOpen((prev) => !prev)}
             >
-              <span className="text-sm font-medium">
-                {isPreviewOpen ? 'Nascondi Anteprima' : 'Mostra Anteprima'}
-              </span>
+              <div className="flex items-center gap-2">
+                {isPreviewOpen ? (
+                  <EyeOff className="h-5 w-5" />
+                ) : (
+                  <Eye className="h-5 w-5" />
+                )}
+                <span className="text-base font-semibold">
+                  {isPreviewOpen ? 'Nascondi Anteprima' : 'Mostra Anteprima'}
+                </span>
+              </div>
               <ChevronDown
-                className={cn('h-4 w-4 transition-transform', isPreviewOpen ? 'rotate-180' : '')}
+                className={cn('h-5 w-5 transition-transform duration-200', isPreviewOpen ? 'rotate-180' : '')}
               />
             </Button>
           </div>
@@ -155,7 +162,7 @@ export function DocumentWizard({
       </div>
 
       {/* Footer Navigation */}
-      <div className="border-t bg-background px-4 sm:px-6 py-3 sm:py-4">
+      <div className="border-t bg-background/95 backdrop-blur-sm px-4 sm:px-6 py-3 sm:py-4 pb-[max(1rem,env(safe-area-inset-bottom))] lg:pb-4 shadow-lg lg:shadow-none">
         <div className="flex items-center justify-between gap-3 max-w-2xl mx-auto">
           <Button
             variant="ghost"
