@@ -42,11 +42,41 @@ export function InvoiceLivePreview({
   const client = clients.find(c => c.id === clientId)
 
   const pdfData = useMemo(() => {
-    if (!client || !clientId || items.length === 0 || !items.some(item => item.description?.trim())) {
+    // Show preview as soon as client is selected, even without items
+    if (!client || !clientId) {
       return null
     }
+    
+    // Filter out empty items for calculation
+    const validItems = items.filter(item => item.description?.trim() && item.quantity > 0 && item.unit_price > 0)
+    
+    // If no valid items, return basic preview with client info only
+    if (validItems.length === 0) {
+      return {
+        invoice_number: invoiceNumber || 'INV-XXXX-XXX',
+        date,
+        due_date: dueDate || undefined,
+        status,
+        notes: notes || undefined,
+        client: {
+          id: client.id,
+          name: client.name,
+          email: client.email,
+          phone: client.phone,
+          address: client.address,
+          city: client.city,
+          postal_code: client.postal_code,
+          country: client.country,
+        },
+        items: [],
+        subtotal: 0,
+        tax_amount: 0,
+        total: 0,
+        locale,
+      }
+    }
 
-    const totals = calculateInvoiceTotals(items)
+    const totals = calculateInvoiceTotals(validItems)
 
     return {
       invoice_number: invoiceNumber || 'INV-XXXX-XXX',

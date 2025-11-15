@@ -42,11 +42,41 @@ export function QuoteLivePreview({
   const client = clients.find(c => c.id === clientId)
 
   const pdfData = useMemo(() => {
-    if (!client || !clientId || items.length === 0 || !items.some(item => item.description?.trim())) {
+    // Show preview as soon as client is selected, even without items
+    if (!client || !clientId) {
       return null
     }
+    
+    // Filter out empty items for calculation
+    const validItems = items.filter(item => item.description?.trim() && item.quantity > 0 && item.unit_price > 0)
+    
+    // If no valid items, return basic preview with client info only
+    if (validItems.length === 0) {
+      return {
+        quote_number: quoteNumber || 'QT-XXXX-XXX',
+        date,
+        valid_until: validUntil || undefined,
+        status,
+        notes: notes || undefined,
+        client: {
+          id: client.id,
+          name: client.name,
+          email: client.email,
+          phone: client.phone,
+          address: client.address,
+          city: client.city,
+          postal_code: client.postal_code,
+          country: client.country,
+        },
+        items: [],
+        subtotal: 0,
+        tax_amount: 0,
+        total: 0,
+        locale,
+      }
+    }
 
-    const totals = calculateQuoteTotals(items)
+    const totals = calculateQuoteTotals(validItems)
 
     return {
       quote_number: quoteNumber || 'QT-XXXX-XXX',
@@ -64,14 +94,12 @@ export function QuoteLivePreview({
         postal_code: client.postal_code,
         country: client.country,
       },
-      items: items
-        .filter(item => item.description?.trim())
-        .map(item => ({
-          description: item.description,
-          quantity: item.quantity,
-          unit_price: item.unit_price,
-          tax_rate: item.tax_rate,
-        })),
+      items: validItems.map(item => ({
+        description: item.description,
+        quantity: item.quantity,
+        unit_price: item.unit_price,
+        tax_rate: item.tax_rate,
+      })),
       subtotal: totals.subtotal,
       tax_amount: totals.totalTax,
       total: totals.total,

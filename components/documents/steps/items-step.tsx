@@ -125,62 +125,68 @@ export function ItemsStep({
               </CardHeader>
               <CardContent className="space-y-4 px-4 pb-4">
                 {/* Product Search / Manual Entry */}
-                {filteredProducts.length > 0 && (
-                  <div className="space-y-2">
-                    <Label className="text-xs font-medium">Aggiungi da catalogo</Label>
-                    <Popover
-                      open={isProductSearchOpen}
-                      onOpenChange={(open) =>
-                        setProductSearchOpen((prev) => ({ ...prev, [item.id]: open }))
-                      }
-                    >
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className="w-full justify-start h-10 text-sm font-normal"
-                        >
-                          <Search className="mr-2 h-4 w-4" />
-                          {item.product_id
-                            ? products.find((p) => p.id === item.product_id)?.name ||
-                              'Cerca prodotto...'
-                            : 'Cerca prodotto...'}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
-                        <Command>
-                          <CommandInput placeholder="Cerca prodotto..." className="h-9" />
-                          <CommandList>
-                            <CommandEmpty>Nessun prodotto trovato</CommandEmpty>
-                            <CommandGroup>
-                              {filteredProducts.map((product) => (
-                                <CommandItem
-                                  key={product.id}
-                                  value={product.name}
-                                  onSelect={() => fillFromProduct(item.id, product.id)}
-                                  className="cursor-pointer"
-                                >
-                                  <div className="flex items-center justify-between w-full gap-3">
-                                    <div className="flex flex-col">
-                                      <span className="font-medium text-sm">{product.name}</span>
-                                      {product.sku && (
-                                        <span className="text-xs text-muted-foreground">
-                                          SKU: {product.sku}
-                                        </span>
-                                      )}
+                <div className="space-y-3">
+                  {filteredProducts.length > 0 && (
+                    <div className="space-y-2">
+                      <Label className="text-xs font-medium">Aggiungi da catalogo (opzionale)</Label>
+                      <Popover
+                        open={isProductSearchOpen}
+                        onOpenChange={(open) =>
+                          setProductSearchOpen((prev) => ({ ...prev, [item.id]: open }))
+                        }
+                      >
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className="w-full justify-start h-10 text-sm font-normal"
+                          >
+                            <Search className="mr-2 h-4 w-4" />
+                            {item.product_id
+                              ? products.find((p) => p.id === item.product_id)?.name ||
+                                'Cerca prodotto...'
+                              : 'Cerca prodotto dal catalogo...'}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+                          <Command>
+                            <CommandInput placeholder="Cerca prodotto..." className="h-9" />
+                            <CommandList>
+                              <CommandEmpty>Nessun prodotto trovato</CommandEmpty>
+                              <CommandGroup>
+                                {filteredProducts.map((product) => (
+                                  <CommandItem
+                                    key={product.id}
+                                    value={product.name}
+                                    onSelect={() => fillFromProduct(item.id, product.id)}
+                                    className="cursor-pointer"
+                                  >
+                                    <div className="flex items-center justify-between w-full gap-3">
+                                      <div className="flex flex-col">
+                                        <span className="font-medium text-sm">{product.name}</span>
+                                        {product.sku && (
+                                          <span className="text-xs text-muted-foreground">
+                                            SKU: {product.sku}
+                                          </span>
+                                        )}
+                                      </div>
+                                      <span className="text-sm font-semibold tabular-nums text-muted-foreground">
+                                        CHF {product.unit_price.toFixed(2)}
+                                      </span>
                                     </div>
-                                    <span className="text-sm font-semibold tabular-nums text-muted-foreground">
-                                      CHF {product.unit_price.toFixed(2)}
-                                    </span>
-                                  </div>
-                                </CommandItem>
-                              ))}
-                            </CommandGroup>
-                          </CommandList>
-                        </Command>
-                      </PopoverContent>
-                    </Popover>
+                                  </CommandItem>
+                                ))}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                  )}
+                  
+                  <div className="text-xs text-muted-foreground text-center py-1">
+                    oppure
                   </div>
-                )}
+                </div>
 
                 {/* Description */}
                 <div className="space-y-2">
