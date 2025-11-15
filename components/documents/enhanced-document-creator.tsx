@@ -20,7 +20,7 @@ interface EnhancedDocumentCreatorProps {
   clients: Client[]
   products: Product[]
   locale: string
-  onSave: (data: DocumentData) => Promise<void>
+  onSave: (data: DocumentData) => Promise<any>
   previewComponent?: React.ReactNode | ((data: DocumentData) => React.ReactNode)
   onCreateClient?: () => void
 }
@@ -122,6 +122,17 @@ export function EnhancedDocumentCreator({
   }, [items])
 
   const handleComplete = async () => {
+    // Check if we're on the actions step by checking current step
+    // If on actions step, navigate away
+    const actionsStepIndex = steps.findIndex(s => s.id === 'actions')
+    const isOnActionsStep = actionsStepIndex >= 0
+    
+    if (isOnActionsStep) {
+      router.push(`/${locale}/dashboard/${type === 'invoice' ? 'invoices' : 'quotes'}`)
+      return
+    }
+
+    // If we're on notes step, save the document
     if (!isStep1Valid || !isStep2Valid) {
       toast.error('Compila tutti i campi obbligatori')
       return
@@ -129,7 +140,7 @@ export function EnhancedDocumentCreator({
 
     setIsSaving(true)
     try {
-      await onSave({
+      const result = await onSave({
         clientId,
         date,
         dueDate: type === 'invoice' ? dueDate : undefined,
@@ -138,9 +149,22 @@ export function EnhancedDocumentCreator({
         items,
         notes,
       })
+      
+      // Store saved document info for actions step
+      if (result && typeof result === 'object' && 'id' in result) {
+        setSavedDocumentId(result.id as string)
+        if ('invoice_number' in result) {
+          setSavedDocumentNumber(result.invoice_number as string)
+        } else if ('quote_number' in result) {
+          setSavedDocumentNumber(result.quote_number as string)
+        }
+        setIsSaving(false)
+        toast.success(type === 'invoice' ? 'Fattura creata con successo' : 'Preventivo creato con successo')
+      } else {
+        setIsSaving(false)
+      }
     } catch (error: any) {
       toast.error(error?.message || tCommon('error'))
-    } finally {
       setIsSaving(false)
     }
   }
@@ -202,6 +226,35 @@ export function EnhancedDocumentCreator({
         ),
         isValid: true,
       },
+      {
+        id: 'actions',
+        label: 'Azioni',
+        description: 'Condividi e gestisci',
+        component: (
+          <ActionsStep
+            documentId={savedDocumentId}
+            documentNumber={savedDocumentNumber}
+            documentType={type}
+            onDownload={() => {
+              if (savedDocumentId) {
+                window.open(`/${locale}/dashboard/${type === 'invoice' ? 'invoices' : 'quotes'}/${savedDocumentId}?download=true`, '_blank')
+              }
+            }}
+            onEmail={() => {
+              if (savedDocumentId) {
+                window.open(`/${locale}/dashboard/${type === 'invoice' ? 'invoices' : 'quotes'}/${savedDocumentId}?email=true`, '_blank')
+              }
+            }}
+            onView={() => {
+              if (savedDocumentId) {
+                router.push(`/${locale}/dashboard/${type === 'invoice' ? 'invoices' : 'quotes'}/${savedDocumentId}`)
+              }
+            }}
+            locale={locale}
+          />
+        ),
+        isValid: !!savedDocumentId,
+      },
     ],
     [
       clients,
@@ -219,6 +272,11 @@ export function EnhancedDocumentCreator({
       notes,
       isStep1Valid,
       isStep2Valid,
+      savedDocumentId,
+      savedDocumentNumber,
+      type,
+      locale,
+      router,
       t,
       tCommon,
     ]

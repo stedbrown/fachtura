@@ -193,8 +193,13 @@ export function DocumentWizard({
             ))}
           </div>
 
-          <Button onClick={handleNext} disabled={!canGoNext}>
-            {isLastStep ? (
+          <Button onClick={handleNext} disabled={!canGoNext || isSaving}>
+            {isSaving ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Salvataggio...
+              </>
+            ) : isLastStep ? (
               <>
                 <Check className="h-4 w-4 mr-2" />
                 Completa
