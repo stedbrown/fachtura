@@ -105,10 +105,16 @@ export function ClientInfoStep({
               <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+          <PopoverContent 
+            className="w-[var(--radix-popover-trigger-width)] p-0 max-h-[300px] sm:max-h-[400px]" 
+            align="start"
+            side="bottom"
+            sideOffset={4}
+            collisionPadding={8}
+          >
             <Command>
               <CommandInput placeholder="Cerca cliente..." className="h-9" />
-              <CommandList>
+              <CommandList className="max-h-[250px] sm:max-h-[350px]">
                 <CommandEmpty>
                   <div className="py-4 text-center text-sm">
                     <p className="text-muted-foreground mb-2">Nessun cliente trovato</p>
