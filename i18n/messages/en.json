@@ -867,6 +867,8 @@
   "orders": {
     "title": "Orders",
     "moduleDescription": "Manage your customer orders",
+    "order": "order",
+    "orders": "orders",
     "addNew": "New Order",
     "newOrder": "New Order",
     "editOrder": "Edit Order",

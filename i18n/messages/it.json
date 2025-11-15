@@ -1010,6 +1010,8 @@
     "title": "Ordini Fornitori",
     "subtitle": "Gestisci gli ordini ai tuoi fornitori",
     "moduleDescription": "Gestisci gli ordini ai fornitori",
+    "order": "ordine",
+    "orders": "ordini",
     "addNew": "Nuovo Ordine",
     "newOrder": "Nuovo Ordine",
     "editOrder": "Modifica Ordine",
