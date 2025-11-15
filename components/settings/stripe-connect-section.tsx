@@ -54,12 +54,27 @@ export function StripeConnectSection() {
     setConnecting(true)
     try {
       const response = await fetch('/api/stripe/connect?return_url=' + encodeURIComponent(window.location.href))
+      const data = await response.json()
       
       if (!response.ok) {
-        throw new Error('Errore nella connessione a Stripe')
+        // Check if it's a Connect not enabled error
+        if (data.helpUrl) {
+          toast.error(data.message || data.error || 'Stripe Connect non abilitato', {
+            description: 'Clicca per vedere come abilitarlo',
+            action: {
+              label: 'Apri guida',
+              onClick: () => window.open(data.helpUrl, '_blank'),
+            },
+            duration: 10000,
+          })
+        } else {
+          toast.error(data.error || data.message || 'Errore nella connessione a Stripe')
+        }
+        setConnecting(false)
+        return
       }
 
-      const { url } = await response.json()
+      const { url } = data
       window.location.href = url
     } catch (error: any) {
       logger.error('Error connecting Stripe', error)

@@ -58,6 +58,23 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(result.data)
   } else {
     logger.error('Error initiating Stripe Connect', result.details)
+    
+    // Check if it's a Connect not enabled error
+    const errorMessage = result.error || ''
+    const isConnectNotEnabled = errorMessage.includes('signed up for Connect') || 
+                                 errorMessage.includes('Connect')
+    
+    if (isConnectNotEnabled) {
+      return NextResponse.json(
+        { 
+          error: 'Stripe Connect non abilitato',
+          message: 'Il tuo account Stripe non ha Stripe Connect abilitato. Per abilitarlo, visita https://stripe.com/docs/connect e segui le istruzioni per attivare Stripe Connect sul tuo account.',
+          helpUrl: 'https://stripe.com/docs/connect'
+        },
+        { status: 400 }
+      )
+    }
+    
     return NextResponse.json(
       { error: result.error },
       { status: 500 }
