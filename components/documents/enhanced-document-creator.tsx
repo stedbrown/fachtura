@@ -14,6 +14,11 @@ import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { useCompanySettings } from '@/hooks/use-company-settings'
 import { createClient } from '@/lib/supabase/client'
+import { ClientDialog } from '@/components/clients/client-dialog'
+import type { ClientInput } from '@/lib/validations/client'
+import { safeAsync, getSupabaseErrorMessage } from '@/lib/error-handler'
+import { logger } from '@/lib/logger'
+import { useSubscription } from '@/hooks/use-subscription'
 
 interface EnhancedDocumentCreatorProps {
   type: 'invoice' | 'quote'
@@ -23,6 +28,7 @@ interface EnhancedDocumentCreatorProps {
   onSave: (data: DocumentData) => Promise<any>
   previewComponent?: React.ReactNode | ((data: DocumentData) => React.ReactNode)
   onCreateClient?: () => void
+  onClientsChange?: (clients: Client[]) => void
 }
 
 interface DocumentData {
@@ -43,13 +49,18 @@ export function EnhancedDocumentCreator({
   onSave,
   previewComponent,
   onCreateClient,
+  onClientsChange,
 }: EnhancedDocumentCreatorProps) {
   const router = useRouter()
   const t = useTranslations(type === 'invoice' ? 'invoices' : 'quotes')
   const tCommon = useTranslations('common')
   const tStatus = useTranslations(`${type === 'invoice' ? 'invoices' : 'quotes'}.status`)
+  const tClients = useTranslations('clients')
+  const tSubscription = useTranslations('subscription')
+  const tErrors = useTranslations('errors')
 
   const { settings } = useCompanySettings()
+  const { checkLimits } = useSubscription()
   
   const [clientId, setClientId] = React.useState('')
   const [date, setDate] = React.useState(new Date().toISOString().split('T')[0])
@@ -64,6 +75,81 @@ export function EnhancedDocumentCreator({
   const [savedDocumentId, setSavedDocumentId] = React.useState<string | undefined>()
   const [savedDocumentNumber, setSavedDocumentNumber] = React.useState<string | undefined>()
   const [currentStepIndex, setCurrentStepIndex] = React.useState(0)
+  const [clientDialogOpen, setClientDialogOpen] = React.useState(false)
+  const [isCreatingClient, setIsCreatingClient] = React.useState(false)
+
+  // Handle client creation
+  const handleCreateClient = React.useCallback(async () => {
+    // Check subscription limits
+    const limitsResult = await checkLimits('client')
+    logger.debug('Client limits check', { limitsResult })
+
+    if (!limitsResult.allowed) {
+      toast.error(tSubscription('toast.limitReached'), {
+        description: tSubscription('toast.limitReachedDescription', {
+          max: limitsResult.max_count || 0,
+          resource: tCommon('client'),
+          plan: limitsResult.plan_name || 'Free',
+        }),
+        duration: 5000,
+      })
+      return
+    }
+
+    setClientDialogOpen(true)
+  }, [checkLimits, tSubscription, tCommon])
+
+  const handleClientSubmit = React.useCallback(async (data: ClientInput) => {
+    setIsCreatingClient(true)
+
+    const result = await safeAsync(async () => {
+      const supabase = createClient()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+
+      if (!user) {
+        throw new Error(tErrors('generic') || 'Utente non autenticato')
+      }
+
+      const { data: newClient, error } = await supabase
+        .from('clients')
+        .insert({
+          ...data,
+          user_id: user.id,
+        })
+        .select()
+        .single()
+
+      if (error) {
+        throw error
+      }
+
+      return newClient
+    }, 'Error creating client')
+
+    setIsCreatingClient(false)
+
+    if (result.success && result.data) {
+      const newClient = result.data as Client
+      toast.success(tSubscription('toast.clientCreated'), {
+        description: tSubscription('toast.clientCreatedDescription', { name: data.name }),
+      })
+      setClientDialogOpen(false)
+      
+      // Update clients list
+      const updatedClients = [...clients, newClient].sort((a, b) => a.name.localeCompare(b.name))
+      onClientsChange?.(updatedClients)
+      
+      // Select the new client
+      setClientId(newClient.id)
+    } else {
+      logger.error('Error creating client', result.details)
+      toast.error(tCommon('error'), {
+        description: getSupabaseErrorMessage(result.details) || tClients('createError') || tCommon('error'),
+      })
+    }
+  }, [clients, onClientsChange, tSubscription, tCommon, tClients, tErrors])
 
   const handleSaveDocument = React.useCallback(async () => {
     if (!isStep1Valid || !isStep2Valid) {
@@ -207,7 +293,7 @@ export function EnhancedDocumentCreator({
             onStatusChange={setStatus}
             statusOptions={statusOptions}
             type={type}
-            onCreateClient={onCreateClient}
+            onCreateClient={handleCreateClient}
             defaultDays={getDefaultDays()}
             t={t}
           />
@@ -346,6 +432,14 @@ export function EnhancedDocumentCreator({
       isSaving={isSaving}
       onStepChange={setCurrentStepIndex}
     />
+    <ClientDialog
+      open={clientDialogOpen}
+      onOpenChange={setClientDialogOpen}
+      onSubmit={handleClientSubmit}
+      client={null}
+      loading={isCreatingClient}
+    />
+  </>
   )
 }
 

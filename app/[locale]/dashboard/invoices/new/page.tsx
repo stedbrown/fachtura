@@ -184,8 +184,8 @@ export default function NewInvoicePage() {
       locale={locale}
       onSave={handleSave}
       previewComponent={previewComponent}
-      onCreateClient={() => {
-        router.push(`/${locale}/dashboard/clients?create=true`)
+      onClientsChange={(updatedClients) => {
+        setClients(updatedClients)
       }}
     />
   )
