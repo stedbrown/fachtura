@@ -142,7 +142,7 @@ export async function GET(request: NextRequest) {
   if (result.success) {
     return NextResponse.json(result.data)
   } else {
-    logger.error('Payment verification failed', result.details, { sessionId })
+    logger.error('Payment verification failed', result.details || result.error, { sessionId })
     return NextResponse.json(
       { error: result.error, success: false },
       { status: 500 }

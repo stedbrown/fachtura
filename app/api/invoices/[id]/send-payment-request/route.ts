@@ -115,7 +115,7 @@ export async function POST(
   if (result.success) {
     return NextResponse.json(result.data)
   } else {
-    logger.error('Error sending payment request', result.details, { invoiceId: id })
+    logger.error('Error sending payment request', result.details || result.error, { invoiceId: id })
     return NextResponse.json(
       { error: result.error },
       { status: 500 }
