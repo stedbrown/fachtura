@@ -134,12 +134,14 @@ export default function NewInvoicePage() {
     }, 'Error saving invoice')
 
     if (result.success) {
-      toast.success(t('createSuccess') || 'Fattura creata con successo')
-      router.push(`/${locale}/dashboard/invoices`)
+      // Return the invoice data instead of navigating immediately
+      // Navigation will be handled by the actions step
+      return result.data
     } else {
       const errorMessage = getSupabaseErrorMessage(result.error)
       logger.error('Error creating invoice', result.details)
       toast.error(errorMessage || t('createError') || tCommon('error'))
+      throw new Error(errorMessage || t('createError') || tCommon('error'))
     }
   }
 

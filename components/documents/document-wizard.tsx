@@ -22,6 +22,7 @@ interface DocumentWizardProps {
   showPreview?: boolean
   previewComponent?: React.ReactNode | ((data: any) => React.ReactNode)
   previewData?: any
+  isSaving?: boolean
 }
 
 export function DocumentWizard({
