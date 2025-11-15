@@ -153,7 +153,8 @@ export async function POST(
   if (result.success) {
     return NextResponse.json(result.data)
   } else {
-    logger.error('Error creating payment link', result.details || result.error, { invoiceId: id })
+    const errorDetails = result.details || result.error
+    logger.error('Error creating payment link', errorDetails, { invoiceId: id })
     return NextResponse.json(
       { error: result.error },
       { status: 500 }

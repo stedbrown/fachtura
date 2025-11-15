@@ -47,7 +47,8 @@ export async function GET(request: NextRequest) {
   if (result.success && result.data) {
     return result.data as NextResponse
   } else {
-    logger.error('Error refreshing Stripe Connect', result.details || result.error)
+    const errorDetails = result.success === false ? (result.details || result.error) : result.error
+    logger.error('Error refreshing Stripe Connect', errorDetails)
     return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings?error=stripe_connect_failed`)
   }
 }

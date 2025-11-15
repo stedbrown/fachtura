@@ -66,7 +66,8 @@ export async function GET(request: NextRequest) {
   if (result.success) {
     return NextResponse.json(result.data)
   } else {
-    logger.error('Error initiating Stripe Connect', result.details || result.error)
+    const errorDetails = result.details || result.error
+    logger.error('Error initiating Stripe Connect', errorDetails)
     
     // Check if it's a Connect not enabled error
     const errorMessage = result.error || ''
@@ -172,7 +173,8 @@ export async function POST(request: NextRequest) {
   if (result.success) {
     return NextResponse.json(result.data)
   } else {
-    logger.error('Error saving Stripe Connect account', result.details || result.error)
+    const errorDetails = result.details || result.error
+    logger.error('Error saving Stripe Connect account', errorDetails)
     return NextResponse.json(
       { error: result.error },
       { status: 500 }

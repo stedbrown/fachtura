@@ -147,7 +147,8 @@ export async function POST(
   if (result.success) {
     return NextResponse.json(result.data)
   } else {
-    logger.error('Payment verification failed', result.details || result.error, { invoiceId: id })
+    const errorDetails = result.details || result.error
+    logger.error('Payment verification failed', errorDetails, { invoiceId: id })
     return NextResponse.json(
       { error: result.error },
       { status: 500 }
