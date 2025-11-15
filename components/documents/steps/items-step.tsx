@@ -18,6 +18,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Plus, Trash2, GripVertical, Package, Search } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Product } from '@/lib/types/database'
+import { logger } from '@/lib/logger'
 
 export interface ItemInput {
   id: string
@@ -63,6 +64,9 @@ export function ItemsStep({
   }
 
   const updateItem = (id: string, field: keyof ItemInput, value: any) => {
+    if (process.env.NODE_ENV === 'development') {
+      logger.debug('ItemsStep: updateItem', { id, field, value })
+    }
     onItemsChange(
       items.map((item) => (item.id === id ? { ...item, [field]: value } : item))
     )
@@ -71,11 +75,43 @@ export function ItemsStep({
   const fillFromProduct = (itemId: string, productId: string) => {
     const product = products.find((p) => p.id === productId)
     if (product) {
-      updateItem(itemId, 'description', product.name)
-      updateItem(itemId, 'unit_price', product.unit_price)
-      updateItem(itemId, 'tax_rate', product.tax_rate)
-      updateItem(itemId, 'product_id', product.id)
+      if (process.env.NODE_ENV === 'development') {
+        logger.debug('ItemsStep: fillFromProduct', {
+          itemId,
+          productId,
+          productName: product.name,
+          unitPrice: product.unit_price,
+          taxRate: product.tax_rate,
+        })
+      }
+      
+      // Batch update all fields at once to avoid multiple re-renders
+      const updatedItems = items.map((item) => {
+        if (item.id === itemId) {
+          return {
+            ...item,
+            description: product.name,
+            unit_price: product.unit_price,
+            tax_rate: product.tax_rate,
+            product_id: product.id,
+          }
+        }
+        return item
+      })
+      
+      if (process.env.NODE_ENV === 'development') {
+        logger.debug('ItemsStep: fillFromProduct - updated items', {
+          itemId,
+          updatedItem: updatedItems.find(item => item.id === itemId),
+        })
+      }
+      
+      onItemsChange(updatedItems)
       setProductSearchOpen((prev) => ({ ...prev, [itemId]: false }))
+    } else {
+      if (process.env.NODE_ENV === 'development') {
+        logger.warn('ItemsStep: fillFromProduct - product not found', { productId })
+      }
     }
   }
 

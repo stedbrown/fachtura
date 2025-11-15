@@ -220,15 +220,34 @@ export function EnhancedDocumentCreator({
     ]
   )
 
-  const currentData: DocumentData = {
-    clientId,
-    date,
-    dueDate: type === 'invoice' ? dueDate : undefined,
-    validUntil: type === 'quote' ? validUntil : undefined,
-    status,
-    items,
-    notes,
-  }
+  const currentData: DocumentData = React.useMemo(() => {
+    const data = {
+      clientId,
+      date,
+      dueDate: type === 'invoice' ? dueDate : undefined,
+      validUntil: type === 'quote' ? validUntil : undefined,
+      status,
+      items,
+      notes,
+    }
+    
+    // Dev logging
+    if (process.env.NODE_ENV === 'development') {
+      logger.debug('EnhancedDocumentCreator: currentData updated', {
+        clientId,
+        itemsCount: items.length,
+        items: items.map(item => ({
+          id: item.id,
+          description: item.description?.substring(0, 30),
+          quantity: item.quantity,
+          unit_price: item.unit_price,
+          product_id: item.product_id,
+        })),
+      })
+    }
+    
+    return data
+  }, [clientId, date, dueDate, validUntil, status, items, notes, type])
 
   // Show preview only when client is selected
   // Preview will update in real-time as user fills the form

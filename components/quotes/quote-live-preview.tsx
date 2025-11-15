@@ -6,6 +6,7 @@ import type { Client } from '@/lib/types/database'
 import type { QuoteItemInput } from '@/lib/validations/quote'
 import { calculateQuoteTotals } from '@/lib/utils/quote-utils'
 import { cn } from '@/lib/utils'
+import { logger } from '@/lib/logger'
 
 interface QuoteLivePreviewProps {
   clientId: string
@@ -42,13 +43,42 @@ export function QuoteLivePreview({
   const client = clients.find(c => c.id === clientId)
 
   const pdfData = useMemo(() => {
+    // Dev logging
+    if (process.env.NODE_ENV === 'development') {
+      logger.debug('QuoteLivePreview: pdfData recalculating', {
+        clientId,
+        itemsCount: items.length,
+        items: items.map(item => ({
+          description: item.description?.substring(0, 30),
+          quantity: item.quantity,
+          unit_price: item.unit_price,
+          hasDescription: !!item.description?.trim(),
+        })),
+      })
+    }
+
     // Show preview as soon as client is selected, even without items
     if (!client || !clientId) {
+      if (process.env.NODE_ENV === 'development') {
+        logger.debug('QuoteLivePreview: No client selected', { clientId, hasClient: !!client })
+      }
       return null
     }
     
     // Filter out empty items for calculation
     const validItems = items.filter(item => item.description?.trim() && item.quantity > 0 && item.unit_price > 0)
+    
+    if (process.env.NODE_ENV === 'development') {
+      logger.debug('QuoteLivePreview: Valid items', {
+        totalItems: items.length,
+        validItemsCount: validItems.length,
+        validItems: validItems.map(item => ({
+          description: item.description?.substring(0, 30),
+          quantity: item.quantity,
+          unit_price: item.unit_price,
+        })),
+      })
+    }
     
     // If no valid items, return basic preview with client info only
     if (validItems.length === 0) {

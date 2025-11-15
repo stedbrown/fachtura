@@ -42,13 +42,42 @@ export function InvoiceLivePreview({
   const client = clients.find(c => c.id === clientId)
 
   const pdfData = useMemo(() => {
+    // Dev logging
+    if (process.env.NODE_ENV === 'development') {
+      logger.debug('InvoiceLivePreview: pdfData recalculating', {
+        clientId,
+        itemsCount: items.length,
+        items: items.map(item => ({
+          description: item.description?.substring(0, 30),
+          quantity: item.quantity,
+          unit_price: item.unit_price,
+          hasDescription: !!item.description?.trim(),
+        })),
+      })
+    }
+
     // Show preview as soon as client is selected, even without items
     if (!client || !clientId) {
+      if (process.env.NODE_ENV === 'development') {
+        logger.debug('InvoiceLivePreview: No client selected', { clientId, hasClient: !!client })
+      }
       return null
     }
     
     // Filter out empty items for calculation
     const validItems = items.filter(item => item.description?.trim() && item.quantity > 0 && item.unit_price > 0)
+    
+    if (process.env.NODE_ENV === 'development') {
+      logger.debug('InvoiceLivePreview: Valid items', {
+        totalItems: items.length,
+        validItemsCount: validItems.length,
+        validItems: validItems.map(item => ({
+          description: item.description?.substring(0, 30),
+          quantity: item.quantity,
+          unit_price: item.unit_price,
+        })),
+      })
+    }
     
     // If no valid items, return basic preview with client info only
     if (validItems.length === 0) {
@@ -94,14 +123,12 @@ export function InvoiceLivePreview({
         postal_code: client.postal_code,
         country: client.country,
       },
-      items: items
-        .filter(item => item.description?.trim())
-        .map(item => ({
-          description: item.description,
-          quantity: item.quantity,
-          unit_price: item.unit_price,
-          tax_rate: item.tax_rate,
-        })),
+      items: validItems.map(item => ({
+        description: item.description,
+        quantity: item.quantity,
+        unit_price: item.unit_price,
+        tax_rate: item.tax_rate,
+      })),
       subtotal: totals.subtotal,
       tax_amount: totals.totalTax,
       total: totals.total,
@@ -110,11 +137,23 @@ export function InvoiceLivePreview({
   }, [clientId, client, date, dueDate, status, notes, items, invoiceNumber, locale])
 
   useEffect(() => {
+    // Dev logging
+    if (process.env.NODE_ENV === 'development') {
+      logger.debug('InvoiceLivePreview: useEffect triggered', {
+        hasPdfData: !!pdfData,
+        pdfDataItemsCount: pdfData?.items?.length || 0,
+        clientName: pdfData?.client?.name,
+      })
+    }
+
     // Abort any pending request when dependencies change
     pendingAbortRef.current?.abort()
     pendingAbortRef.current = null
 
     if (!pdfData) {
+      if (process.env.NODE_ENV === 'development') {
+        logger.debug('InvoiceLivePreview: No pdfData, clearing preview')
+      }
       if (activeBlobUrlRef.current) {
         URL.revokeObjectURL(activeBlobUrlRef.current)
         activeBlobUrlRef.current = null
@@ -129,6 +168,13 @@ export function InvoiceLivePreview({
 
     setIsGenerating(true)
     setError(null)
+
+    if (process.env.NODE_ENV === 'development') {
+      logger.debug('InvoiceLivePreview: Starting PDF generation', {
+        itemsCount: pdfData.items.length,
+        total: pdfData.total,
+      })
+    }
 
     let generatedUrl: string | null = null
 
