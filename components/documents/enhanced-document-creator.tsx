@@ -65,20 +65,6 @@ export function EnhancedDocumentCreator({
   const [savedDocumentNumber, setSavedDocumentNumber] = React.useState<string | undefined>()
   const [currentStepIndex, setCurrentStepIndex] = React.useState(0)
 
-  // Auto-save when moving from Notes to Actions step
-  React.useEffect(() => {
-    const notesStepIndex = steps.findIndex(s => s.id === 'notes')
-    const actionsStepIndex = steps.findIndex(s => s.id === 'actions')
-    
-    // If we're moving to actions step and document not saved yet
-    if (currentStepIndex === actionsStepIndex && !savedDocumentId && notesStepIndex >= 0) {
-      // Check if previous step was notes and form is valid
-      if (isStep1Valid && isStep2Valid && !isSaving) {
-        handleSaveDocument()
-      }
-    }
-  }, [currentStepIndex, savedDocumentId, isStep1Valid, isStep2Valid, isSaving])
-
   const handleSaveDocument = React.useCallback(async () => {
     if (!isStep1Valid || !isStep2Valid) {
       toast.error('Compila tutti i campi obbligatori')
