@@ -161,52 +161,29 @@ export function EnhancedDocumentCreator({
     )
   }, [items])
 
-  const handleComplete = async () => {
-    // Check if we're on the actions step by checking current step
-    // If on actions step, navigate away
-    const actionsStepIndex = steps.findIndex(s => s.id === 'actions')
-    const isOnActionsStep = actionsStepIndex >= 0
+  // Auto-save when moving from Notes to Actions step
+  React.useEffect(() => {
+    // Actions step is always index 3 (client=0, items=1, notes=2, actions=3)
+    const actionsStepIndex = 3
     
-    if (isOnActionsStep) {
+    // If we're moving to actions step and document not saved yet
+    if (currentStepIndex === actionsStepIndex && !savedDocumentId) {
+      // Check if form is valid
+      if (isStep1Valid && isStep2Valid && !isSaving) {
+        handleSaveDocument()
+      }
+    }
+  }, [currentStepIndex, savedDocumentId, isStep1Valid, isStep2Valid, isSaving, handleSaveDocument])
+
+  const handleComplete = async () => {
+    // If we're on the actions step (index 3), navigate away
+    if (currentStepIndex === 3) {
       router.push(`/${locale}/dashboard/${type === 'invoice' ? 'invoices' : 'quotes'}`)
       return
     }
 
-    // If we're on notes step, save the document
-    if (!isStep1Valid || !isStep2Valid) {
-      toast.error('Compila tutti i campi obbligatori')
-      return
-    }
-
-    setIsSaving(true)
-    try {
-      const result = await onSave({
-        clientId,
-        date,
-        dueDate: type === 'invoice' ? dueDate : undefined,
-        validUntil: type === 'quote' ? validUntil : undefined,
-        status,
-        items,
-        notes,
-      })
-      
-      // Store saved document info for actions step
-      if (result && typeof result === 'object' && 'id' in result) {
-        setSavedDocumentId(result.id as string)
-        if ('invoice_number' in result) {
-          setSavedDocumentNumber(result.invoice_number as string)
-        } else if ('quote_number' in result) {
-          setSavedDocumentNumber(result.quote_number as string)
-        }
-        setIsSaving(false)
-        toast.success(type === 'invoice' ? 'Fattura creata con successo' : 'Preventivo creato con successo')
-      } else {
-        setIsSaving(false)
-      }
-    } catch (error: any) {
-      toast.error(error?.message || tCommon('error'))
-      setIsSaving(false)
-    }
+    // Otherwise, save the document (shouldn't happen normally as auto-save handles it)
+    await handleSaveDocument()
   }
 
   const steps = React.useMemo(
