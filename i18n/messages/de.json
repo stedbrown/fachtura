@@ -328,6 +328,8 @@
     "restore": "Wiederherstellen",
     "permanentDelete": "Dauerhaft löschen",
     "permanentDeleteWarning": "WARNUNG: Diese Aktion wird den Offert endgültig löschen und kann nicht rückgängig gemacht werden. Fortfahren?",
+    "permanentDeleteSuccess": "Offert dauerhaft gelöscht",
+    "permanentDeleteError": "Fehler beim dauerhaften Löschen des Offerts",
     "changeStatus": "Status ändern",
     "convertToInvoice": "In Rechnung umwandeln",
     "downloadPDF": "PDF herunterladen",

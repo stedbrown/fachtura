@@ -328,6 +328,8 @@
     "restore": "Restore",
     "permanentDelete": "Delete permanently",
     "permanentDeleteWarning": "WARNING: This action will permanently delete the quote and cannot be undone. Continue?",
+    "permanentDeleteSuccess": "Quote permanently deleted",
+    "permanentDeleteError": "Error permanently deleting quote",
     "changeStatus": "Change status",
     "convertToInvoice": "Convert to Invoice",
     "downloadPDF": "Download PDF",

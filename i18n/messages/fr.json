@@ -328,6 +328,8 @@
     "restore": "Restaurer",
     "permanentDelete": "Supprimer définitivement",
     "permanentDeleteWarning": "ATTENTION: Cette action supprimera définitivement le devis et ne pourra pas être annulée. Continuer?",
+    "permanentDeleteSuccess": "Devis supprimé définitivement",
+    "permanentDeleteError": "Erreur lors de la suppression définitive du devis",
     "changeStatus": "Changer le statut",
     "convertToInvoice": "Convertir en facture",
     "downloadPDF": "Télécharger PDF",

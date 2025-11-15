@@ -328,6 +328,8 @@
     "restore": "Restaurar",
     "permanentDelete": "Stizzar definitivamain",
     "permanentDeleteWarning": "ATTENZIUN: Questa acziun stizza definitivamain il preventiv e na po betg vegnir revocada. Cuntinuar?",
+    "permanentDeleteSuccess": "Preventiv stizzà definitivamain",
+    "permanentDeleteError": "Errur tar stizzar definitivamain il preventiv",
     "changeStatus": "Midar il status",
     "convertToInvoice": "Converter en factura",
     "downloadPDF": "Telechargiar PDF",
