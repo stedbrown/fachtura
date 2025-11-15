@@ -74,13 +74,15 @@ export async function POST(
 
     // For now, we'll use mailto link
     // In production, you'd use a service like Resend, SendGrid, or Supabase Edge Functions
+    // Note: mailto: cannot attach files natively
+    // On mobile, Web Share API handles file attachment automatically
+    // On desktop, user should download PDF first and attach manually
     const subject = encodeURIComponent(`Fattura ${invoice.invoice_number} - Richiesta di pagamento`)
     const body = encodeURIComponent(
       `Gentile ${invoice.client.name},\n\n` +
       `Le inviamo la fattura ${invoice.invoice_number} per un importo di ${invoice.total.toFixed(2)} CHF.\n\n` +
       `Scadenza: ${invoice.due_date ? new Date(invoice.due_date).toLocaleDateString('it-IT') : 'Non specificata'}\n\n` +
-      `Può pagare online tramite il seguente link:\n${paymentUrl}\n\n` +
-      `Oppure può scaricare la fattura in PDF e procedere con il pagamento tradizionale.\n\n` +
+      `💳 Può pagare online tramite il seguente link:\n${paymentUrl}\n\n` +
       `Cordiali saluti,\n${company?.company_name || 'Il team'}`
     )
 

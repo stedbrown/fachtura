@@ -110,6 +110,15 @@ export async function POST(
       stripeAccount: stripeAccount.stripe_account_id,
     })
 
+    if (!checkoutSession.url) {
+      logger.error('Checkout session created but URL is missing', {
+        invoiceId: invoice.id,
+        sessionId: checkoutSession.id,
+        session: checkoutSession,
+      })
+      throw new Error('Impossibile ottenere il link di pagamento. La sessione è stata creata ma l\'URL non è disponibile.')
+    }
+
     logger.debug('Checkout session created', {
       invoiceId: invoice.id,
       sessionId: checkoutSession.id,

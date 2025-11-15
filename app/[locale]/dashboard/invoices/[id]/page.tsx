@@ -18,7 +18,7 @@ import {
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Plus, Trash2, Package, Edit3, ArrowLeft, Loader2 } from 'lucide-react'
+import { Plus, Trash2, Package, Edit3, ArrowLeft, Loader2, RefreshCw, CheckCircle2 } from 'lucide-react'
 import type { Client, Product } from '@/lib/types/database'
 import type { InvoiceItemInput } from '@/lib/validations/invoice'
 import { calculateInvoiceTotals } from '@/lib/utils/invoice-utils'
@@ -49,6 +49,8 @@ export default function EditInvoicePage() {
   const [notes, setNotes] = useState('')
   const [items, setItems] = useState<InvoiceItemInput[]>([])
   const [invoiceNumber, setInvoiceNumber] = useState('')
+  const [stripeCheckoutSessionId, setStripeCheckoutSessionId] = useState<string | null>(null)
+  const [verifyingPayment, setVerifyingPayment] = useState(false)
 
   useEffect(() => {
     loadClients()

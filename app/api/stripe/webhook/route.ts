@@ -20,10 +20,25 @@ export async function POST(req: NextRequest) {
   const body = await req.text();
   const signature = req.headers.get('stripe-signature');
 
+  logger.info('Webhook request received', {
+    hasSignature: !!signature,
+    bodyLength: body.length,
+    webhookSecretConfigured: !!webhookSecret,
+  });
+
   if (!signature) {
+    logger.error('Missing stripe-signature header');
     return NextResponse.json(
       { error: 'Missing stripe-signature header' },
       { status: 400 }
+    );
+  }
+
+  if (!webhookSecret) {
+    logger.error('STRIPE_WEBHOOK_SECRET not configured');
+    return NextResponse.json(
+      { error: 'Webhook secret not configured' },
+      { status: 500 }
     );
   }
 
@@ -31,24 +46,59 @@ export async function POST(req: NextRequest) {
 
   try {
     event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
-  } catch (err) {
-    logger.error('Webhook signature verification failed', err);
+    logger.info('Webhook signature verified successfully', {
+      eventType: event.type,
+      eventId: event.id,
+    });
+  } catch (err: any) {
+    logger.error('Webhook signature verification failed', {
+      error: err.message,
+      errorType: err.type,
+    });
     return NextResponse.json(
-      { error: 'Invalid signature' },
+      { error: 'Invalid signature', details: err.message },
       { status: 400 }
     );
   }
 
   const supabase = await createClient();
 
+  logger.info('Webhook event received', { 
+    eventType: event.type, 
+    eventId: event.id,
+    livemode: event.livemode,
+  })
+
   try {
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session;
+        
+        logger.info('checkout.session.completed received', {
+          sessionId: session.id,
+          metadata: session.metadata,
+          subscription: session.subscription,
+          paymentStatus: session.payment_status,
+          paymentIntent: session.payment_intent,
+          mode: session.mode,
+          customer: session.customer,
+          customerEmail: session.customer_email,
+        })
+        
+        // Handle subscription checkout
         const userId = session.metadata?.user_id;
         const planId = session.metadata?.plan_id;
+        const invoiceId = session.metadata?.invoice_id;
 
-        if (userId && planId) {
+        logger.info('Extracted metadata from session', {
+          userId,
+          planId,
+          invoiceId,
+          hasSubscription: !!session.subscription,
+        });
+
+        if (userId && planId && session.subscription) {
+          // This is a subscription checkout
           await supabase
             .from('user_subscriptions')
             .update({
@@ -60,6 +110,99 @@ export async function POST(req: NextRequest) {
               ).toISOString(),
             })
             .eq('user_id', userId);
+          logger.info('Subscription updated', { userId, planId, subscriptionId: session.subscription });
+        } else if (invoiceId && !session.subscription) {
+          // This is a one-time invoice payment
+          logger.info('Processing invoice payment', { 
+            invoiceId, 
+            sessionId: session.id,
+            paymentStatus: session.payment_status,
+          });
+          
+          // First, check if invoice exists
+          const { data: existingInvoice, error: fetchError } = await supabase
+            .from('invoices')
+            .select('id, status, payment_status')
+            .eq('id', invoiceId)
+            .single();
+
+          if (fetchError || !existingInvoice) {
+            logger.error('Invoice not found in database', {
+              invoiceId,
+              error: fetchError,
+              sessionId: session.id,
+            });
+            break;
+          }
+
+          logger.info('Invoice found in database', {
+            invoiceId,
+            currentStatus: existingInvoice.status,
+            currentPaymentStatus: existingInvoice.payment_status,
+          });
+          
+          const { error: updateError, data: updatedInvoice } = await supabase
+            .from('invoices')
+            .update({
+              status: 'paid',
+              payment_status: 'paid',
+              paid_at: new Date().toISOString(),
+              stripe_checkout_session_id: session.id,
+              stripe_payment_intent_id: typeof session.payment_intent === 'string' 
+                ? session.payment_intent 
+                : session.payment_intent?.id || null,
+            })
+            .eq('id', invoiceId)
+            .select();
+
+          if (updateError) {
+            logger.error('Error updating invoice payment status', {
+              error: updateError,
+              invoiceId,
+              sessionId: session.id,
+              errorCode: updateError.code,
+              errorMessage: updateError.message,
+            });
+          } else {
+            logger.info('Invoice updated successfully', { 
+              invoiceId, 
+              sessionId: session.id,
+              updatedData: updatedInvoice,
+            });
+            // Create notification for user
+            const { data: invoice } = await supabase
+              .from('invoices')
+              .select('user_id, invoice_number, total')
+              .eq('id', invoiceId)
+              .single();
+
+            if (invoice) {
+              await supabase.rpc('create_notification', {
+                p_user_id: invoice.user_id,
+                p_type: 'invoice_paid',
+                p_title: 'Fattura pagata',
+                p_message: `La fattura ${invoice.invoice_number} di ${invoice.total} CHF è stata pagata!`,
+                p_entity_type: 'invoice',
+                p_entity_id: invoiceId,
+                p_priority: 'high',
+                p_channels: ['in_app', 'email'],
+                p_metadata: {
+                  invoice_number: invoice.invoice_number,
+                  total: invoice.total,
+                  payment_method: session.payment_method_types?.[0] || 'unknown',
+                },
+                p_action_url: `/dashboard/invoices/${invoiceId}`,
+                p_action_label: 'Visualizza fattura'
+              });
+            }
+          }
+        } else {
+          logger.warn('checkout.session.completed received but no matching handler', {
+            userId,
+            planId,
+            invoiceId,
+            hasSubscription: !!session.subscription,
+          });
         }
         break;
       }
@@ -163,65 +306,6 @@ export async function POST(req: NextRequest) {
         break;
       }
 
-      // ============================================
-      // INVOICE PAYMENT EVENTS (for customer invoices)
-      // ============================================
-      case 'checkout.session.completed': {
-        const session = event.data.object as Stripe.Checkout.Session;
-        
-        // Check if this is for an invoice payment (not subscription)
-        const invoiceId = session.metadata?.invoice_id;
-        
-        if (invoiceId && !session.subscription) {
-          // This is a one-time invoice payment
-          const { error: updateError } = await supabase
-            .from('invoices')
-            .update({
-              status: 'paid',
-              payment_status: 'paid',
-              paid_at: new Date().toISOString(),
-              stripe_checkout_session_id: session.id,
-              stripe_payment_intent_id: typeof session.payment_intent === 'string' 
-                ? session.payment_intent 
-                : session.payment_intent?.id || null,
-            })
-            .eq('id', invoiceId);
-
-          if (updateError) {
-            logger.error('Error updating invoice payment status', updateError, { invoiceId, sessionId: session.id });
-          } else {
-            // Create notification for user
-            const { data: invoice } = await supabase
-              .from('invoices')
-              .select('user_id, invoice_number, total')
-              .eq('id', invoiceId)
-              .single();
-
-            if (invoice) {
-              await supabase.rpc('create_notification', {
-                p_user_id: invoice.user_id,
-                p_type: 'invoice_paid',
-                p_title: 'Fattura pagata',
-                p_message: `La fattura ${invoice.invoice_number} di ${invoice.total} CHF è stata pagata!`,
-                p_entity_type: 'invoice',
-                p_entity_id: invoiceId,
-                p_priority: 'high',
-                p_channels: '["in_app", "email"]'::jsonb,
-                p_metadata: {
-                  invoice_number: invoice.invoice_number,
-                  total: invoice.total,
-                  payment_method: session.payment_method_types?.[0] || 'unknown',
-                },
-                p_action_url: `/dashboard/invoices/${invoiceId}`,
-                p_action_label: 'Visualizza fattura'
-              });
-            }
-
-            logger.info('Invoice payment completed', { invoiceId, sessionId: session.id });
-          }
-        }
-        break;
-      }
 
       case 'payment_intent.succeeded': {
         const paymentIntent = event.data.object as Stripe.PaymentIntent;
