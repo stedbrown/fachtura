@@ -17,7 +17,6 @@ import { createClient } from '@/lib/supabase/client'
 import { ClientDialog } from '@/components/clients/client-dialog'
 import type { ClientInput } from '@/lib/validations/client'
 import { safeAsync, getSupabaseErrorMessage } from '@/lib/error-handler'
-import { logger } from '@/lib/logger'
 import { useSubscription } from '@/hooks/use-subscription'
 
 interface EnhancedDocumentCreatorProps {
