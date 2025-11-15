@@ -50,13 +50,17 @@ export function DocumentWizard({
       onComplete()
     } else {
       setDirection('forward')
-      setCurrentStep((prev) => Math.min(prev + 1, steps.length - 1))
+      const nextStep = Math.min(currentStep + 1, steps.length - 1)
+      setCurrentStep(nextStep)
+      onStepChange?.(nextStep)
     }
   }
 
   const handleBack = () => {
     setDirection('backward')
-    setCurrentStep((prev) => Math.max(prev - 1, 0))
+    const prevStep = Math.max(currentStep - 1, 0)
+    setCurrentStep(prevStep)
+    onStepChange?.(prevStep)
   }
 
   const goToStep = (stepIndex: number) => {
@@ -66,7 +70,13 @@ export function DocumentWizard({
       setDirection('forward')
     }
     setCurrentStep(stepIndex)
+    onStepChange?.(stepIndex)
   }
+  
+  // Notify parent of initial step
+  React.useEffect(() => {
+    onStepChange?.(currentStep)
+  }, []) // Only on mount
 
   return (
     <div className={cn('flex flex-col h-full', className)}>
