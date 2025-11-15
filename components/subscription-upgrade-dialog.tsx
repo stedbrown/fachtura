@@ -128,7 +128,7 @@ export function SubscriptionUpgradeDialog({
 
                   {plan.features && plan.features.length > 0 && (
                     <div className="border-t pt-3 space-y-2">
-                      {plan.features.map((feature, idx) => {
+                      {(plan.features as string[]).map((feature: string, idx: number) => {
                         const translationKey = getFeatureTranslationKey(feature);
                         const translatedFeature = translationKey ? tFeatures(translationKey) : feature;
                         
