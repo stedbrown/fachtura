@@ -3,6 +3,7 @@
 import * as React from 'react'
 import { useRouter } from 'next/navigation'
 import { useTranslations } from 'next-intl'
+import { logger } from '@/lib/logger'
 import { DocumentWizard } from './document-wizard'
 import { ClientInfoStep } from './steps/client-info-step'
 import { ItemsStep, type ItemInput } from './steps/items-step'
