@@ -142,7 +142,7 @@ export function EnhancedDocumentCreator({
       
       // Select the new client
       setClientId(newClient.id)
-    } else {
+    } else if (!result.success) {
       logger.error('Error creating client', result.details)
       toast.error(tCommon('error'), {
         description: getSupabaseErrorMessage(result.details) || tClients('createError') || tCommon('error'),
