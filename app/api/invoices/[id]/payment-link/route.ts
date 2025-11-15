@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { stripe } from '@/lib/stripe/server'
 import { logger } from '@/lib/logger'
 import { safeAsync } from '@/lib/error-handler'
+import Stripe from 'stripe'
 
 export async function POST(
   request: NextRequest,
@@ -37,6 +38,18 @@ export async function POST(
       throw new Error('Invoice not found')
     }
 
+    // Check if user has Stripe Connect account
+    const { data: stripeAccount } = await supabase
+      .from('stripe_accounts')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('is_active', true)
+      .single()
+
+    if (!stripeAccount || !stripeAccount.charges_enabled) {
+      throw new Error('Stripe account not connected or not ready. Please connect your Stripe account in settings.')
+    }
+
     // Get company settings for currency
     const { data: company } = await supabase
       .from('company_settings')
@@ -49,57 +62,79 @@ export async function POST(
     // Convert total to cents (Stripe uses minor currency units)
     const amountInCents = Math.round(invoice.total * 100)
 
-    // Create Stripe product for this invoice
-    const product = await stripe.products.create({
-      name: `Fattura ${invoice.invoice_number}`,
-      description: `Fattura ${invoice.invoice_number} per ${invoice.client?.name || 'Cliente'}`,
+    // Create Stripe instance for connected account
+    const connectedStripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+      apiVersion: '2025-10-29.clover',
+      typescript: true,
     })
 
-    // Create Stripe price
-    const price = await stripe.prices.create({
+    // Create Stripe product for this invoice (on connected account)
+    const product = await connectedStripe.products.create({
+      name: `Fattura ${invoice.invoice_number}`,
+      description: `Fattura ${invoice.invoice_number} per ${invoice.client?.name || 'Cliente'}`,
+    }, {
+      stripeAccount: stripeAccount.stripe_account_id,
+    })
+
+    // Create Stripe price (on connected account)
+    const price = await connectedStripe.prices.create({
       product: product.id,
       unit_amount: amountInCents,
       currency: currency.toLowerCase(),
+    }, {
+      stripeAccount: stripeAccount.stripe_account_id,
     })
 
-    // Create payment link
-    const paymentLink = await stripe.paymentLinks.create({
+    // Create Checkout Session (better than Payment Link for invoices)
+    const checkoutSession = await connectedStripe.checkout.sessions.create({
+      payment_method_types: ['card'],
       line_items: [
         {
           price: price.id,
           quantity: 1,
         },
       ],
+      mode: 'payment',
+      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/cancel?invoice_id=${invoice.id}`,
+      customer_email: invoice.client?.email || undefined,
       metadata: {
         invoice_id: invoice.id,
         invoice_number: invoice.invoice_number,
         user_id: user.id,
       },
+      invoice_creation: {
+        enabled: false, // We handle invoices ourselves
+      },
+    }, {
+      stripeAccount: stripeAccount.stripe_account_id,
     })
 
-    logger.debug('Payment link created', {
+    logger.debug('Checkout session created', {
       invoiceId: invoice.id,
-      paymentLinkId: paymentLink.id,
-      url: paymentLink.url,
+      sessionId: checkoutSession.id,
+      url: checkoutSession.url,
     })
 
-    // Store payment link in invoice
+    // Store checkout session info in invoice
     const { error: updateError } = await supabase
       .from('invoices')
       .update({
-        stripe_payment_link_id: paymentLink.id,
-        stripe_payment_link_url: paymentLink.url,
+        stripe_account_id: stripeAccount.stripe_account_id,
+        stripe_checkout_session_id: checkoutSession.id,
+        stripe_payment_link_url: checkoutSession.url,
+        payment_status: 'pending',
       })
       .eq('id', invoice.id)
 
     if (updateError) {
-      logger.warn('Error updating invoice with payment link', updateError, { invoiceId: invoice.id })
-      // Continue anyway as payment link was created successfully
+      logger.warn('Error updating invoice with checkout session', updateError, { invoiceId: invoice.id })
+      // Continue anyway as checkout session was created successfully
     }
 
     return {
-      paymentLinkUrl: paymentLink.url,
-      paymentLinkId: paymentLink.id,
+      paymentLinkUrl: checkoutSession.url,
+      sessionId: checkoutSession.id,
     }
   }, 'Error creating payment link')
 

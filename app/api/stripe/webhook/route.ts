@@ -163,6 +163,116 @@ export async function POST(req: NextRequest) {
         break;
       }
 
+      // ============================================
+      // INVOICE PAYMENT EVENTS (for customer invoices)
+      // ============================================
+      case 'checkout.session.completed': {
+        const session = event.data.object as Stripe.Checkout.Session;
+        
+        // Check if this is for an invoice payment (not subscription)
+        const invoiceId = session.metadata?.invoice_id;
+        
+        if (invoiceId && !session.subscription) {
+          // This is a one-time invoice payment
+          const { error: updateError } = await supabase
+            .from('invoices')
+            .update({
+              status: 'paid',
+              payment_status: 'paid',
+              paid_at: new Date().toISOString(),
+              stripe_checkout_session_id: session.id,
+              stripe_payment_intent_id: typeof session.payment_intent === 'string' 
+                ? session.payment_intent 
+                : session.payment_intent?.id || null,
+            })
+            .eq('id', invoiceId);
+
+          if (updateError) {
+            logger.error('Error updating invoice payment status', updateError, { invoiceId, sessionId: session.id });
+          } else {
+            // Create notification for user
+            const { data: invoice } = await supabase
+              .from('invoices')
+              .select('user_id, invoice_number, total')
+              .eq('id', invoiceId)
+              .single();
+
+            if (invoice) {
+              await supabase.rpc('create_notification', {
+                p_user_id: invoice.user_id,
+                p_type: 'invoice_paid',
+                p_title: 'Fattura pagata',
+                p_message: `La fattura ${invoice.invoice_number} di ${invoice.total} CHF è stata pagata!`,
+                p_entity_type: 'invoice',
+                p_entity_id: invoiceId,
+                p_priority: 'high',
+                p_channels: '["in_app", "email"]'::jsonb,
+                p_metadata: {
+                  invoice_number: invoice.invoice_number,
+                  total: invoice.total,
+                  payment_method: session.payment_method_types?.[0] || 'unknown',
+                },
+                p_action_url: `/dashboard/invoices/${invoiceId}`,
+                p_action_label: 'Visualizza fattura'
+              });
+            }
+
+            logger.info('Invoice payment completed', { invoiceId, sessionId: session.id });
+          }
+        }
+        break;
+      }
+
+      case 'payment_intent.succeeded': {
+        const paymentIntent = event.data.object as Stripe.PaymentIntent;
+        const invoiceId = paymentIntent.metadata?.invoice_id;
+
+        if (invoiceId) {
+          // Update invoice if not already updated by checkout.session.completed
+          const { data: existingInvoice } = await supabase
+            .from('invoices')
+            .select('payment_status')
+            .eq('id', invoiceId)
+            .single();
+
+          if (existingInvoice && existingInvoice.payment_status !== 'paid') {
+            const { error: updateError } = await supabase
+              .from('invoices')
+              .update({
+                status: 'paid',
+                payment_status: 'paid',
+                paid_at: new Date().toISOString(),
+                stripe_payment_intent_id: paymentIntent.id,
+              })
+              .eq('id', invoiceId);
+
+            if (!updateError) {
+              logger.info('Invoice payment confirmed via payment_intent', { invoiceId, paymentIntentId: paymentIntent.id });
+            }
+          }
+        }
+        break;
+      }
+
+      case 'payment_intent.payment_failed': {
+        const paymentIntent = event.data.object as Stripe.PaymentIntent;
+        const invoiceId = paymentIntent.metadata?.invoice_id;
+
+        if (invoiceId) {
+          const { error: updateError } = await supabase
+            .from('invoices')
+            .update({
+              payment_status: 'failed',
+            })
+            .eq('id', invoiceId);
+
+          if (!updateError) {
+            logger.info('Invoice payment failed', { invoiceId, paymentIntentId: paymentIntent.id });
+          }
+        }
+        break;
+      }
+
       default:
         logger.info(`Unhandled event type: ${event.type}`, { eventType: event.type });
     }
