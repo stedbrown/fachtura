@@ -17,6 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import Image from 'next/image'
 import { Upload, X, Building2, FileText, Receipt, Palette, CreditCard } from 'lucide-react'
 import { ThemeCustomizer } from '@/components/theme-customizer'
+import { StripeConnectSection } from '@/components/settings/stripe-connect-section'
 import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 
@@ -527,7 +528,11 @@ export default function SettingsPage() {
 
           {/* Payment Info Tab */}
           <TabsContent value="payment">
-            <div className="max-w-3xl mx-auto">
+            <div className="max-w-3xl mx-auto space-y-6">
+              {/* Stripe Connect Section */}
+              <StripeConnectSection />
+
+              {/* Payment Methods Card */}
               <Card className="w-full">
                 <CardHeader>
                   <CardTitle>{t('paymentInfo')}</CardTitle>

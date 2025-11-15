@@ -120,6 +120,32 @@ export function ActionsStep({
     }
   }
 
+  const handleSendPaymentRequest = async () => {
+    if (!documentId || documentType !== 'invoice') {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/invoices/${documentId}/send-payment-request`, {
+        method: 'POST',
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Errore nell\'invio della richiesta di pagamento')
+      }
+
+      const { mailtoLink } = await response.json()
+      
+      // Open mailto link to send email
+      window.location.href = mailtoLink
+      toast.success('Email pronta per l\'invio')
+    } catch (error: any) {
+      logger.error('Error sending payment request', error)
+      toast.error(error.message || 'Errore nell\'invio della richiesta di pagamento')
+    }
+  }
+
   const handleCopyLink = async () => {
     const link = documentId
       ? `${window.location.origin}/${locale}/dashboard/${documentType === 'invoice' ? 'invoices' : 'quotes'}/${documentId}`
@@ -155,13 +181,22 @@ export function ActionsStep({
       disabled: isSharing,
     },
     {
+      id: 'send-payment',
+      label: 'Invia e Richiedi Pagamento',
+      description: 'Invia email con link pagamento',
+      icon: Mail,
+      onClick: handleSendPaymentRequest,
+      available: documentType === 'invoice' && !!documentId,
+      primary: documentType === 'invoice',
+    },
+    {
       id: 'payment',
       label: 'Paga Online',
       description: total ? `Paga ${total.toFixed(2)} CHF` : 'Crea link di pagamento',
       icon: CreditCard,
       onClick: handlePayment,
       available: documentType === 'invoice' && !!documentId,
-      primary: documentType === 'invoice',
+      primary: false,
     },
     {
       id: 'download',
