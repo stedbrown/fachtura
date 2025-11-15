@@ -42,7 +42,7 @@ export async function notifySubscriptionLimitReached(
     p_entity_type: 'subscription',
     p_entity_id: null,
     p_priority: 'high',
-    p_channels: '["in_app", "email"]'::jsonb,
+    p_channels: ['in_app', 'email'],
     p_metadata: JSON.stringify({
       resource_type: data.resourceType,
       current_count: data.currentCount,
@@ -88,7 +88,7 @@ export async function notifySubscriptionLimitWarning(
     p_entity_type: 'subscription',
     p_entity_id: null,
     p_priority: 'medium',
-    p_channels: '["in_app"]'::jsonb,
+    p_channels: ['in_app'],
     p_metadata: JSON.stringify({
       resource_type: data.resourceType,
       current_count: data.currentCount,
