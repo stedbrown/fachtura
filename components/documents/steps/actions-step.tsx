@@ -146,12 +146,22 @@ export function ActionsStep({
   const actions = [
     {
       id: 'share',
-      label: 'Condividi',
-      description: 'Condividi nativamente',
+      label: 'Condividi PDF',
+      description: 'Condividi il PDF nativamente',
       icon: Share2,
       onClick: handleNativeShare,
-      available: !!navigator.share,
+      available: !!navigator.share && !!documentId,
       primary: true,
+      disabled: isSharing,
+    },
+    {
+      id: 'payment',
+      label: 'Paga Online',
+      description: total ? `Paga ${total.toFixed(2)} CHF` : 'Crea link di pagamento',
+      icon: CreditCard,
+      onClick: handlePayment,
+      available: documentType === 'invoice' && !!documentId,
+      primary: documentType === 'invoice',
     },
     {
       id: 'download',
