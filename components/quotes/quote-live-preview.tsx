@@ -258,18 +258,18 @@ export function QuoteLivePreview({
 
   if (!pdfUrl) {
     return (
-      <div className={cn('relative h-full bg-background', compact && 'py-4')}>
+      <div className={cn('relative h-full bg-background rounded-lg border border-border shadow-sm', compact && 'py-4')}>
         {isGenerating && renderOverlay()}
-        <div className="flex items-center justify-center h-full">
+        <div className="flex items-center justify-center h-full min-h-[400px]">
           <div className={cn('text-center space-y-2 max-w-md px-4', compact && 'px-3')}>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm font-medium text-muted-foreground">
               Compila il form per vedere l'anteprima del PDF
             </p>
             <p className="text-xs text-muted-foreground">
               Seleziona un cliente e aggiungi almeno un articolo
             </p>
             {error && (
-              <p className="text-xs text-destructive">
+              <p className="text-xs text-destructive mt-2">
                 {error}
               </p>
             )}
@@ -280,12 +280,12 @@ export function QuoteLivePreview({
   }
 
   return (
-    <div className={cn('relative h-full bg-background', compact && 'py-4')}>
+    <div className={cn('relative h-full bg-background rounded-lg border border-border shadow-lg overflow-hidden', compact && 'py-4')}>
       <iframe
         src={`${pdfUrl}#toolbar=0&navpanes=0&scrollbar=0`}
         className={cn(
           'w-full h-full border-0',
-          compact && 'rounded-lg border border-border shadow-sm'
+          compact && 'rounded-lg'
         )}
         title="Quote Preview"
       />
