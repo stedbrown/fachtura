@@ -337,6 +337,7 @@ export function EnhancedDocumentCreator({
             documentId={savedDocumentId}
             documentNumber={savedDocumentNumber}
             documentType={type}
+            total={documentTotal}
             onDownload={() => {
               if (savedDocumentId) {
                 window.open(`/${locale}/dashboard/${type === 'invoice' ? 'invoices' : 'quotes'}/${savedDocumentId}?download=true`, '_blank')
