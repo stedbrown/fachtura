@@ -60,12 +60,12 @@ export function StripeConnectSection() {
         // Check if it's a Connect not enabled error
         if (data.helpUrl) {
           toast.error(data.message || data.error || 'Stripe Connect non abilitato', {
-            description: 'Clicca per vedere come abilitarlo',
+            description: data.dashboardUrl ? 'Apri il dashboard Stripe per verificare' : 'Clicca per vedere come abilitarlo',
             action: {
-              label: 'Apri guida',
-              onClick: () => window.open(data.helpUrl, '_blank'),
+              label: data.dashboardUrl ? 'Apri Dashboard' : 'Apri guida',
+              onClick: () => window.open(data.dashboardUrl || data.helpUrl, '_blank'),
             },
-            duration: 10000,
+            duration: 15000,
           })
         } else {
           toast.error(data.error || data.message || 'Errore nella connessione a Stripe')

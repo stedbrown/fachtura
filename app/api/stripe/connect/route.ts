@@ -20,6 +20,15 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const returnUrl = searchParams.get('return_url') || `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/settings`
 
+    // Check if we can create accounts (Connect must be enabled)
+    // First, try to retrieve the platform account to verify Connect is enabled
+    try {
+      await stripe.accounts.retrieve()
+    } catch (error: any) {
+      // If we can't retrieve accounts, Connect might not be fully enabled
+      logger.warn('Could not retrieve platform account', error)
+    }
+
     // For Express accounts, we need to create the account first
     // Then create the account link
     const account = await stripe.accounts.create({
